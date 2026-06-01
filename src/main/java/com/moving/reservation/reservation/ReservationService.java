@@ -9,9 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
+    private final ReservationStatusHistoryRepository statusHistoryRepository;
 
-    public ReservationService(ReservationRepository reservationRepository) {
+    public ReservationService(ReservationRepository reservationRepository,
+                              ReservationStatusHistoryRepository statusHistoryRepository) {
         this.reservationRepository = reservationRepository;
+        this.statusHistoryRepository = statusHistoryRepository;
     }
 
     @Transactional
@@ -33,9 +36,21 @@ public class ReservationService {
         return reservationRepository.findAllByOrderByMoveDateAscMoveTimeAsc();
     }
 
+    public List<ReservationStatusHistory> findStatusHistories(Long reservationId) {
+        return statusHistoryRepository.findByReservationIdOrderByChangedAtDesc(reservationId);
+    }
+
     @Transactional
     public void updateStatus(Long id, ReservationStatus status) {
-        get(id).updateStatus(status);
+        Reservation reservation = get(id);
+        ReservationStatus previousStatus = reservation.getStatus();
+
+        if (previousStatus == status) {
+            return;
+        }
+
+        reservation.updateStatus(status);
+        statusHistoryRepository.save(new ReservationStatusHistory(reservation, previousStatus, status));
     }
 
     @Transactional

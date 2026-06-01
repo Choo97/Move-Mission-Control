@@ -120,6 +120,24 @@
         </aside>
     </section>
 
+    <section class="history-panel">
+        <div class="section-title">
+            <p class="eyebrow">Status History</p>
+            <h2>상태 변경 이력</h2>
+        </div>
+
+        <p class="empty" th:if="${statusHistories.isEmpty()}">아직 상태 변경 이력이 없습니다.</p>
+
+        <ol class="history-list" th:unless="${statusHistories.isEmpty()}">
+            <li th:each="history : ${statusHistories}">
+                <div>
+                    <strong th:text="${history.previousStatus.label + ' -> ' + history.changedStatus.label}">접수 -> 상담중</strong>
+                    <span th:text="${#temporals.format(history.changedAt, 'yyyy-MM-dd HH:mm')}">2026-06-02 10:00</span>
+                </div>
+            </li>
+        </ol>
+    </section>
+
     <div class="actions">
         <a class="button button--ghost" th:href="@{/admin/reservations}">목록으로</a>
         <a class="button button--primary" th:href="@{/reservations/{id}(id=${reservation.id})}">고객 화면 보기</a>
