@@ -2,7 +2,9 @@ package com.moving.reservation.admin;
 
 import com.moving.reservation.reservation.ReservationService;
 import com.moving.reservation.reservation.ReservationStatus;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,6 +30,8 @@ public class AdminReservationController {
                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
                        Model model) {
+        LocalDate currentDate = LocalDate.now();
+
         model.addAttribute("reservations", reservationService.search(status, keyword, startDate, endDate));
         model.addAttribute("summary", reservationService.summary());
         model.addAttribute("statuses", ReservationStatus.values());
@@ -35,6 +39,11 @@ public class AdminReservationController {
         model.addAttribute("keyword", keyword);
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
+        model.addAttribute("today", currentDate);
+        model.addAttribute("weekStart", currentDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)));
+        model.addAttribute("weekEnd", currentDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)));
+        model.addAttribute("monthStart", currentDate.withDayOfMonth(1));
+        model.addAttribute("monthEnd", currentDate.with(TemporalAdjusters.lastDayOfMonth()));
         return "admin/reservations";
     }
 

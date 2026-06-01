@@ -501,6 +501,29 @@ small {
     grid-template-columns: 160px minmax(220px, 1fr) 170px 170px auto;
 }
 
+.quick-filters {
+    display: flex;
+    grid-column: 1 / -1;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.quick-filters a {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface-soft);
+    color: var(--blue-strong);
+    font-size: 13px;
+    font-weight: 800;
+    padding: 8px 12px;
+    text-decoration: none;
+}
+
+.quick-filters a:hover {
+    border-color: var(--blue);
+    background: var(--white);
+}
+
 .filter-actions {
     display: flex;
     gap: 8px;
