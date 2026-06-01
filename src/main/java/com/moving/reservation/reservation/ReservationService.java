@@ -24,6 +24,11 @@ public class ReservationService {
                 .orElseThrow(() -> new IllegalArgumentException("예약을 찾을 수 없습니다."));
     }
 
+    public Reservation search(ReservationSearchRequest request) {
+        return reservationRepository.findByIdAndPhone(request.getReservationId(), request.getPhone())
+                .orElseThrow(() -> new IllegalArgumentException("예약 번호와 연락처가 일치하는 예약을 찾을 수 없습니다."));
+    }
+
     public List<Reservation> findAll() {
         return reservationRepository.findAllByOrderByMoveDateAscMoveTimeAsc();
     }

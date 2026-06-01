@@ -294,6 +294,16 @@ small {
     color: var(--red);
 }
 
+.alert {
+    margin: 0;
+    border: 1px solid rgba(229, 72, 77, 0.28);
+    border-radius: 6px;
+    background: #fff1f2;
+    color: var(--red);
+    padding: 13px 14px;
+    font-weight: 700;
+}
+
 .checks {
     display: flex;
     align-items: end;

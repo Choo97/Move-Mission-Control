@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>예약 조회 | Move Mission Control</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" th:href="@{/}">Move Mission Control</a>
+    <nav>
+        <a th:href="@{/reservations/new}">예약하기</a>
+        <a th:href="@{/reservations/search}">예약조회</a>
+        <a th:href="@{/admin/reservations}">관리자</a>
+    </nav>
+</header>
+
+<main class="page narrow">
+    <section class="page-heading">
+        <p class="eyebrow">Mission Lookup</p>
+        <h1>내 예약 조회</h1>
+        <p>예약 번호와 예약 당시 입력한 연락처를 입력해 진행 상태를 확인합니다.</p>
+    </section>
+
+    <form class="form-shell" th:action="@{/reservations/search}" th:object="${reservationSearchRequest}" method="post">
+        <p class="alert" th:if="${searchError}" th:text="${searchError}">예약을 찾을 수 없습니다.</p>
+
+        <label>
+            예약 번호
+            <input type="number" th:field="*{reservationId}" min="1" placeholder="예: 1">
+            <small th:if="${#fields.hasErrors('reservationId')}" th:errors="*{reservationId}"></small>
+        </label>
+
+        <label>
+            연락처
+            <input type="text" th:field="*{phone}" placeholder="010-1234-5678">
+            <small th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></small>
+        </label>
+
+        <div class="form-actions">
+            <a class="button button--ghost" th:href="@{/}">홈으로</a>
+            <button class="button button--primary" type="submit">예약 조회</button>
+        </div>
+    </form>
+</main>
+</body>
+</html>

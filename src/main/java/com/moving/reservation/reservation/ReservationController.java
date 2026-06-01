@@ -27,6 +27,29 @@ public class ReservationController {
         return "reservation/new";
     }
 
+    @GetMapping("/search")
+    public String searchForm(Model model) {
+        model.addAttribute("reservationSearchRequest", new ReservationSearchRequest());
+        return "reservation/search";
+    }
+
+    @PostMapping("/search")
+    public String search(@Valid @ModelAttribute ReservationSearchRequest request,
+                         BindingResult bindingResult,
+                         Model model) {
+        if (bindingResult.hasErrors()) {
+            return "reservation/search";
+        }
+
+        try {
+            Reservation reservation = reservationService.search(request);
+            return "redirect:/reservations/" + reservation.getId();
+        } catch (IllegalArgumentException exception) {
+            model.addAttribute("searchError", exception.getMessage());
+            return "reservation/search";
+        }
+    }
+
     @PostMapping
     public String create(@Valid @ModelAttribute ReservationCreateRequest request,
                          BindingResult bindingResult,

@@ -11,6 +11,7 @@
     <a class="brand" th:href="@{/}">Move Mission Control</a>
     <nav>
         <a th:href="@{/reservations/new}">예약하기</a>
+        <a th:href="@{/reservations/search}">예약조회</a>
         <a th:href="@{/admin/reservations}">관리자</a>
     </nav>
 </header>
@@ -23,7 +24,7 @@
             <p class="hero__copy">출발지부터 도착지까지, 예약과 상담 상태를 한 화면에서 정확하게 관리합니다.</p>
             <div class="actions">
                 <a class="button button--primary" th:href="@{/reservations/new}">예약 시작하기</a>
-                <a class="button button--ghost" th:href="@{/admin/reservations}">예약 현황 보기</a>
+                <a class="button button--ghost" th:href="@{/reservations/search}">내 예약 조회</a>
             </div>
         </div>
         <div class="mission-panel">
