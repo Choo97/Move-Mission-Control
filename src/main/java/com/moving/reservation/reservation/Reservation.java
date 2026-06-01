@@ -108,6 +108,10 @@ public class Reservation {
         this.adminMemo = adminMemo;
     }
 
+    public boolean isCancelable() {
+        return status == ReservationStatus.RECEIVED || status == ReservationStatus.CONSULTING;
+    }
+
     public Long getId() {
         return id;
     }

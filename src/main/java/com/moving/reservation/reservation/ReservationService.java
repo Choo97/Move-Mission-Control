@@ -48,6 +48,22 @@ public class ReservationService {
     @Transactional
     public void updateStatus(Long id, ReservationStatus status) {
         Reservation reservation = get(id);
+        changeStatus(reservation, status);
+    }
+
+    @Transactional
+    public void cancel(Long id, String phone) {
+        Reservation reservation = reservationRepository.findByIdAndPhone(id, phone)
+                .orElseThrow(() -> new IllegalArgumentException("예약 번호와 연락처가 일치하지 않습니다."));
+
+        if (!reservation.isCancelable()) {
+            throw new IllegalArgumentException("현재 상태에서는 예약을 취소할 수 없습니다.");
+        }
+
+        changeStatus(reservation, ReservationStatus.CANCELED);
+    }
+
+    private void changeStatus(Reservation reservation, ReservationStatus status) {
         ReservationStatus previousStatus = reservation.getStatus();
 
         if (previousStatus == status) {

@@ -172,6 +172,15 @@ button:hover {
     color: var(--blue-strong);
 }
 
+.button--danger {
+    background: var(--red);
+    color: var(--white);
+}
+
+.button--danger:hover {
+    background: #b4232a;
+}
+
 .mission-panel,
 .form-shell,
 .detail-panel,
@@ -409,6 +418,22 @@ small {
 }
 
 .admin-action-panel form {
+    display: grid;
+    gap: 12px;
+}
+
+.cancel-panel {
+    display: grid;
+    gap: 16px;
+    margin-top: 18px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: var(--shadow);
+    padding: 24px;
+}
+
+.cancel-panel form {
     display: grid;
     gap: 12px;
 }

@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/reservations")
@@ -67,5 +69,19 @@ public class ReservationController {
     public String detail(@PathVariable Long id, Model model) {
         model.addAttribute("reservation", reservationService.get(id));
         return "reservation/detail";
+    }
+
+    @PostMapping("/{id}/cancel")
+    public String cancel(@PathVariable Long id,
+                         @RequestParam String phone,
+                         RedirectAttributes redirectAttributes) {
+        try {
+            reservationService.cancel(id, phone);
+            redirectAttributes.addFlashAttribute("cancelMessage", "예약이 취소되었습니다.");
+        } catch (IllegalArgumentException exception) {
+            redirectAttributes.addFlashAttribute("cancelError", exception.getMessage());
+        }
+
+        return "redirect:/reservations/" + id;
     }
 }
