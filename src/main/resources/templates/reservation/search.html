@@ -24,6 +24,8 @@
     </section>
 
     <form class="form-shell" th:action="@{/reservations/search}" th:object="${reservationSearchRequest}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
         <p class="alert" th:if="${searchError}" th:text="${searchError}">예약을 찾을 수 없습니다.</p>
 
         <label>
