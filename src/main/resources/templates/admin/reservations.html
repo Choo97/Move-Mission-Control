@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>관리자 | Move Mission Control</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" th:href="@{/}">Move Mission Control</a>
+    <nav>
+        <a th:href="@{/reservations/new}">예약하기</a>
+        <a th:href="@{/admin/reservations}">관리자</a>
+    </nav>
+</header>
+
+<main class="page">
+    <section class="page-heading">
+        <p class="eyebrow">Operations Board</p>
+        <h1>예약 관제 보드</h1>
+        <p>접수된 이사 미션의 상태와 견적을 관리합니다.</p>
+    </section>
+
+    <section class="stats">
+        <div><span th:text="${summary.total()}">0</span><p>전체</p></div>
+        <div><span th:text="${summary.received()}">0</span><p>접수</p></div>
+        <div><span th:text="${summary.consulting()}">0</span><p>상담중</p></div>
+        <div><span th:text="${summary.confirmed()}">0</span><p>확정</p></div>
+    </section>
+
+    <section class="table-shell">
+        <table>
+            <thead>
+            <tr>
+                <th>번호</th>
+                <th>고객</th>
+                <th>일정</th>
+                <th>유형</th>
+                <th>경로</th>
+                <th>상태</th>
+                <th>견적</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${reservations.isEmpty()}">
+                <td colspan="7" class="empty">등록된 예약이 없습니다.</td>
+            </tr>
+            <tr th:each="reservation : ${reservations}">
+                <td th:text="${reservation.id}">1</td>
+                <td>
+                    <strong th:text="${reservation.customerName}">홍길동</strong>
+                    <span th:text="${reservation.phone}">010-0000-0000</span>
+                </td>
+                <td th:text="${reservation.moveDate + ' ' + reservation.moveTime}">2026-06-01 09:00</td>
+                <td th:text="${reservation.moveType.label}">원룸</td>
+                <td th:text="${reservation.fromAddress + ' -> ' + reservation.toAddress}">출발 -> 도착</td>
+                <td>
+                    <form th:action="@{/admin/reservations/{id}/status(id=${reservation.id})}" method="post">
+                        <select name="status">
+                            <option th:each="status : ${statuses}"
+                                    th:value="${status}"
+                                    th:text="${status.label}"
+                                    th:selected="${status == reservation.status}"></option>
+                        </select>
+                        <button type="submit">변경</button>
+                    </form>
+                </td>
+                <td>
+                    <form th:action="@{/admin/reservations/{id}/estimate(id=${reservation.id})}" method="post">
+                        <input type="number" name="estimatedPrice" min="0" step="10000" th:value="${reservation.estimatedPrice}">
+                        <button type="submit">저장</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</body>
+</html>
