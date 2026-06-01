@@ -112,6 +112,18 @@ public class Reservation {
         return status == ReservationStatus.RECEIVED || status == ReservationStatus.CONSULTING;
     }
 
+    public boolean isEditable() {
+        return status == ReservationStatus.RECEIVED || status == ReservationStatus.CONSULTING;
+    }
+
+    public void updateDetails(LocalDate moveDate, LocalTime moveTime, String fromAddress, String toAddress, String memo) {
+        this.moveDate = moveDate;
+        this.moveTime = moveTime;
+        this.fromAddress = fromAddress;
+        this.toAddress = toAddress;
+        this.memo = memo;
+    }
+
     public Long getId() {
         return id;
     }

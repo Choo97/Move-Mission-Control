@@ -46,6 +46,8 @@
         </div>
     </section>
 
+    <p class="notice" th:if="${updateMessage}" th:text="${updateMessage}">예약 정보가 수정되었습니다.</p>
+
     <section class="cancel-panel">
         <div class="section-title">
             <p class="eyebrow">Cancel Request</p>
@@ -68,6 +70,7 @@
 
     <div class="actions">
         <a class="button button--primary" th:href="@{/}">홈으로</a>
+        <a class="button button--ghost" th:if="${reservation.editable}" th:href="@{/reservations/{id}/edit(id=${reservation.id})}">예약 수정</a>
         <a class="button button--ghost" th:href="@{/admin/reservations}">관리자 화면</a>
     </div>
 </main>

@@ -71,6 +71,38 @@ public class ReservationController {
         return "reservation/detail";
     }
 
+    @GetMapping("/{id}/edit")
+    public String editForm(@PathVariable Long id, Model model) {
+        Reservation reservation = reservationService.get(id);
+        model.addAttribute("reservation", reservation);
+        model.addAttribute("reservationUpdateRequest", ReservationUpdateRequest.from(reservation));
+        return "reservation/edit";
+    }
+
+    @PostMapping("/{id}/edit")
+    public String update(@PathVariable Long id,
+                         @Valid @ModelAttribute ReservationUpdateRequest request,
+                         BindingResult bindingResult,
+                         Model model,
+                         RedirectAttributes redirectAttributes) {
+        Reservation reservation = reservationService.get(id);
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("reservation", reservation);
+            return "reservation/edit";
+        }
+
+        try {
+            reservationService.updateDetails(id, request);
+            redirectAttributes.addFlashAttribute("updateMessage", "예약 정보가 수정되었습니다.");
+            return "redirect:/reservations/" + id;
+        } catch (IllegalArgumentException exception) {
+            model.addAttribute("reservation", reservation);
+            model.addAttribute("updateError", exception.getMessage());
+            return "reservation/edit";
+        }
+    }
+
     @PostMapping("/{id}/cancel")
     public String cancel(@PathVariable Long id,
                          @RequestParam String phone,

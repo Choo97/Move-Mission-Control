@@ -63,6 +63,24 @@ public class ReservationService {
         changeStatus(reservation, ReservationStatus.CANCELED);
     }
 
+    @Transactional
+    public void updateDetails(Long id, ReservationUpdateRequest request) {
+        Reservation reservation = reservationRepository.findByIdAndPhone(id, request.getPhone())
+                .orElseThrow(() -> new IllegalArgumentException("예약 번호와 연락처가 일치하지 않습니다."));
+
+        if (!reservation.isEditable()) {
+            throw new IllegalArgumentException("현재 상태에서는 예약을 수정할 수 없습니다.");
+        }
+
+        reservation.updateDetails(
+                request.getMoveDate(),
+                request.getMoveTime(),
+                request.getFromAddress(),
+                request.getToAddress(),
+                request.getMemo()
+        );
+    }
+
     private void changeStatus(Reservation reservation, ReservationStatus status) {
         ReservationStatus previousStatus = reservation.getStatus();
 
