@@ -9,7 +9,7 @@ Spring Boot 기반 이사 예약 웹 서비스입니다. 고객은 이사 예약
 - Spring MVC
 - Thymeleaf
 - Spring Data JPA
-- H2 Database
+- MySQL
 - Maven
 
 ## 주요 기능
@@ -20,6 +20,7 @@ Spring Boot 기반 이사 예약 웹 서비스입니다. 고객은 이사 예약
 - 관리자 예약 목록
 - 예약 상태 변경
 - 견적 금액 입력
+- 관리자 예약 메모
 
 ## 추후 개발 예정 기능
 
@@ -34,7 +35,6 @@ Spring Boot 기반 이사 예약 웹 서비스입니다. 고객은 이사 예약
 - 지도 기반 이동 거리 계산
 - 이사 유형별 기본 견적 계산
 - 사다리차, 엘리베이터, 층수 옵션
-- 관리자 메모 기능
 - 담당 기사 또는 이사업체 배정
 - 예약 상태 변경 이력 관리
 - SMS 또는 카카오 알림톡 발송
@@ -43,7 +43,7 @@ Spring Boot 기반 이사 예약 웹 서비스입니다. 고객은 이사 예약
 - 쿠폰 및 할인 정책
 - 고객 리뷰 및 평점
 - 자주 묻는 질문 페이지
-- MySQL 또는 PostgreSQL 전환
+- PostgreSQL 전환 검토
 - 파일 저장소 S3 또는 NCP Object Storage 연동
 - 배포 환경 구성
 - 운영 로그 및 에러 모니터링
@@ -80,16 +80,19 @@ http://localhost:8081/
 메인 화면       http://localhost:8081/
 예약 신청       http://localhost:8081/reservations/new
 관리자 화면     http://localhost:8081/admin/reservations
-H2 콘솔         http://localhost:8081/h2-console
 ```
 
-## H2 Database 접속 정보
+## MySQL Database 접속 정보
 
 ```text
-JDBC URL  jdbc:h2:mem:moving-reservation
-User      sa
-Password  없음
+Host      localhost
+Port      3306
+Database  movemission
+User      root
+Password  mysql
 ```
+
+애플리케이션은 `spring.jpa.hibernate.ddl-auto=update` 설정을 사용합니다. 개발 단계에서 엔티티 필드가 추가되면 Hibernate가 테이블 구조를 자동으로 반영합니다.
 
 ## 예약 상태
 
