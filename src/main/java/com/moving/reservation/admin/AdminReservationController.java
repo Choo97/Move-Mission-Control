@@ -28,15 +28,22 @@ public class AdminReservationController {
         return "admin/reservations";
     }
 
+    @GetMapping("/{id}")
+    public String detail(@PathVariable Long id, Model model) {
+        model.addAttribute("reservation", reservationService.get(id));
+        model.addAttribute("statuses", ReservationStatus.values());
+        return "admin/reservation-detail";
+    }
+
     @PostMapping("/{id}/status")
     public String updateStatus(@PathVariable Long id, @RequestParam ReservationStatus status) {
         reservationService.updateStatus(id, status);
-        return "redirect:/admin/reservations";
+        return "redirect:/admin/reservations/" + id;
     }
 
     @PostMapping("/{id}/estimate")
     public String updateEstimate(@PathVariable Long id, @RequestParam Integer estimatedPrice) {
         reservationService.updateEstimate(id, estimatedPrice);
-        return "redirect:/admin/reservations";
+        return "redirect:/admin/reservations/" + id;
     }
 }

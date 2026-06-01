@@ -48,9 +48,15 @@
                 <td colspan="7" class="empty">등록된 예약이 없습니다.</td>
             </tr>
             <tr th:each="reservation : ${reservations}">
-                <td th:text="${reservation.id}">1</td>
                 <td>
-                    <strong th:text="${reservation.customerName}">홍길동</strong>
+                    <a class="text-link"
+                       th:href="@{/admin/reservations/{id}(id=${reservation.id})}"
+                       th:text="${reservation.id}">1</a>
+                </td>
+                <td>
+                    <a class="text-link"
+                       th:href="@{/admin/reservations/{id}(id=${reservation.id})}"
+                       th:text="${reservation.customerName}">홍길동</a>
                     <span th:text="${reservation.phone}">010-0000-0000</span>
                 </td>
                 <td th:text="${reservation.moveDate + ' ' + reservation.moveTime}">2026-06-01 09:00</td>

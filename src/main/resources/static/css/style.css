@@ -33,6 +33,15 @@ a {
     text-decoration: none;
 }
 
+.text-link {
+    color: var(--blue-strong);
+    font-weight: 900;
+}
+
+.text-link:hover {
+    text-decoration: underline;
+}
+
 .site-header {
     position: sticky;
     top: 0;
@@ -347,6 +356,34 @@ small {
     color: var(--navy);
 }
 
+.admin-detail-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 18px;
+    align-items: start;
+}
+
+.admin-action-panel {
+    display: grid;
+    gap: 18px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: var(--shadow);
+    padding: 22px;
+}
+
+.admin-action-panel h2 {
+    margin: 0;
+    color: var(--navy);
+    font-size: 22px;
+}
+
+.admin-action-panel form {
+    display: grid;
+    gap: 12px;
+}
+
 .stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -437,7 +474,8 @@ td button {
     .hero,
     .process,
     .field-grid,
-    .stats {
+    .stats,
+    .admin-detail-layout {
         grid-template-columns: 1fr;
     }
 

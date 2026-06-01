@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>관리자 예약 상세 | Move Mission Control</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" th:href="@{/}">Move Mission Control</a>
+    <nav>
+        <a th:href="@{/reservations/new}">예약하기</a>
+        <a th:href="@{/reservations/search}">예약조회</a>
+        <a th:href="@{/admin/reservations}">관리자</a>
+    </nav>
+</header>
+
+<main class="page">
+    <section class="page-heading">
+        <p class="eyebrow">Mission Detail</p>
+        <h1>예약 상세 관리</h1>
+        <p>
+            예약 번호
+            <strong th:text="${reservation.id}">1</strong>
+            번의 고객 정보, 이동 경로, 처리 상태를 확인합니다.
+        </p>
+    </section>
+
+    <section class="admin-detail-layout">
+        <article class="detail-panel">
+            <div>
+                <span>현재 상태</span>
+                <strong th:text="${reservation.status.label}">접수</strong>
+            </div>
+            <div>
+                <span>고객명</span>
+                <strong th:text="${reservation.customerName}">홍길동</strong>
+            </div>
+            <div>
+                <span>연락처</span>
+                <strong th:text="${reservation.phone}">010-0000-0000</strong>
+            </div>
+            <div>
+                <span>일정</span>
+                <strong th:text="${reservation.moveDate + ' ' + reservation.moveTime}">2026-06-01 09:00</strong>
+            </div>
+            <div>
+                <span>이사 유형</span>
+                <strong th:text="${reservation.moveType.label}">원룸</strong>
+            </div>
+            <div>
+                <span>출발 주소</span>
+                <strong th:text="${reservation.fromAddress}">서울시 강남구</strong>
+            </div>
+            <div>
+                <span>도착 주소</span>
+                <strong th:text="${reservation.toAddress}">서울시 마포구</strong>
+            </div>
+            <div>
+                <span>엘리베이터</span>
+                <strong th:text="${'출발지 ' + (reservation.fromElevator ? '있음' : '없음') + ' / 도착지 ' + (reservation.toElevator ? '있음' : '없음')}">
+                    출발지 있음 / 도착지 없음
+                </strong>
+            </div>
+            <div>
+                <span>요청사항</span>
+                <strong th:text="${#strings.isEmpty(reservation.memo) ? '없음' : reservation.memo}">요청사항</strong>
+            </div>
+            <div>
+                <span>견적</span>
+                <strong th:text="${reservation.estimatedPrice == null ? '상담 후 안내' : #numbers.formatInteger(reservation.estimatedPrice, 0, 'COMMA') + '원'}">
+                    상담 후 안내
+                </strong>
+            </div>
+        </article>
+
+        <aside class="admin-action-panel">
+            <h2>처리 변경</h2>
+
+            <form th:action="@{/admin/reservations/{id}/status(id=${reservation.id})}" method="post">
+                <label>
+                    예약 상태
+                    <select name="status">
+                        <option th:each="status : ${statuses}"
+                                th:value="${status}"
+                                th:text="${status.label}"
+                                th:selected="${status == reservation.status}"></option>
+                    </select>
+                </label>
+                <button type="submit">상태 저장</button>
+            </form>
+
+            <form th:action="@{/admin/reservations/{id}/estimate(id=${reservation.id})}" method="post">
+                <label>
+                    견적 금액
+                    <input type="number" name="estimatedPrice" min="0" step="10000" th:value="${reservation.estimatedPrice}" placeholder="예: 250000">
+                </label>
+                <button type="submit">견적 저장</button>
+            </form>
+        </aside>
+    </section>
+
+    <div class="actions">
+        <a class="button button--ghost" th:href="@{/admin/reservations}">목록으로</a>
+        <a class="button button--primary" th:href="@{/reservations/{id}(id=${reservation.id})}">고객 화면 보기</a>
+    </div>
+</main>
+</body>
+</html>
