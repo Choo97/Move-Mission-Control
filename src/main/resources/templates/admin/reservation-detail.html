@@ -68,6 +68,10 @@
                 <strong th:text="${#strings.isEmpty(reservation.memo) ? '없음' : reservation.memo}">요청사항</strong>
             </div>
             <div>
+                <span>관리자 메모</span>
+                <strong th:text="${#strings.isEmpty(reservation.adminMemo) ? '없음' : reservation.adminMemo}">관리자 메모</strong>
+            </div>
+            <div>
                 <span>견적</span>
                 <strong th:text="${reservation.estimatedPrice == null ? '상담 후 안내' : #numbers.formatInteger(reservation.estimatedPrice, 0, 'COMMA') + '원'}">
                     상담 후 안내
@@ -97,6 +101,14 @@
                     <input type="number" name="estimatedPrice" min="0" step="10000" th:value="${reservation.estimatedPrice}" placeholder="예: 250000">
                 </label>
                 <button type="submit">견적 저장</button>
+            </form>
+
+            <form th:action="@{/admin/reservations/{id}/memo(id=${reservation.id})}" method="post">
+                <label>
+                    관리자 메모
+                    <textarea name="adminMemo" rows="5" placeholder="상담 내용, 주의사항, 추가 확인 사항을 기록하세요." th:text="${reservation.adminMemo}"></textarea>
+                </label>
+                <button type="submit">메모 저장</button>
             </form>
         </aside>
     </section>

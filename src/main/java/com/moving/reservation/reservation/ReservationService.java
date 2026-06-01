@@ -43,6 +43,11 @@ public class ReservationService {
         get(id).updateEstimate(estimatedPrice);
     }
 
+    @Transactional
+    public void updateAdminMemo(Long id, String adminMemo) {
+        get(id).updateAdminMemo(adminMemo);
+    }
+
     public ReservationSummary summary() {
         return new ReservationSummary(
                 reservationRepository.count(),

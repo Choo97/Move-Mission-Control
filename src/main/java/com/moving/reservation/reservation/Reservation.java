@@ -55,6 +55,9 @@ public class Reservation {
     @Column(length = 1000)
     private String memo;
 
+    @Column(length = 1000)
+    private String adminMemo;
+
     private Integer estimatedPrice;
 
     @Column(nullable = false)
@@ -99,6 +102,10 @@ public class Reservation {
 
     public void updateEstimate(Integer estimatedPrice) {
         this.estimatedPrice = estimatedPrice;
+    }
+
+    public void updateAdminMemo(String adminMemo) {
+        this.adminMemo = adminMemo;
     }
 
     public Long getId() {
@@ -147,6 +154,10 @@ public class Reservation {
 
     public String getMemo() {
         return memo;
+    }
+
+    public String getAdminMemo() {
+        return adminMemo;
     }
 
     public Integer getEstimatedPrice() {

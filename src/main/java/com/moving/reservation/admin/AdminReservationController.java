@@ -46,4 +46,10 @@ public class AdminReservationController {
         reservationService.updateEstimate(id, estimatedPrice);
         return "redirect:/admin/reservations/" + id;
     }
+
+    @PostMapping("/{id}/memo")
+    public String updateAdminMemo(@PathVariable Long id, @RequestParam(required = false) String adminMemo) {
+        reservationService.updateAdminMemo(id, adminMemo);
+        return "redirect:/admin/reservations/" + id;
+    }
 }
