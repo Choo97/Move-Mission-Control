@@ -34,7 +34,7 @@
         <div><span th:text="${summary.confirmed()}">0</span><p>확정</p></div>
     </section>
 
-    <form class="filter-panel" th:action="@{/admin/reservations}" method="get">
+    <form class="filter-panel filter-panel--wide" th:action="@{/admin/reservations}" method="get">
         <label>
             상태
             <select name="status">
@@ -48,6 +48,14 @@
         <label>
             고객명 / 연락처
             <input type="text" name="keyword" th:value="${keyword}" placeholder="고객명 또는 연락처">
+        </label>
+        <label>
+            시작일
+            <input type="date" name="startDate" th:value="${startDate}">
+        </label>
+        <label>
+            종료일
+            <input type="date" name="endDate" th:value="${endDate}">
         </label>
         <div class="filter-actions">
             <button type="submit">검색</button>

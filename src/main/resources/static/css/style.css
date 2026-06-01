@@ -497,6 +497,10 @@ small {
     padding: 18px;
 }
 
+.filter-panel--wide {
+    grid-template-columns: 160px minmax(220px, 1fr) 170px 170px auto;
+}
+
 .filter-actions {
     display: flex;
     gap: 8px;

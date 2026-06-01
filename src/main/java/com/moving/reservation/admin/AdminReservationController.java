@@ -2,6 +2,8 @@ package com.moving.reservation.admin;
 
 import com.moving.reservation.reservation.ReservationService;
 import com.moving.reservation.reservation.ReservationStatus;
+import java.time.LocalDate;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,12 +25,16 @@ public class AdminReservationController {
     @GetMapping
     public String list(@RequestParam(required = false) ReservationStatus status,
                        @RequestParam(required = false) String keyword,
+                       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
                        Model model) {
-        model.addAttribute("reservations", reservationService.search(status, keyword));
+        model.addAttribute("reservations", reservationService.search(status, keyword, startDate, endDate));
         model.addAttribute("summary", reservationService.summary());
         model.addAttribute("statuses", ReservationStatus.values());
         model.addAttribute("selectedStatus", status);
         model.addAttribute("keyword", keyword);
+        model.addAttribute("startDate", startDate);
+        model.addAttribute("endDate", endDate);
         return "admin/reservations";
     }
 

@@ -1,5 +1,6 @@
 package com.moving.reservation.reservation;
 
+import java.time.LocalDate;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,8 +37,8 @@ public class ReservationService {
         return reservationRepository.findAllByOrderByMoveDateAscMoveTimeAsc();
     }
 
-    public List<Reservation> search(ReservationStatus status, String keyword) {
-        return reservationRepository.search(status, normalizeKeyword(keyword));
+    public List<Reservation> search(ReservationStatus status, String keyword, LocalDate startDate, LocalDate endDate) {
+        return reservationRepository.search(status, normalizeKeyword(keyword), startDate, endDate);
     }
 
     public List<ReservationStatusHistory> findStatusHistories(Long reservationId) {
