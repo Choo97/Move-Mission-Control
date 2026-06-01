@@ -484,6 +484,29 @@ small {
     color: var(--muted);
 }
 
+.filter-panel {
+    display: grid;
+    grid-template-columns: 180px minmax(240px, 1fr) auto;
+    gap: 14px;
+    align-items: end;
+    margin-bottom: 18px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: var(--shadow);
+    padding: 18px;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.filter-actions .button,
+.filter-actions button {
+    white-space: nowrap;
+}
+
 .table-shell {
     overflow-x: auto;
     background: var(--white);
@@ -551,6 +574,7 @@ td button {
     .process,
     .field-grid,
     .stats,
+    .filter-panel,
     .admin-detail-layout {
         grid-template-columns: 1fr;
     }

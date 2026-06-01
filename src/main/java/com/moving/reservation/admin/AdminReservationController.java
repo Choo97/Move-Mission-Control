@@ -21,10 +21,14 @@ public class AdminReservationController {
     }
 
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("reservations", reservationService.findAll());
+    public String list(@RequestParam(required = false) ReservationStatus status,
+                       @RequestParam(required = false) String keyword,
+                       Model model) {
+        model.addAttribute("reservations", reservationService.search(status, keyword));
         model.addAttribute("summary", reservationService.summary());
         model.addAttribute("statuses", ReservationStatus.values());
+        model.addAttribute("selectedStatus", status);
+        model.addAttribute("keyword", keyword);
         return "admin/reservations";
     }
 

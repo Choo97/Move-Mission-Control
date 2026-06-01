@@ -34,6 +34,27 @@
         <div><span th:text="${summary.confirmed()}">0</span><p>확정</p></div>
     </section>
 
+    <form class="filter-panel" th:action="@{/admin/reservations}" method="get">
+        <label>
+            상태
+            <select name="status">
+                <option value="">전체 상태</option>
+                <option th:each="status : ${statuses}"
+                        th:value="${status}"
+                        th:text="${status.label}"
+                        th:selected="${status == selectedStatus}"></option>
+            </select>
+        </label>
+        <label>
+            고객명 / 연락처
+            <input type="text" name="keyword" th:value="${keyword}" placeholder="고객명 또는 연락처">
+        </label>
+        <div class="filter-actions">
+            <button type="submit">검색</button>
+            <a class="button button--ghost" th:href="@{/admin/reservations}">초기화</a>
+        </div>
+    </form>
+
     <section class="table-shell">
         <table>
             <thead>
@@ -49,7 +70,7 @@
             </thead>
             <tbody>
             <tr th:if="${reservations.isEmpty()}">
-                <td colspan="7" class="empty">등록된 예약이 없습니다.</td>
+                <td colspan="7" class="empty">조건에 맞는 예약이 없습니다.</td>
             </tr>
             <tr th:each="reservation : ${reservations}">
                 <td>

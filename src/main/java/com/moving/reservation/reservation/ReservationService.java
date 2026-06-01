@@ -36,6 +36,10 @@ public class ReservationService {
         return reservationRepository.findAllByOrderByMoveDateAscMoveTimeAsc();
     }
 
+    public List<Reservation> search(ReservationStatus status, String keyword) {
+        return reservationRepository.search(status, normalizeKeyword(keyword));
+    }
+
     public List<ReservationStatusHistory> findStatusHistories(Long reservationId) {
         return statusHistoryRepository.findByReservationIdOrderByChangedAtDesc(reservationId);
     }
@@ -70,5 +74,18 @@ public class ReservationService {
                 reservationRepository.countByStatus(ReservationStatus.CONSULTING),
                 reservationRepository.countByStatus(ReservationStatus.CONFIRMED)
         );
+    }
+
+    private String normalizeKeyword(String keyword) {
+        if (keyword == null) {
+            return null;
+        }
+
+        String trimmedKeyword = keyword.trim();
+        if (trimmedKeyword.isEmpty()) {
+            return null;
+        }
+
+        return trimmedKeyword.toLowerCase();
     }
 }
