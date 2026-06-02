@@ -4,6 +4,10 @@ public record ReservationSummary(
         long total,
         long received,
         long consulting,
-        long confirmed
+        long confirmed,
+        long completed,
+        long today,
+        long couponUsages,
+        double averageRating
 ) {
 }

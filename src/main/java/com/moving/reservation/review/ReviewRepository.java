@@ -18,4 +18,10 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             order by review.createdAt desc
             """)
     List<Review> findAllWithReservationOrderByCreatedAtDesc();
+
+    @Query("""
+            select coalesce(avg(review.rating), 0)
+            from Review review
+            """)
+    double averageRating();
 }

@@ -2,6 +2,7 @@ package com.moving.reservation.reservation;
 
 import com.moving.reservation.coupon.Coupon;
 import com.moving.reservation.coupon.CouponService;
+import com.moving.reservation.review.ReviewService;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -16,17 +17,20 @@ public class ReservationService {
     private final ReservationPhotoRepository reservationPhotoRepository;
     private final ReservationPhotoStorage reservationPhotoStorage;
     private final CouponService couponService;
+    private final ReviewService reviewService;
 
     public ReservationService(ReservationRepository reservationRepository,
                               ReservationStatusHistoryRepository statusHistoryRepository,
                               ReservationPhotoRepository reservationPhotoRepository,
                               ReservationPhotoStorage reservationPhotoStorage,
-                              CouponService couponService) {
+                              CouponService couponService,
+                              ReviewService reviewService) {
         this.reservationRepository = reservationRepository;
         this.statusHistoryRepository = statusHistoryRepository;
         this.reservationPhotoRepository = reservationPhotoRepository;
         this.reservationPhotoStorage = reservationPhotoStorage;
         this.couponService = couponService;
+        this.reviewService = reviewService;
     }
 
     @Transactional
@@ -142,11 +146,17 @@ public class ReservationService {
     }
 
     public ReservationSummary summary() {
+        LocalDate currentDate = LocalDate.now();
+
         return new ReservationSummary(
                 reservationRepository.count(),
                 reservationRepository.countByStatus(ReservationStatus.RECEIVED),
                 reservationRepository.countByStatus(ReservationStatus.CONSULTING),
-                reservationRepository.countByStatus(ReservationStatus.CONFIRMED)
+                reservationRepository.countByStatus(ReservationStatus.CONFIRMED),
+                reservationRepository.countByStatus(ReservationStatus.COMPLETED),
+                reservationRepository.countByMoveDate(currentDate),
+                reservationRepository.countCouponUsages(),
+                reviewService.averageRating()
         );
     }
 

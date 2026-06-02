@@ -34,10 +34,12 @@
     </section>
 
     <section class="stats">
-        <div><span th:text="${summary.total()}">0</span><p>전체</p></div>
-        <div><span th:text="${summary.received()}">0</span><p>접수</p></div>
-        <div><span th:text="${summary.consulting()}">0</span><p>상담중</p></div>
-        <div><span th:text="${summary.confirmed()}">0</span><p>확정</p></div>
+        <div><span th:text="${summary.today()}">0</span><p>오늘 예약</p></div>
+        <div><span th:text="${summary.received()}">0</span><p>접수 대기</p></div>
+        <div><span th:text="${summary.completed()}">0</span><p>완료 예약</p></div>
+        <div><span th:text="${#numbers.formatDecimal(summary.averageRating(), 1, 1)}">0.0</span><p>평균 평점</p></div>
+        <div><span th:text="${summary.couponUsages()}">0</span><p>쿠폰 사용</p></div>
+        <div><span th:text="${summary.total()}">0</span><p>전체 예약</p></div>
     </section>
 
     <form class="filter-panel filter-panel--wide" th:action="@{/admin/reservations}" method="get">

@@ -41,4 +41,14 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findCouponUsages();
 
     long countByStatus(ReservationStatus status);
+
+    long countByMoveDate(LocalDate moveDate);
+
+    @Query("""
+            select count(reservation)
+            from Reservation reservation
+            where reservation.couponCode is not null
+              and reservation.couponCode <> ''
+            """)
+    long countCouponUsages();
 }

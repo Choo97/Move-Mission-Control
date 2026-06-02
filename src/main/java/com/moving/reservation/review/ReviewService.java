@@ -28,6 +28,10 @@ public class ReviewService {
         return reviewRepository.findAllWithReservationOrderByCreatedAtDesc();
     }
 
+    public double averageRating() {
+        return reviewRepository.averageRating();
+    }
+
     @Transactional
     public Review create(ReviewCreateRequest request) {
         Reservation reservation = reservationRepository.findByIdAndPhone(request.getReservationId(), request.getPhone())
