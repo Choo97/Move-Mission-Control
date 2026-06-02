@@ -76,6 +76,10 @@
                 <strong th:text="${#strings.isEmpty(reservation.adminMemo) ? '없음' : reservation.adminMemo}">관리자 메모</strong>
             </div>
             <div>
+                <span>메모 수정자</span>
+                <strong th:text="${#strings.isEmpty(reservation.adminMemoUpdatedBy) ? '없음' : reservation.adminMemoUpdatedBy}">admin</strong>
+            </div>
+            <div>
                 <span>견적</span>
                 <strong th:text="${reservation.estimatedPrice == null ? '상담 후 안내' : #numbers.formatInteger(reservation.estimatedPrice, 0, 'COMMA') + '원'}">
                     상담 후 안내
@@ -132,7 +136,7 @@
             <li th:each="history : ${statusHistories}">
                 <div>
                     <strong th:text="${history.previousStatus.label + ' -> ' + history.changedStatus.label}">접수 -> 상담중</strong>
-                    <span th:text="${#temporals.format(history.changedAt, 'yyyy-MM-dd HH:mm')}">2026-06-02 10:00</span>
+                    <span th:text="${(#strings.isEmpty(history.changedBy) ? '기록 없음' : history.changedBy) + ' / ' + #temporals.format(history.changedAt, 'yyyy-MM-dd HH:mm')}">admin / 2026-06-02 10:00</span>
                 </div>
             </li>
         </ol>

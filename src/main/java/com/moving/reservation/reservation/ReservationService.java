@@ -46,9 +46,9 @@ public class ReservationService {
     }
 
     @Transactional
-    public void updateStatus(Long id, ReservationStatus status) {
+    public void updateStatus(Long id, ReservationStatus status, String changedBy) {
         Reservation reservation = get(id);
-        changeStatus(reservation, status);
+        changeStatus(reservation, status, changedBy);
     }
 
     @Transactional
@@ -60,7 +60,7 @@ public class ReservationService {
             throw new IllegalArgumentException("현재 상태에서는 예약을 취소할 수 없습니다.");
         }
 
-        changeStatus(reservation, ReservationStatus.CANCELED);
+        changeStatus(reservation, ReservationStatus.CANCELED, "customer");
     }
 
     @Transactional
@@ -81,7 +81,7 @@ public class ReservationService {
         );
     }
 
-    private void changeStatus(Reservation reservation, ReservationStatus status) {
+    private void changeStatus(Reservation reservation, ReservationStatus status, String changedBy) {
         ReservationStatus previousStatus = reservation.getStatus();
 
         if (previousStatus == status) {
@@ -89,7 +89,7 @@ public class ReservationService {
         }
 
         reservation.updateStatus(status);
-        statusHistoryRepository.save(new ReservationStatusHistory(reservation, previousStatus, status));
+        statusHistoryRepository.save(new ReservationStatusHistory(reservation, previousStatus, status, changedBy));
     }
 
     @Transactional
@@ -98,8 +98,8 @@ public class ReservationService {
     }
 
     @Transactional
-    public void updateAdminMemo(Long id, String adminMemo) {
-        get(id).updateAdminMemo(adminMemo);
+    public void updateAdminMemo(Long id, String adminMemo, String updatedBy) {
+        get(id).updateAdminMemo(adminMemo, updatedBy);
     }
 
     public ReservationSummary summary() {

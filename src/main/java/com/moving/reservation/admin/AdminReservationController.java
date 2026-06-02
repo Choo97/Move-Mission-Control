@@ -2,6 +2,7 @@ package com.moving.reservation.admin;
 
 import com.moving.reservation.reservation.ReservationService;
 import com.moving.reservation.reservation.ReservationStatus;
+import java.security.Principal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
@@ -56,8 +57,8 @@ public class AdminReservationController {
     }
 
     @PostMapping("/{id}/status")
-    public String updateStatus(@PathVariable Long id, @RequestParam ReservationStatus status) {
-        reservationService.updateStatus(id, status);
+    public String updateStatus(@PathVariable Long id, @RequestParam ReservationStatus status, Principal principal) {
+        reservationService.updateStatus(id, status, principal.getName());
         return "redirect:/admin/reservations/" + id;
     }
 
@@ -68,8 +69,10 @@ public class AdminReservationController {
     }
 
     @PostMapping("/{id}/memo")
-    public String updateAdminMemo(@PathVariable Long id, @RequestParam(required = false) String adminMemo) {
-        reservationService.updateAdminMemo(id, adminMemo);
+    public String updateAdminMemo(@PathVariable Long id,
+                                  @RequestParam(required = false) String adminMemo,
+                                  Principal principal) {
+        reservationService.updateAdminMemo(id, adminMemo, principal.getName());
         return "redirect:/admin/reservations/" + id;
     }
 }

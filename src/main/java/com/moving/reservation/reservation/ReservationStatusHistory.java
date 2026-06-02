@@ -34,14 +34,19 @@ public class ReservationStatusHistory {
     @Column(nullable = false)
     private LocalDateTime changedAt;
 
+    @Column(length = 50)
+    private String changedBy;
+
     protected ReservationStatusHistory() {
     }
 
-    public ReservationStatusHistory(Reservation reservation, ReservationStatus previousStatus, ReservationStatus changedStatus) {
+    public ReservationStatusHistory(Reservation reservation, ReservationStatus previousStatus,
+                                    ReservationStatus changedStatus, String changedBy) {
         this.reservation = reservation;
         this.previousStatus = previousStatus;
         this.changedStatus = changedStatus;
         this.changedAt = LocalDateTime.now();
+        this.changedBy = changedBy;
     }
 
     public Long getId() {
@@ -62,5 +67,9 @@ public class ReservationStatusHistory {
 
     public LocalDateTime getChangedAt() {
         return changedAt;
+    }
+
+    public String getChangedBy() {
+        return changedBy;
     }
 }

@@ -58,6 +58,9 @@ public class Reservation {
     @Column(length = 1000)
     private String adminMemo;
 
+    @Column(length = 50)
+    private String adminMemoUpdatedBy;
+
     private Integer estimatedPrice;
 
     @Column(nullable = false)
@@ -104,8 +107,9 @@ public class Reservation {
         this.estimatedPrice = estimatedPrice;
     }
 
-    public void updateAdminMemo(String adminMemo) {
+    public void updateAdminMemo(String adminMemo, String adminMemoUpdatedBy) {
         this.adminMemo = adminMemo;
+        this.adminMemoUpdatedBy = adminMemoUpdatedBy;
     }
 
     public boolean isCancelable() {
@@ -174,6 +178,10 @@ public class Reservation {
 
     public String getAdminMemo() {
         return adminMemo;
+    }
+
+    public String getAdminMemoUpdatedBy() {
+        return adminMemoUpdatedBy;
     }
 
     public Integer getEstimatedPrice() {
