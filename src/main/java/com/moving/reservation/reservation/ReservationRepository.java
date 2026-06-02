@@ -31,5 +31,14 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     Optional<Reservation> findByIdAndPhone(Long id, String phone);
 
+    @Query("""
+            select reservation
+            from Reservation reservation
+            where reservation.couponCode is not null
+              and reservation.couponCode <> ''
+            order by reservation.createdAt desc
+            """)
+    List<Reservation> findCouponUsages();
+
     long countByStatus(ReservationStatus status);
 }

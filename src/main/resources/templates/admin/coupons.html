@@ -14,6 +14,7 @@
         <a th:href="@{/reservations/search}">예약조회</a>
         <a th:href="@{/admin/reservations}">관리자</a>
         <a th:href="@{/admin/coupons}">쿠폰 관리</a>
+        <a th:href="@{/admin/coupons/usages}">쿠폰 이력</a>
         <a th:href="@{/admin/account/users}">계정 목록</a>
         <a th:href="@{/admin/account/users/new}">계정 추가</a>
         <a th:href="@{/admin/account/password}">비밀번호 변경</a>
@@ -67,6 +68,7 @@
 
         <div class="form-actions">
             <a class="button button--ghost" th:href="@{/admin/reservations}">예약 목록</a>
+            <a class="button button--ghost" th:href="@{/admin/coupons/usages}">쿠폰 사용이력</a>
             <button class="button button--primary" type="submit">쿠폰 추가</button>
         </div>
     </form>

@@ -1,5 +1,6 @@
 package com.moving.reservation.coupon;
 
+import com.moving.reservation.reservation.ReservationService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,9 +17,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class CouponController {
 
     private final CouponService couponService;
+    private final ReservationService reservationService;
 
-    public CouponController(CouponService couponService) {
+    public CouponController(CouponService couponService, ReservationService reservationService) {
         this.couponService = couponService;
+        this.reservationService = reservationService;
     }
 
     @GetMapping
@@ -27,6 +30,12 @@ public class CouponController {
         model.addAttribute("couponCreateRequest", new CouponCreateRequest());
         model.addAttribute("discountTypes", DiscountType.values());
         return "admin/coupons";
+    }
+
+    @GetMapping("/usages")
+    public String usages(Model model) {
+        model.addAttribute("couponUsages", reservationService.findCouponUsages());
+        return "admin/coupon-usages";
     }
 
     @PostMapping

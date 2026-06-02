@@ -80,6 +80,10 @@ public class ReservationService {
         return reservationPhotoRepository.findByReservationIdOrderByUploadedAtAsc(reservationId);
     }
 
+    public List<Reservation> findCouponUsages() {
+        return reservationRepository.findCouponUsages();
+    }
+
     @Transactional
     public void updateStatus(Long id, ReservationStatus status, String changedBy) {
         Reservation reservation = get(id);
