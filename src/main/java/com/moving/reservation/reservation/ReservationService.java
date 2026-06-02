@@ -3,6 +3,7 @@ package com.moving.reservation.reservation;
 import com.moving.reservation.coupon.Coupon;
 import com.moving.reservation.coupon.CouponService;
 import com.moving.reservation.map.KakaoDistanceService;
+import com.moving.reservation.notification.CustomerNotificationService;
 import com.moving.reservation.review.ReviewService;
 import java.time.LocalDate;
 import java.util.List;
@@ -21,6 +22,7 @@ public class ReservationService {
     private final ReviewService reviewService;
     private final ReservationEstimateCalculator estimateCalculator;
     private final KakaoDistanceService kakaoDistanceService;
+    private final CustomerNotificationService customerNotificationService;
 
     public ReservationService(ReservationRepository reservationRepository,
                               ReservationStatusHistoryRepository statusHistoryRepository,
@@ -29,7 +31,8 @@ public class ReservationService {
                               CouponService couponService,
                               ReviewService reviewService,
                               ReservationEstimateCalculator estimateCalculator,
-                              KakaoDistanceService kakaoDistanceService) {
+                              KakaoDistanceService kakaoDistanceService,
+                              CustomerNotificationService customerNotificationService) {
         this.reservationRepository = reservationRepository;
         this.statusHistoryRepository = statusHistoryRepository;
         this.reservationPhotoRepository = reservationPhotoRepository;
@@ -38,6 +41,7 @@ public class ReservationService {
         this.reviewService = reviewService;
         this.estimateCalculator = estimateCalculator;
         this.kakaoDistanceService = kakaoDistanceService;
+        this.customerNotificationService = customerNotificationService;
     }
 
     @Transactional
@@ -61,6 +65,7 @@ public class ReservationService {
         }
 
         reservationRepository.save(reservation);
+        customerNotificationService.prepareReservationCreated(reservation);
 
         request.getItemPhotos().stream()
                 .filter(itemPhoto -> itemPhoto != null && !itemPhoto.isEmpty())
@@ -184,6 +189,7 @@ public class ReservationService {
 
         reservation.updateStatus(status);
         statusHistoryRepository.save(new ReservationStatusHistory(reservation, previousStatus, status, changedBy));
+        customerNotificationService.prepareStatusChanged(reservation, status);
     }
 
     private void recalculateBaseEstimate(Reservation reservation) {
@@ -201,7 +207,9 @@ public class ReservationService {
 
     @Transactional
     public void updateEstimate(Long id, Integer estimatedPrice) {
-        get(id).updateEstimate(estimatedPrice);
+        Reservation reservation = get(id);
+        reservation.updateEstimate(estimatedPrice);
+        customerNotificationService.prepareEstimateUpdated(reservation);
     }
 
     @Transactional

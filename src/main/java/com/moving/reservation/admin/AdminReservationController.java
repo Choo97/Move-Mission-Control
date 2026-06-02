@@ -1,5 +1,6 @@
 package com.moving.reservation.admin;
 
+import com.moving.reservation.notification.CustomerNotificationService;
 import com.moving.reservation.reservation.ReservationService;
 import com.moving.reservation.reservation.ReservationStatus;
 import java.security.Principal;
@@ -21,9 +22,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AdminReservationController {
 
     private final ReservationService reservationService;
+    private final CustomerNotificationService customerNotificationService;
 
-    public AdminReservationController(ReservationService reservationService) {
+    public AdminReservationController(ReservationService reservationService,
+                                      CustomerNotificationService customerNotificationService) {
         this.reservationService = reservationService;
+        this.customerNotificationService = customerNotificationService;
     }
 
     @GetMapping
@@ -54,6 +58,7 @@ public class AdminReservationController {
         model.addAttribute("reservation", reservationService.get(id));
         model.addAttribute("photos", reservationService.findPhotos(id));
         model.addAttribute("statusHistories", reservationService.findStatusHistories(id));
+        model.addAttribute("notifications", customerNotificationService.findByReservationId(id));
         model.addAttribute("statuses", ReservationStatus.values());
         return "admin/reservation-detail";
     }

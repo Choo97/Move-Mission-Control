@@ -225,6 +225,27 @@
         </ol>
     </section>
 
+    <section class="history-panel">
+        <div class="section-title">
+            <p class="eyebrow">Customer Notification</p>
+            <h2>고객 알림 준비 이력</h2>
+        </div>
+
+        <p class="empty" th:if="${notifications.isEmpty()}">아직 준비된 고객 알림이 없습니다.</p>
+
+        <ol class="history-list" th:unless="${notifications.isEmpty()}">
+            <li th:each="notification : ${notifications}">
+                <div>
+                    <strong th:text="${notification.type.label + ' / ' + notification.status.label}">예약 접수 / 발송 준비</strong>
+                    <span th:text="${notification.channel.label + ' / ' + notification.recipientPhone + ' / ' + #temporals.format(notification.createdAt, 'yyyy-MM-dd HH:mm')}">
+                        SMS / 010-0000-0000 / 2026-06-02 10:00
+                    </span>
+                    <span th:text="${notification.message}">고객 알림 메시지</span>
+                </div>
+            </li>
+        </ol>
+    </section>
+
     <div class="actions">
         <a class="button button--ghost" th:href="@{/admin/reservations}">목록으로</a>
         <a class="button button--primary" th:href="@{/reservations/{id}(id=${reservation.id})}">고객 화면 보기</a>
