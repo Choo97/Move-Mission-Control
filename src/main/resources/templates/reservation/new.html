@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>예약하기 | Move Mission Control</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script src="//t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <script defer th:src="@{/js/address-search.js}"></script>
 </head>
 <body>
 <header class="site-header">
@@ -51,12 +53,20 @@
             </label>
             <label>
                 출발 주소
-                <input type="text" th:field="*{fromAddress}" placeholder="서울시 강남구 ...">
+                <div class="address-control">
+                    <input type="text" th:field="*{fromAddress}" placeholder="주소 검색 후 상세주소를 이어서 입력">
+                    <button class="button button--ghost" type="button" data-address-target="fromAddress">주소 검색</button>
+                </div>
+                <span class="help-text">주소를 선택한 뒤 동, 호수, 층수 등 상세주소를 이어서 입력해 주세요.</span>
                 <small th:if="${#fields.hasErrors('fromAddress')}" th:errors="*{fromAddress}"></small>
             </label>
             <label>
                 도착 주소
-                <input type="text" th:field="*{toAddress}" placeholder="서울시 마포구 ...">
+                <div class="address-control">
+                    <input type="text" th:field="*{toAddress}" placeholder="주소 검색 후 상세주소를 이어서 입력">
+                    <button class="button button--ghost" type="button" data-address-target="toAddress">주소 검색</button>
+                </div>
+                <span class="help-text">주소를 선택한 뒤 동, 호수, 층수 등 상세주소를 이어서 입력해 주세요.</span>
                 <small th:if="${#fields.hasErrors('toAddress')}" th:errors="*{toAddress}"></small>
             </label>
             <label>

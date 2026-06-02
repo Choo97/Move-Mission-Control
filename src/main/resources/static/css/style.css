@@ -374,6 +374,16 @@ small {
     width: auto;
 }
 
+.address-control {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+}
+
+.address-control button {
+    white-space: nowrap;
+}
+
 .detail-panel {
     display: grid;
     gap: 1px;
@@ -663,6 +673,7 @@ td button {
     .hero,
     .process,
     .field-grid,
+    .address-control,
     .stats,
     .filter-panel,
     .admin-detail-layout {
