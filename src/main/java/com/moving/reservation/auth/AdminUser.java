@@ -22,6 +22,8 @@ public class AdminUser {
     @Column(nullable = false, length = 30)
     private String role;
 
+    private Boolean enabled;
+
     protected AdminUser() {
     }
 
@@ -29,6 +31,7 @@ public class AdminUser {
         this.username = username;
         this.password = password;
         this.role = role;
+        this.enabled = true;
     }
 
     public Long getId() {
@@ -47,7 +50,19 @@ public class AdminUser {
         return role;
     }
 
+    public boolean isEnabled() {
+        return enabled == null || enabled;
+    }
+
     public void changePassword(String password) {
         this.password = password;
+    }
+
+    public void activate() {
+        this.enabled = true;
+    }
+
+    public void deactivate() {
+        this.enabled = false;
     }
 }

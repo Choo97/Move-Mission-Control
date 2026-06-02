@@ -42,6 +42,7 @@ public class SecurityConfig {
                 .map(adminUser -> User.builder()
                         .username(adminUser.getUsername())
                         .password(adminUser.getPassword())
+                        .disabled(!adminUser.isEnabled())
                         .roles(adminUser.getRole())
                         .build())
                 .orElseThrow(() -> new UsernameNotFoundException("관리자 계정을 찾을 수 없습니다."));

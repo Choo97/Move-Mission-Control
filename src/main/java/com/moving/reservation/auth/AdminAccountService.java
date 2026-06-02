@@ -1,5 +1,6 @@
 package com.moving.reservation.auth;
 
+import java.util.List;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,10 @@ public class AdminAccountService {
     public AdminAccountService(AdminUserRepository adminUserRepository, PasswordEncoder passwordEncoder) {
         this.adminUserRepository = adminUserRepository;
         this.passwordEncoder = passwordEncoder;
+    }
+
+    public List<AdminUser> findAll() {
+        return adminUserRepository.findAllByOrderByUsernameAsc();
     }
 
     @Transactional
@@ -50,5 +55,27 @@ public class AdminAccountService {
         }
 
         adminUser.changePassword(passwordEncoder.encode(request.getNewPassword()));
+    }
+
+    @Transactional
+    public void activate(Long id) {
+        AdminUser adminUser = getAdminUser(id);
+        adminUser.activate();
+    }
+
+    @Transactional
+    public void deactivate(Long id, String currentUsername) {
+        AdminUser adminUser = getAdminUser(id);
+
+        if (adminUser.getUsername().equals(currentUsername)) {
+            throw new IllegalArgumentException("현재 로그인한 계정은 비활성화할 수 없습니다.");
+        }
+
+        adminUser.deactivate();
+    }
+
+    private AdminUser getAdminUser(Long id) {
+        return adminUserRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("관리자 계정을 찾을 수 없습니다."));
     }
 }
