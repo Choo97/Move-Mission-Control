@@ -1,8 +1,12 @@
 package com.moving.reservation.review;
 
+import com.moving.reservation.reservation.ReservationAccessSession;
 import com.moving.reservation.reservation.Reservation;
 import com.moving.reservation.reservation.ReservationService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -26,7 +30,16 @@ public class ReviewController {
     }
 
     @GetMapping("/new")
-    public String newReview(@RequestParam Long reservationId, Model model) {
+    public String newReview(@RequestParam Long reservationId,
+                            Model model,
+                            HttpSession session,
+                            Authentication authentication,
+                            RedirectAttributes redirectAttributes) {
+        if (!hasReservationAccess(reservationId, session, authentication)) {
+            redirectAttributes.addFlashAttribute("searchError", "리뷰를 작성하려면 먼저 예약 조회 인증을 해주세요.");
+            return "redirect:/reservations/search";
+        }
+
         Reservation reservation = reservationService.get(reservationId);
         ReviewCreateRequest request = new ReviewCreateRequest();
         request.setReservationId(reservationId);
@@ -41,7 +54,14 @@ public class ReviewController {
     public String create(@Valid @ModelAttribute ReviewCreateRequest request,
                          BindingResult bindingResult,
                          Model model,
-                         RedirectAttributes redirectAttributes) {
+                         RedirectAttributes redirectAttributes,
+                         HttpSession session,
+                         Authentication authentication) {
+        if (!hasReservationAccess(request.getReservationId(), session, authentication)) {
+            redirectAttributes.addFlashAttribute("searchError", "리뷰를 작성하려면 먼저 예약 조회 인증을 해주세요.");
+            return "redirect:/reservations/search";
+        }
+
         Reservation reservation = reservationService.get(request.getReservationId());
 
         if (bindingResult.hasErrors()) {
@@ -60,5 +80,15 @@ public class ReviewController {
             model.addAttribute("reviewError", exception.getMessage());
             return "review/new";
         }
+    }
+
+    private boolean hasReservationAccess(Long reservationId, HttpSession session, Authentication authentication) {
+        return ReservationAccessSession.isAuthorized(session, reservationId) || isAdmin(authentication);
+    }
+
+    private boolean isAdmin(Authentication authentication) {
+        return authentication != null
+                && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken);
     }
 }

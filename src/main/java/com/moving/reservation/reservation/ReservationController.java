@@ -1,7 +1,10 @@
 package com.moving.reservation.reservation;
 
 import com.moving.reservation.review.ReviewService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -34,20 +37,24 @@ public class ReservationController {
 
     @GetMapping("/search")
     public String searchForm(Model model) {
-        model.addAttribute("reservationSearchRequest", new ReservationSearchRequest());
+        if (!model.containsAttribute("reservationSearchRequest")) {
+            model.addAttribute("reservationSearchRequest", new ReservationSearchRequest());
+        }
         return "reservation/search";
     }
 
     @PostMapping("/search")
     public String search(@Valid @ModelAttribute ReservationSearchRequest request,
                          BindingResult bindingResult,
-                         Model model) {
+                         Model model,
+                         HttpSession session) {
         if (bindingResult.hasErrors()) {
             return "reservation/search";
         }
 
         try {
             Reservation reservation = reservationService.search(request);
+            ReservationAccessSession.authorize(session, reservation.getId());
             return "redirect:/reservations/" + reservation.getId();
         } catch (IllegalArgumentException exception) {
             model.addAttribute("searchError", exception.getMessage());
@@ -58,7 +65,8 @@ public class ReservationController {
     @PostMapping
     public String create(@Valid @ModelAttribute ReservationCreateRequest request,
                          BindingResult bindingResult,
-                         Model model) {
+                         Model model,
+                         HttpSession session) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("moveTypes", MoveType.values());
             return "reservation/new";
@@ -66,6 +74,7 @@ public class ReservationController {
 
         try {
             Reservation reservation = reservationService.create(request);
+            ReservationAccessSession.authorize(session, reservation.getId());
             return "redirect:/reservations/" + reservation.getId();
         } catch (IllegalArgumentException | IllegalStateException exception) {
             model.addAttribute("moveTypes", MoveType.values());
@@ -75,7 +84,16 @@ public class ReservationController {
     }
 
     @GetMapping("/{id}")
-    public String detail(@PathVariable Long id, Model model) {
+    public String detail(@PathVariable Long id,
+                         Model model,
+                         HttpSession session,
+                         Authentication authentication,
+                         RedirectAttributes redirectAttributes) {
+        if (!hasReservationAccess(id, session, authentication)) {
+            redirectAttributes.addFlashAttribute("searchError", "예약 조회를 먼저 인증해 주세요.");
+            return "redirect:/reservations/search";
+        }
+
         model.addAttribute("reservation", reservationService.get(id));
         model.addAttribute("photos", reservationService.findPhotos(id));
         model.addAttribute("review", reviewService.findByReservationId(id).orElse(null));
@@ -83,7 +101,16 @@ public class ReservationController {
     }
 
     @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable Long id, Model model) {
+    public String editForm(@PathVariable Long id,
+                           Model model,
+                           HttpSession session,
+                           Authentication authentication,
+                           RedirectAttributes redirectAttributes) {
+        if (!hasReservationAccess(id, session, authentication)) {
+            redirectAttributes.addFlashAttribute("searchError", "예약 수정을 하려면 먼저 예약 조회 인증을 해주세요.");
+            return "redirect:/reservations/search";
+        }
+
         Reservation reservation = reservationService.get(id);
         model.addAttribute("reservation", reservation);
         model.addAttribute("reservationUpdateRequest", ReservationUpdateRequest.from(reservation));
@@ -95,7 +122,14 @@ public class ReservationController {
                          @Valid @ModelAttribute ReservationUpdateRequest request,
                          BindingResult bindingResult,
                          Model model,
-                         RedirectAttributes redirectAttributes) {
+                         RedirectAttributes redirectAttributes,
+                         HttpSession session,
+                         Authentication authentication) {
+        if (!hasReservationAccess(id, session, authentication)) {
+            redirectAttributes.addFlashAttribute("searchError", "예약 수정을 하려면 먼저 예약 조회 인증을 해주세요.");
+            return "redirect:/reservations/search";
+        }
+
         Reservation reservation = reservationService.get(id);
 
         if (bindingResult.hasErrors()) {
@@ -117,7 +151,14 @@ public class ReservationController {
     @PostMapping("/{id}/cancel")
     public String cancel(@PathVariable Long id,
                          @RequestParam String phone,
-                         RedirectAttributes redirectAttributes) {
+                         RedirectAttributes redirectAttributes,
+                         HttpSession session,
+                         Authentication authentication) {
+        if (!hasReservationAccess(id, session, authentication)) {
+            redirectAttributes.addFlashAttribute("searchError", "예약 취소를 하려면 먼저 예약 조회 인증을 해주세요.");
+            return "redirect:/reservations/search";
+        }
+
         try {
             reservationService.cancel(id, phone);
             redirectAttributes.addFlashAttribute("cancelMessage", "예약이 취소되었습니다.");
@@ -126,5 +167,15 @@ public class ReservationController {
         }
 
         return "redirect:/reservations/" + id;
+    }
+
+    private boolean hasReservationAccess(Long reservationId, HttpSession session, Authentication authentication) {
+        return ReservationAccessSession.isAuthorized(session, reservationId) || isAdmin(authentication);
+    }
+
+    private boolean isAdmin(Authentication authentication) {
+        return authentication != null
+                && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken);
     }
 }
