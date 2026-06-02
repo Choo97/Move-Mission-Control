@@ -1,5 +1,6 @@
 package com.moving.reservation.reservation;
 
+import com.moving.reservation.review.ReviewService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,9 +18,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class ReservationController {
 
     private final ReservationService reservationService;
+    private final ReviewService reviewService;
 
-    public ReservationController(ReservationService reservationService) {
+    public ReservationController(ReservationService reservationService, ReviewService reviewService) {
         this.reservationService = reservationService;
+        this.reviewService = reviewService;
     }
 
     @GetMapping("/new")
@@ -75,6 +78,7 @@ public class ReservationController {
     public String detail(@PathVariable Long id, Model model) {
         model.addAttribute("reservation", reservationService.get(id));
         model.addAttribute("photos", reservationService.findPhotos(id));
+        model.addAttribute("review", reviewService.findByReservationId(id).orElse(null));
         return "reservation/detail";
     }
 

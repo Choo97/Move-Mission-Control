@@ -59,6 +59,31 @@
     </section>
 
     <p class="notice" th:if="${updateMessage}" th:text="${updateMessage}">예약 정보가 수정되었습니다.</p>
+    <p class="notice" th:if="${reviewMessage}" th:text="${reviewMessage}">리뷰가 등록되었습니다.</p>
+
+    <section class="cancel-panel">
+        <div class="section-title">
+            <p class="eyebrow">Customer Review</p>
+            <h2>고객 리뷰</h2>
+        </div>
+
+        <div th:if="${review != null}" class="detail-panel">
+            <div>
+                <span>평점</span>
+                <strong th:text="${review.rating + '점'}">5점</strong>
+            </div>
+            <div>
+                <span>리뷰</span>
+                <strong th:text="${review.content}">친절하고 빠릅니다.</strong>
+            </div>
+        </div>
+
+        <p class="empty" th:if="${review == null && reservation.status.name() != 'COMPLETED'}">이사가 완료되면 리뷰를 작성할 수 있습니다.</p>
+
+        <div class="actions" th:if="${review == null && reservation.status.name() == 'COMPLETED'}">
+            <a class="button button--primary" th:href="@{/reviews/new(reservationId=${reservation.id})}">리뷰 작성</a>
+        </div>
+    </section>
 
     <section class="cancel-panel">
         <div class="section-title">
