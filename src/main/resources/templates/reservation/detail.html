@@ -44,6 +44,18 @@
             <span>견적</span>
             <strong th:text="${reservation.estimatedPrice == null ? '상담 후 안내' : #numbers.formatInteger(reservation.estimatedPrice, 0, 'COMMA') + '원'}">상담 후 안내</strong>
         </div>
+        <div>
+            <span>쿠폰</span>
+            <strong th:text="${reservation.hasCoupon() ? reservation.couponCode + ' / ' + reservation.couponName : '미적용'}">미적용</strong>
+        </div>
+        <div>
+            <span>할인</span>
+            <strong th:text="${reservation.estimatedPrice == null ? '견적 입력 후 계산' : #numbers.formatInteger(reservation.appliedDiscountAmount, 0, 'COMMA') + '원'}">견적 입력 후 계산</strong>
+        </div>
+        <div>
+            <span>최종 견적</span>
+            <strong th:text="${reservation.finalEstimatedPrice == null ? '상담 후 안내' : #numbers.formatInteger(reservation.finalEstimatedPrice, 0, 'COMMA') + '원'}">상담 후 안내</strong>
+        </div>
     </section>
 
     <p class="notice" th:if="${updateMessage}" th:text="${updateMessage}">예약 정보가 수정되었습니다.</p>

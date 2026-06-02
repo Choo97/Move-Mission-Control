@@ -1,5 +1,7 @@
 package com.moving.reservation.reservation;
 
+import com.moving.reservation.coupon.Coupon;
+import com.moving.reservation.coupon.DiscountType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -63,6 +65,20 @@ public class Reservation {
 
     private Integer estimatedPrice;
 
+    @Column(length = 40)
+    private String couponCode;
+
+    @Column(length = 100)
+    private String couponName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private DiscountType couponDiscountType;
+
+    private Integer couponDiscountValue;
+
+    private Integer discountAmount;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
@@ -105,6 +121,7 @@ public class Reservation {
 
     public void updateEstimate(Integer estimatedPrice) {
         this.estimatedPrice = estimatedPrice;
+        recalculateDiscount();
     }
 
     public void updateAdminMemo(String adminMemo, String adminMemoUpdatedBy) {
@@ -126,6 +143,44 @@ public class Reservation {
         this.fromAddress = fromAddress;
         this.toAddress = toAddress;
         this.memo = memo;
+    }
+
+    public void applyCoupon(Coupon coupon) {
+        this.couponCode = coupon.getCode();
+        this.couponName = coupon.getName();
+        this.couponDiscountType = coupon.getDiscountType();
+        this.couponDiscountValue = coupon.getDiscountValue();
+        recalculateDiscount();
+    }
+
+    public Integer getFinalEstimatedPrice() {
+        if (estimatedPrice == null) {
+            return null;
+        }
+
+        return Math.max(0, estimatedPrice - getAppliedDiscountAmount());
+    }
+
+    public int getAppliedDiscountAmount() {
+        return discountAmount == null ? 0 : discountAmount;
+    }
+
+    public boolean hasCoupon() {
+        return couponCode != null && !couponCode.isBlank();
+    }
+
+    private void recalculateDiscount() {
+        if (estimatedPrice == null || estimatedPrice <= 0 || couponDiscountType == null || couponDiscountValue == null) {
+            this.discountAmount = 0;
+            return;
+        }
+
+        int discount = switch (couponDiscountType) {
+            case FIXED -> couponDiscountValue;
+            case PERCENT -> estimatedPrice * couponDiscountValue / 100;
+        };
+
+        this.discountAmount = Math.min(estimatedPrice, discount);
     }
 
     public Long getId() {
@@ -186,6 +241,26 @@ public class Reservation {
 
     public Integer getEstimatedPrice() {
         return estimatedPrice;
+    }
+
+    public String getCouponCode() {
+        return couponCode;
+    }
+
+    public String getCouponName() {
+        return couponName;
+    }
+
+    public DiscountType getCouponDiscountType() {
+        return couponDiscountType;
+    }
+
+    public Integer getCouponDiscountValue() {
+        return couponDiscountValue;
+    }
+
+    public Integer getDiscountAmount() {
+        return discountAmount;
     }
 
     public LocalDateTime getCreatedAt() {

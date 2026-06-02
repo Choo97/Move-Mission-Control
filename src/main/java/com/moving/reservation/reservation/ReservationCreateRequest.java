@@ -38,6 +38,7 @@ public class ReservationCreateRequest {
     private boolean fromElevator;
     private boolean toElevator;
     private String memo;
+    private String couponCode;
     private List<MultipartFile> itemPhotos = new ArrayList<>();
 
     public Reservation toEntity() {
@@ -133,6 +134,14 @@ public class ReservationCreateRequest {
 
     public void setMemo(String memo) {
         this.memo = memo;
+    }
+
+    public String getCouponCode() {
+        return couponCode;
+    }
+
+    public void setCouponCode(String couponCode) {
+        this.couponCode = couponCode;
     }
 
     public List<MultipartFile> getItemPhotos() {

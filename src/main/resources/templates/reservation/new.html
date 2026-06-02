@@ -77,6 +77,11 @@
             <textarea th:field="*{memo}" rows="5" placeholder="큰 가전, 사다리차 필요 여부, 주차 상황 등을 적어주세요."></textarea>
         </label>
         <label>
+            쿠폰 코드
+            <input type="text" th:field="*{couponCode}" placeholder="예: MOVE10">
+            <span class="help-text">관리자가 발급한 쿠폰 코드가 있으면 입력해 주세요. 견적 입력 시 할인액이 자동 계산됩니다.</span>
+        </label>
+        <label>
             짐 사진
             <input type="file" th:field="*{itemPhotos}" accept="image/jpeg,image/png,image/webp" multiple>
             <span class="help-text">큰 가구, 가전, 박스 상태를 사진으로 올리면 상담과 견적에 도움이 됩니다.</span>

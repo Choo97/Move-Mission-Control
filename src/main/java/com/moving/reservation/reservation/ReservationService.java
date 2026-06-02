@@ -1,5 +1,7 @@
 package com.moving.reservation.reservation;
 
+import com.moving.reservation.coupon.Coupon;
+import com.moving.reservation.coupon.CouponService;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -13,20 +15,30 @@ public class ReservationService {
     private final ReservationStatusHistoryRepository statusHistoryRepository;
     private final ReservationPhotoRepository reservationPhotoRepository;
     private final ReservationPhotoStorage reservationPhotoStorage;
+    private final CouponService couponService;
 
     public ReservationService(ReservationRepository reservationRepository,
                               ReservationStatusHistoryRepository statusHistoryRepository,
                               ReservationPhotoRepository reservationPhotoRepository,
-                              ReservationPhotoStorage reservationPhotoStorage) {
+                              ReservationPhotoStorage reservationPhotoStorage,
+                              CouponService couponService) {
         this.reservationRepository = reservationRepository;
         this.statusHistoryRepository = statusHistoryRepository;
         this.reservationPhotoRepository = reservationPhotoRepository;
         this.reservationPhotoStorage = reservationPhotoStorage;
+        this.couponService = couponService;
     }
 
     @Transactional
     public Reservation create(ReservationCreateRequest request) {
-        Reservation reservation = reservationRepository.save(request.toEntity());
+        Reservation reservation = request.toEntity();
+        Coupon coupon = couponService.findActiveByCode(request.getCouponCode());
+
+        if (coupon != null) {
+            reservation.applyCoupon(coupon);
+        }
+
+        reservationRepository.save(reservation);
 
         request.getItemPhotos().stream()
                 .filter(itemPhoto -> itemPhoto != null && !itemPhoto.isEmpty())
