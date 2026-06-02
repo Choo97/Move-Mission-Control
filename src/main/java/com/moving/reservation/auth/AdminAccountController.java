@@ -23,6 +23,31 @@ public class AdminAccountController {
         this.adminAccountService = adminAccountService;
     }
 
+    @GetMapping("/users/new")
+    public String newUserForm(Model model) {
+        model.addAttribute("adminUserCreateRequest", new AdminUserCreateRequest());
+        return "auth/user-new";
+    }
+
+    @PostMapping("/users")
+    public String createUser(@Valid @ModelAttribute AdminUserCreateRequest request,
+                             BindingResult bindingResult,
+                             Model model) {
+        if (bindingResult.hasErrors()) {
+            return "auth/user-new";
+        }
+
+        try {
+            adminAccountService.create(request);
+            model.addAttribute("createMessage", "관리자 계정이 생성되었습니다.");
+            model.addAttribute("adminUserCreateRequest", new AdminUserCreateRequest());
+            return "auth/user-new";
+        } catch (IllegalArgumentException exception) {
+            model.addAttribute("createError", exception.getMessage());
+            return "auth/user-new";
+        }
+    }
+
     @GetMapping("/password")
     public String passwordForm(Model model) {
         model.addAttribute("adminPasswordChangeRequest", new AdminPasswordChangeRequest());

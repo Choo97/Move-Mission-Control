@@ -18,6 +18,25 @@ public class AdminAccountService {
     }
 
     @Transactional
+    public void create(AdminUserCreateRequest request) {
+        String username = request.getUsername().trim();
+
+        if (adminUserRepository.existsByUsername(username)) {
+            throw new IllegalArgumentException("이미 사용 중인 관리자 아이디입니다.");
+        }
+
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new IllegalArgumentException("초기 비밀번호와 확인 값이 일치하지 않습니다.");
+        }
+
+        adminUserRepository.save(new AdminUser(
+                username,
+                passwordEncoder.encode(request.getPassword()),
+                "ADMIN"
+        ));
+    }
+
+    @Transactional
     public void changePassword(String username, AdminPasswordChangeRequest request) {
         AdminUser adminUser = adminUserRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("관리자 계정을 찾을 수 없습니다."));
