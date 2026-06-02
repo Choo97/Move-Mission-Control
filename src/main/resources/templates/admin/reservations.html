@@ -13,6 +13,7 @@
         <a th:href="@{/reservations/new}">예약하기</a>
         <a th:href="@{/reservations/search}">예약조회</a>
         <a th:href="@{/admin/reservations}">관리자</a>
+        <a th:href="@{/admin/account/password}">비밀번호 변경</a>
         <form class="nav-form" th:action="@{/logout}" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
             <button type="submit">로그아웃</button>

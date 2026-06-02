@@ -46,4 +46,8 @@ public class AdminUser {
     public String getRole() {
         return role;
     }
+
+    public void changePassword(String password) {
+        this.password = password;
+    }
 }
