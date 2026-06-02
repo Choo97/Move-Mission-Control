@@ -18,24 +18,33 @@ public class ReservationService {
     private final ReservationPhotoStorage reservationPhotoStorage;
     private final CouponService couponService;
     private final ReviewService reviewService;
+    private final ReservationEstimateCalculator estimateCalculator;
 
     public ReservationService(ReservationRepository reservationRepository,
                               ReservationStatusHistoryRepository statusHistoryRepository,
                               ReservationPhotoRepository reservationPhotoRepository,
                               ReservationPhotoStorage reservationPhotoStorage,
                               CouponService couponService,
-                              ReviewService reviewService) {
+                              ReviewService reviewService,
+                              ReservationEstimateCalculator estimateCalculator) {
         this.reservationRepository = reservationRepository;
         this.statusHistoryRepository = statusHistoryRepository;
         this.reservationPhotoRepository = reservationPhotoRepository;
         this.reservationPhotoStorage = reservationPhotoStorage;
         this.couponService = couponService;
         this.reviewService = reviewService;
+        this.estimateCalculator = estimateCalculator;
     }
 
     @Transactional
     public Reservation create(ReservationCreateRequest request) {
         Reservation reservation = request.toEntity();
+        reservation.applyBaseEstimate(estimateCalculator.calculate(
+                request.getMoveType(),
+                request.isFromElevator(),
+                request.isToElevator()
+        ));
+
         Coupon coupon = couponService.findActiveByCode(request.getCouponCode());
 
         if (coupon != null) {

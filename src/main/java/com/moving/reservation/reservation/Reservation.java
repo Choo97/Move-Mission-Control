@@ -65,6 +65,8 @@ public class Reservation {
 
     private Integer estimatedPrice;
 
+    private Integer baseEstimatedPrice;
+
     @Column(length = 40)
     private String couponCode;
 
@@ -122,6 +124,14 @@ public class Reservation {
     public void updateEstimate(Integer estimatedPrice) {
         this.estimatedPrice = estimatedPrice;
         recalculateDiscount();
+    }
+
+    public void applyBaseEstimate(Integer baseEstimatedPrice) {
+        this.baseEstimatedPrice = baseEstimatedPrice;
+
+        if (this.estimatedPrice == null) {
+            updateEstimate(baseEstimatedPrice);
+        }
     }
 
     public void updateAdminMemo(String adminMemo, String adminMemoUpdatedBy) {
@@ -241,6 +251,10 @@ public class Reservation {
 
     public Integer getEstimatedPrice() {
         return estimatedPrice;
+    }
+
+    public Integer getBaseEstimatedPrice() {
+        return baseEstimatedPrice;
     }
 
     public String getCouponCode() {

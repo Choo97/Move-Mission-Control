@@ -92,6 +92,12 @@
                 </strong>
             </div>
             <div>
+                <span>기본 견적</span>
+                <strong th:text="${reservation.baseEstimatedPrice == null ? '계산 전' : #numbers.formatInteger(reservation.baseEstimatedPrice, 0, 'COMMA') + '원'}">
+                    계산 전
+                </strong>
+            </div>
+            <div>
                 <span>쿠폰</span>
                 <strong th:text="${reservation.hasCoupon() ? reservation.couponCode + ' / ' + reservation.couponName : '미적용'}">미적용</strong>
             </div>
@@ -131,6 +137,10 @@
                 <label>
                     견적 금액
                     <input type="number" name="estimatedPrice" min="0" step="10000" th:value="${reservation.estimatedPrice}" placeholder="예: 250000">
+                    <span class="help-text" th:if="${reservation.baseEstimatedPrice != null}"
+                          th:text="${'자동 기본 견적: ' + #numbers.formatInteger(reservation.baseEstimatedPrice, 0, 'COMMA') + '원'}">
+                        자동 기본 견적
+                    </span>
                 </label>
                 <button type="submit">견적 저장</button>
             </form>
