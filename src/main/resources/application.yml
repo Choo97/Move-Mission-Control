@@ -20,3 +20,8 @@ spring:
 
 server:
   port: 8080
+
+map:
+  kakao:
+    enabled: ${KAKAO_MAP_ENABLED:false}
+    rest-api-key: ${KAKAO_REST_API_KEY:}

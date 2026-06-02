@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/admin/reservations")
@@ -72,6 +73,18 @@ public class AdminReservationController {
     @PostMapping("/{id}/distance")
     public String updateDistance(@PathVariable Long id, @RequestParam(required = false) Integer distanceKm) {
         reservationService.updateDistance(id, distanceKm);
+        return "redirect:/admin/reservations/" + id;
+    }
+
+    @PostMapping("/{id}/distance/calculate")
+    public String calculateDistance(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            int distanceKm = reservationService.calculateAndUpdateDistance(id);
+            redirectAttributes.addFlashAttribute("distanceMessage", distanceKm + "km 이동 거리를 자동 계산해 견적에 반영했습니다.");
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            redirectAttributes.addFlashAttribute("distanceError", exception.getMessage());
+        }
+
         return "redirect:/admin/reservations/" + id;
     }
 

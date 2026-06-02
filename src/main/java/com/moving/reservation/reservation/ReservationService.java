@@ -2,6 +2,7 @@ package com.moving.reservation.reservation;
 
 import com.moving.reservation.coupon.Coupon;
 import com.moving.reservation.coupon.CouponService;
+import com.moving.reservation.map.KakaoDistanceService;
 import com.moving.reservation.review.ReviewService;
 import java.time.LocalDate;
 import java.util.List;
@@ -19,6 +20,7 @@ public class ReservationService {
     private final CouponService couponService;
     private final ReviewService reviewService;
     private final ReservationEstimateCalculator estimateCalculator;
+    private final KakaoDistanceService kakaoDistanceService;
 
     public ReservationService(ReservationRepository reservationRepository,
                               ReservationStatusHistoryRepository statusHistoryRepository,
@@ -26,7 +28,8 @@ public class ReservationService {
                               ReservationPhotoStorage reservationPhotoStorage,
                               CouponService couponService,
                               ReviewService reviewService,
-                              ReservationEstimateCalculator estimateCalculator) {
+                              ReservationEstimateCalculator estimateCalculator,
+                              KakaoDistanceService kakaoDistanceService) {
         this.reservationRepository = reservationRepository;
         this.statusHistoryRepository = statusHistoryRepository;
         this.reservationPhotoRepository = reservationPhotoRepository;
@@ -34,6 +37,7 @@ public class ReservationService {
         this.couponService = couponService;
         this.reviewService = reviewService;
         this.estimateCalculator = estimateCalculator;
+        this.kakaoDistanceService = kakaoDistanceService;
     }
 
     @Transactional
@@ -156,16 +160,19 @@ public class ReservationService {
     public void updateDistance(Long id, Integer distanceKm) {
         Reservation reservation = get(id);
         reservation.updateDistance(distanceKm);
-        reservation.applyBaseEstimate(estimateCalculator.calculate(
-                reservation.getMoveType(),
-                reservation.isFromElevator(),
-                reservation.isToElevator(),
-                reservation.getFromFloor(),
-                reservation.getToFloor(),
-                reservation.isFromLadderTruck(),
-                reservation.isToLadderTruck(),
-                reservation.getDistanceKm()
-        ));
+        recalculateBaseEstimate(reservation);
+    }
+
+    @Transactional
+    public int calculateAndUpdateDistance(Long id) {
+        Reservation reservation = get(id);
+        int distanceKm = kakaoDistanceService.calculateDistanceKm(
+                reservation.getFromAddress(),
+                reservation.getToAddress()
+        );
+        reservation.updateDistance(distanceKm);
+        recalculateBaseEstimate(reservation);
+        return distanceKm;
     }
 
     private void changeStatus(Reservation reservation, ReservationStatus status, String changedBy) {
@@ -177,6 +184,19 @@ public class ReservationService {
 
         reservation.updateStatus(status);
         statusHistoryRepository.save(new ReservationStatusHistory(reservation, previousStatus, status, changedBy));
+    }
+
+    private void recalculateBaseEstimate(Reservation reservation) {
+        reservation.applyBaseEstimate(estimateCalculator.calculate(
+                reservation.getMoveType(),
+                reservation.isFromElevator(),
+                reservation.isToElevator(),
+                reservation.getFromFloor(),
+                reservation.getToFloor(),
+                reservation.isFromLadderTruck(),
+                reservation.isToLadderTruck(),
+                reservation.getDistanceKm()
+        ));
     }
 
     @Transactional

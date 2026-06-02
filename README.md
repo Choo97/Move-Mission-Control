@@ -21,7 +21,7 @@ Spring Boot 기반 이사 예약 웹 서비스입니다. 고객은 이사 예약
 - 주소 검색 API 연동
 - 이사 유형별 기본 견적 계산
 - 층수 및 사다리차 옵션
-- 지도 기반 이동 거리 계산 준비
+- 지도 API 자동 거리 계산
 - 관리자 예약 목록
 - 관리자 대시보드 요약 지표
 - 예약 상태 변경
@@ -51,7 +51,6 @@ Spring Boot 기반 이사 예약 웹 서비스입니다. 고객은 이사 예약
 - 회원가입 및 로그인
 - 관리자 권한 분리
 - 예약 수정 및 취소
-- 지도 API 자동 거리 계산
 - 사다리차 자동 배차
 - 담당 기사 또는 이사업체 배정
 - SMS 또는 카카오 알림톡 발송
@@ -90,6 +89,17 @@ mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
 http://localhost:8081/
 ```
 
+## Kakao 지도 API 설정
+
+관리자 예약 상세 화면에서 `지도 API로 거리 자동 계산` 버튼을 사용하려면 Kakao REST API 키가 필요합니다.
+
+```bat
+set KAKAO_MAP_ENABLED=true
+set KAKAO_REST_API_KEY=발급받은_REST_API_KEY
+```
+
+API 키가 설정되지 않은 상태에서도 서비스는 실행됩니다. 이 경우 관리자가 이동 거리(km)를 직접 입력하면 견적 계산에 반영됩니다.
+
 ## 주요 URL
 
 ```text
@@ -112,7 +122,7 @@ Password  mysql
 
 ## 관리자 계정
 
-현재 관리자 계정은 Spring Security 메모리 계정으로 설정되어 있습니다.
+현재 관리자 계정은 데이터베이스에 저장됩니다. 최초 실행 시 기본 관리자 계정이 자동 생성됩니다.
 
 ```text
 ID       admin
