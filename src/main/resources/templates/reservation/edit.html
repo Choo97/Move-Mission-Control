@@ -67,6 +67,20 @@
                 <span class="help-text">주소를 선택한 뒤 동, 호수, 층수 등 상세주소를 이어서 입력해 주세요.</span>
                 <small th:if="${#fields.hasErrors('toAddress')}" th:errors="*{toAddress}"></small>
             </label>
+            <label>
+                출발지 층수
+                <input type="number" th:field="*{fromFloor}" min="1" max="50" th:disabled="${!reservation.editable}">
+                <small th:if="${#fields.hasErrors('fromFloor')}" th:errors="*{fromFloor}"></small>
+            </label>
+            <label>
+                도착지 층수
+                <input type="number" th:field="*{toFloor}" min="1" max="50" th:disabled="${!reservation.editable}">
+                <small th:if="${#fields.hasErrors('toFloor')}" th:errors="*{toFloor}"></small>
+            </label>
+            <div class="checks">
+                <label><input type="checkbox" th:field="*{fromLadderTruck}" th:disabled="${!reservation.editable}"> 출발지 사다리차 필요</label>
+                <label><input type="checkbox" th:field="*{toLadderTruck}" th:disabled="${!reservation.editable}"> 도착지 사다리차 필요</label>
+            </div>
         </div>
 
         <label>

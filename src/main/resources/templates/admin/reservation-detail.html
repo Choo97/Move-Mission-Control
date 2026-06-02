@@ -74,6 +74,19 @@
                 </strong>
             </div>
             <div>
+                <span>층수</span>
+                <strong th:text="${'출발지 ' + (reservation.fromFloor == null ? 1 : reservation.fromFloor) + '층'
+                        + ' / 도착지 ' + (reservation.toFloor == null ? 1 : reservation.toFloor) + '층'}">
+                    출발지 1층 / 도착지 1층
+                </strong>
+            </div>
+            <div>
+                <span>사다리차</span>
+                <strong th:text="${'출발지 ' + (reservation.fromLadderTruck ? '필요' : '없음') + ' / 도착지 ' + (reservation.toLadderTruck ? '필요' : '없음')}">
+                    출발지 없음 / 도착지 없음
+                </strong>
+            </div>
+            <div>
                 <span>요청사항</span>
                 <strong th:text="${#strings.isEmpty(reservation.memo) ? '없음' : reservation.memo}">요청사항</strong>
             </div>

@@ -81,6 +81,20 @@
                 <label><input type="checkbox" th:field="*{fromElevator}"> 출발지 엘리베이터</label>
                 <label><input type="checkbox" th:field="*{toElevator}"> 도착지 엘리베이터</label>
             </div>
+            <label>
+                출발지 층수
+                <input type="number" th:field="*{fromFloor}" min="1" max="50" placeholder="예: 3">
+                <small th:if="${#fields.hasErrors('fromFloor')}" th:errors="*{fromFloor}"></small>
+            </label>
+            <label>
+                도착지 층수
+                <input type="number" th:field="*{toFloor}" min="1" max="50" placeholder="예: 5">
+                <small th:if="${#fields.hasErrors('toFloor')}" th:errors="*{toFloor}"></small>
+            </label>
+            <div class="checks">
+                <label><input type="checkbox" th:field="*{fromLadderTruck}"> 출발지 사다리차 필요</label>
+                <label><input type="checkbox" th:field="*{toLadderTruck}"> 도착지 사다리차 필요</label>
+            </div>
         </div>
         <label>
             요청사항

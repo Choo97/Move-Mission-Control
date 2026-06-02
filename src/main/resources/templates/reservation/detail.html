@@ -41,6 +41,14 @@
             <strong th:text="${reservation.fromAddress + ' -> ' + reservation.toAddress}">출발 -> 도착</strong>
         </div>
         <div>
+            <span>현장 조건</span>
+            <strong th:text="${'출발지 ' + (reservation.fromFloor == null ? 1 : reservation.fromFloor) + '층'
+                    + ' / 도착지 ' + (reservation.toFloor == null ? 1 : reservation.toFloor) + '층'
+                    + ' / 사다리차 ' + (reservation.fromLadderTruck || reservation.toLadderTruck ? '필요' : '없음')}">
+                출발지 1층 / 도착지 1층 / 사다리차 없음
+            </strong>
+        </div>
+        <div>
             <span>견적</span>
             <strong th:text="${reservation.estimatedPrice == null ? '상담 후 안내' : #numbers.formatInteger(reservation.estimatedPrice, 0, 'COMMA') + '원'}">상담 후 안내</strong>
         </div>

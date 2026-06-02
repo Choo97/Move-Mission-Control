@@ -2,6 +2,8 @@ package com.moving.reservation.reservation;
 
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import java.time.LocalDate;
@@ -37,6 +39,20 @@ public class ReservationCreateRequest {
 
     private boolean fromElevator;
     private boolean toElevator;
+
+    @NotNull(message = "출발지 층수를 입력해 주세요.")
+    @Min(value = 1, message = "층수는 1층 이상이어야 합니다.")
+    @Max(value = 50, message = "층수는 50층 이하로 입력해 주세요.")
+    private Integer fromFloor = 1;
+
+    @NotNull(message = "도착지 층수를 입력해 주세요.")
+    @Min(value = 1, message = "층수는 1층 이상이어야 합니다.")
+    @Max(value = 50, message = "층수는 50층 이하로 입력해 주세요.")
+    private Integer toFloor = 1;
+
+    private boolean fromLadderTruck;
+    private boolean toLadderTruck;
+
     private String memo;
     private String couponCode;
     private List<MultipartFile> itemPhotos = new ArrayList<>();
@@ -52,6 +68,10 @@ public class ReservationCreateRequest {
                 moveType,
                 fromElevator,
                 toElevator,
+                fromFloor,
+                toFloor,
+                fromLadderTruck,
+                toLadderTruck,
                 memo
         );
     }
@@ -126,6 +146,38 @@ public class ReservationCreateRequest {
 
     public void setToElevator(boolean toElevator) {
         this.toElevator = toElevator;
+    }
+
+    public Integer getFromFloor() {
+        return fromFloor;
+    }
+
+    public void setFromFloor(Integer fromFloor) {
+        this.fromFloor = fromFloor;
+    }
+
+    public Integer getToFloor() {
+        return toFloor;
+    }
+
+    public void setToFloor(Integer toFloor) {
+        this.toFloor = toFloor;
+    }
+
+    public boolean isFromLadderTruck() {
+        return fromLadderTruck;
+    }
+
+    public void setFromLadderTruck(boolean fromLadderTruck) {
+        this.fromLadderTruck = fromLadderTruck;
+    }
+
+    public boolean isToLadderTruck() {
+        return toLadderTruck;
+    }
+
+    public void setToLadderTruck(boolean toLadderTruck) {
+        this.toLadderTruck = toLadderTruck;
     }
 
     public String getMemo() {

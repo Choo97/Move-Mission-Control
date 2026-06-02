@@ -42,7 +42,11 @@ public class ReservationService {
         reservation.applyBaseEstimate(estimateCalculator.calculate(
                 request.getMoveType(),
                 request.isFromElevator(),
-                request.isToElevator()
+                request.isToElevator(),
+                request.getFromFloor(),
+                request.getToFloor(),
+                request.isFromLadderTruck(),
+                request.isToLadderTruck()
         ));
 
         Coupon coupon = couponService.findActiveByCode(request.getCouponCode());
@@ -129,8 +133,21 @@ public class ReservationService {
                 request.getMoveTime(),
                 request.getFromAddress(),
                 request.getToAddress(),
+                request.getFromFloor(),
+                request.getToFloor(),
+                request.isFromLadderTruck(),
+                request.isToLadderTruck(),
                 request.getMemo()
         );
+        reservation.applyBaseEstimate(estimateCalculator.calculate(
+                reservation.getMoveType(),
+                reservation.isFromElevator(),
+                reservation.isToElevator(),
+                reservation.getFromFloor(),
+                reservation.getToFloor(),
+                reservation.isFromLadderTruck(),
+                reservation.isToLadderTruck()
+        ));
     }
 
     private void changeStatus(Reservation reservation, ReservationStatus status, String changedBy) {

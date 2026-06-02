@@ -54,6 +54,14 @@ public class Reservation {
     @Column(nullable = false)
     private boolean toElevator;
 
+    private Integer fromFloor;
+
+    private Integer toFloor;
+
+    private boolean fromLadderTruck;
+
+    private boolean toLadderTruck;
+
     @Column(length = 1000)
     private String memo;
 
@@ -92,7 +100,8 @@ public class Reservation {
 
     public Reservation(String customerName, String phone, LocalDate moveDate, LocalTime moveTime,
                        String fromAddress, String toAddress, MoveType moveType,
-                       boolean fromElevator, boolean toElevator, String memo) {
+                       boolean fromElevator, boolean toElevator, Integer fromFloor, Integer toFloor,
+                       boolean fromLadderTruck, boolean toLadderTruck, String memo) {
         this.customerName = customerName;
         this.phone = phone;
         this.moveDate = moveDate;
@@ -102,6 +111,10 @@ public class Reservation {
         this.moveType = moveType;
         this.fromElevator = fromElevator;
         this.toElevator = toElevator;
+        this.fromFloor = fromFloor;
+        this.toFloor = toFloor;
+        this.fromLadderTruck = fromLadderTruck;
+        this.toLadderTruck = toLadderTruck;
         this.memo = memo;
     }
 
@@ -127,9 +140,12 @@ public class Reservation {
     }
 
     public void applyBaseEstimate(Integer baseEstimatedPrice) {
+        boolean shouldUpdateEstimate = this.estimatedPrice == null
+                || this.estimatedPrice.equals(this.baseEstimatedPrice);
+
         this.baseEstimatedPrice = baseEstimatedPrice;
 
-        if (this.estimatedPrice == null) {
+        if (shouldUpdateEstimate) {
             updateEstimate(baseEstimatedPrice);
         }
     }
@@ -147,11 +163,17 @@ public class Reservation {
         return status == ReservationStatus.RECEIVED || status == ReservationStatus.CONSULTING;
     }
 
-    public void updateDetails(LocalDate moveDate, LocalTime moveTime, String fromAddress, String toAddress, String memo) {
+    public void updateDetails(LocalDate moveDate, LocalTime moveTime, String fromAddress, String toAddress,
+                              Integer fromFloor, Integer toFloor, boolean fromLadderTruck, boolean toLadderTruck,
+                              String memo) {
         this.moveDate = moveDate;
         this.moveTime = moveTime;
         this.fromAddress = fromAddress;
         this.toAddress = toAddress;
+        this.fromFloor = fromFloor;
+        this.toFloor = toFloor;
+        this.fromLadderTruck = fromLadderTruck;
+        this.toLadderTruck = toLadderTruck;
         this.memo = memo;
     }
 
@@ -235,6 +257,22 @@ public class Reservation {
 
     public boolean isToElevator() {
         return toElevator;
+    }
+
+    public Integer getFromFloor() {
+        return fromFloor;
+    }
+
+    public Integer getToFloor() {
+        return toFloor;
+    }
+
+    public boolean isFromLadderTruck() {
+        return fromLadderTruck;
+    }
+
+    public boolean isToLadderTruck() {
+        return toLadderTruck;
     }
 
     public String getMemo() {
