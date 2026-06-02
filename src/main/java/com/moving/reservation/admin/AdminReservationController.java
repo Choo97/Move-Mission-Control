@@ -69,6 +69,12 @@ public class AdminReservationController {
         return "redirect:/admin/reservations/" + id;
     }
 
+    @PostMapping("/{id}/distance")
+    public String updateDistance(@PathVariable Long id, @RequestParam(required = false) Integer distanceKm) {
+        reservationService.updateDistance(id, distanceKm);
+        return "redirect:/admin/reservations/" + id;
+    }
+
     @PostMapping("/{id}/memo")
     public String updateAdminMemo(@PathVariable Long id,
                                   @RequestParam(required = false) String adminMemo,

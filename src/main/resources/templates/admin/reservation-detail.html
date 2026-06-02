@@ -87,6 +87,10 @@
                 </strong>
             </div>
             <div>
+                <span>이동 거리</span>
+                <strong th:text="${reservation.distanceKm == null ? '확인 전' : reservation.distanceKm + 'km'}">확인 전</strong>
+            </div>
+            <div>
                 <span>요청사항</span>
                 <strong th:text="${#strings.isEmpty(reservation.memo) ? '없음' : reservation.memo}">요청사항</strong>
             </div>
@@ -156,6 +160,16 @@
                     </span>
                 </label>
                 <button type="submit">견적 저장</button>
+            </form>
+
+            <form th:action="@{/admin/reservations/{id}/distance(id=${reservation.id})}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <label>
+                    이동 거리(km)
+                    <input type="number" name="distanceKm" min="0" step="1" th:value="${reservation.distanceKm}" placeholder="예: 18">
+                    <span class="help-text">지도 API 연동 전에는 관리자가 확인한 이동 거리를 입력합니다. 10km 초과분은 km당 10,000원이 기본 견적에 반영됩니다.</span>
+                </label>
+                <button type="submit">거리 저장</button>
             </form>
 
             <form th:action="@{/admin/reservations/{id}/memo(id=${reservation.id})}" method="post">

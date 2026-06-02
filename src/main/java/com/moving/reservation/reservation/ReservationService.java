@@ -46,7 +46,8 @@ public class ReservationService {
                 request.getFromFloor(),
                 request.getToFloor(),
                 request.isFromLadderTruck(),
-                request.isToLadderTruck()
+                request.isToLadderTruck(),
+                null
         ));
 
         Coupon coupon = couponService.findActiveByCode(request.getCouponCode());
@@ -146,7 +147,24 @@ public class ReservationService {
                 reservation.getFromFloor(),
                 reservation.getToFloor(),
                 reservation.isFromLadderTruck(),
-                reservation.isToLadderTruck()
+                reservation.isToLadderTruck(),
+                reservation.getDistanceKm()
+        ));
+    }
+
+    @Transactional
+    public void updateDistance(Long id, Integer distanceKm) {
+        Reservation reservation = get(id);
+        reservation.updateDistance(distanceKm);
+        reservation.applyBaseEstimate(estimateCalculator.calculate(
+                reservation.getMoveType(),
+                reservation.isFromElevator(),
+                reservation.isToElevator(),
+                reservation.getFromFloor(),
+                reservation.getToFloor(),
+                reservation.isFromLadderTruck(),
+                reservation.isToLadderTruck(),
+                reservation.getDistanceKm()
         ));
     }
 

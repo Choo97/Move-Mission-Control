@@ -62,6 +62,8 @@ public class Reservation {
 
     private boolean toLadderTruck;
 
+    private Integer distanceKm;
+
     @Column(length = 1000)
     private String memo;
 
@@ -174,7 +176,12 @@ public class Reservation {
         this.toFloor = toFloor;
         this.fromLadderTruck = fromLadderTruck;
         this.toLadderTruck = toLadderTruck;
+        this.distanceKm = null;
         this.memo = memo;
+    }
+
+    public void updateDistance(Integer distanceKm) {
+        this.distanceKm = distanceKm;
     }
 
     public void applyCoupon(Coupon coupon) {
@@ -273,6 +280,10 @@ public class Reservation {
 
     public boolean isToLadderTruck() {
         return toLadderTruck;
+    }
+
+    public Integer getDistanceKm() {
+        return distanceKm;
     }
 
     public String getMemo() {

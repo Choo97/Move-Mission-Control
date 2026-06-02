@@ -49,6 +49,10 @@
             </strong>
         </div>
         <div>
+            <span>이동 거리</span>
+            <strong th:text="${reservation.distanceKm == null ? '확인 전' : reservation.distanceKm + 'km'}">확인 전</strong>
+        </div>
+        <div>
             <span>견적</span>
             <strong th:text="${reservation.estimatedPrice == null ? '상담 후 안내' : #numbers.formatInteger(reservation.estimatedPrice, 0, 'COMMA') + '원'}">상담 후 안내</strong>
         </div>
