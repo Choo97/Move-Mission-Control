@@ -127,6 +127,22 @@
         </aside>
     </section>
 
+    <section class="photo-panel">
+        <div class="section-title">
+            <p class="eyebrow">Item Photos</p>
+            <h2>짐 사진</h2>
+        </div>
+
+        <p class="empty" th:if="${photos.isEmpty()}">업로드된 짐 사진이 없습니다.</p>
+
+        <div class="photo-grid" th:unless="${photos.isEmpty()}">
+            <a th:each="photo : ${photos}" th:href="@{${photo.fileUrl}}" target="_blank" rel="noopener">
+                <img th:src="@{${photo.fileUrl}}" th:alt="${photo.originalFilename}">
+                <span th:text="${photo.originalFilename}">photo.jpg</span>
+            </a>
+        </div>
+    </section>
+
     <section class="history-panel">
         <div class="section-title">
             <p class="eyebrow">Status History</p>

@@ -11,16 +11,35 @@ public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final ReservationStatusHistoryRepository statusHistoryRepository;
+    private final ReservationPhotoRepository reservationPhotoRepository;
+    private final ReservationPhotoStorage reservationPhotoStorage;
 
     public ReservationService(ReservationRepository reservationRepository,
-                              ReservationStatusHistoryRepository statusHistoryRepository) {
+                              ReservationStatusHistoryRepository statusHistoryRepository,
+                              ReservationPhotoRepository reservationPhotoRepository,
+                              ReservationPhotoStorage reservationPhotoStorage) {
         this.reservationRepository = reservationRepository;
         this.statusHistoryRepository = statusHistoryRepository;
+        this.reservationPhotoRepository = reservationPhotoRepository;
+        this.reservationPhotoStorage = reservationPhotoStorage;
     }
 
     @Transactional
     public Reservation create(ReservationCreateRequest request) {
-        return reservationRepository.save(request.toEntity());
+        Reservation reservation = reservationRepository.save(request.toEntity());
+
+        request.getItemPhotos().stream()
+                .filter(itemPhoto -> itemPhoto != null && !itemPhoto.isEmpty())
+                .map(reservationPhotoStorage::store)
+                .map(storedPhoto -> new ReservationPhoto(
+                        reservation,
+                        storedPhoto.originalFilename(),
+                        storedPhoto.storedFilename(),
+                        storedPhoto.fileUrl()
+                ))
+                .forEach(reservationPhotoRepository::save);
+
+        return reservation;
     }
 
     public Reservation get(Long id) {
@@ -43,6 +62,10 @@ public class ReservationService {
 
     public List<ReservationStatusHistory> findStatusHistories(Long reservationId) {
         return statusHistoryRepository.findByReservationIdOrderByChangedAtDesc(reservationId);
+    }
+
+    public List<ReservationPhoto> findPhotos(Long reservationId) {
+        return reservationPhotoRepository.findByReservationIdOrderByUploadedAtAsc(reservationId);
     }
 
     @Transactional

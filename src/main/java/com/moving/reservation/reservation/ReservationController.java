@@ -61,13 +61,20 @@ public class ReservationController {
             return "reservation/new";
         }
 
-        Reservation reservation = reservationService.create(request);
-        return "redirect:/reservations/" + reservation.getId();
+        try {
+            Reservation reservation = reservationService.create(request);
+            return "redirect:/reservations/" + reservation.getId();
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            model.addAttribute("moveTypes", MoveType.values());
+            model.addAttribute("uploadError", exception.getMessage());
+            return "reservation/new";
+        }
     }
 
     @GetMapping("/{id}")
     public String detail(@PathVariable Long id, Model model) {
         model.addAttribute("reservation", reservationService.get(id));
+        model.addAttribute("photos", reservationService.findPhotos(id));
         return "reservation/detail";
     }
 

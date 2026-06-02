@@ -23,8 +23,10 @@
         <p>필수 정보를 입력하면 접수 상태로 등록됩니다.</p>
     </section>
 
-    <form class="form-shell" th:action="@{/reservations}" th:object="${reservationCreateRequest}" method="post">
+    <form class="form-shell" th:action="@{/reservations}" th:object="${reservationCreateRequest}" method="post" enctype="multipart/form-data">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+        <p class="alert" th:if="${uploadError}" th:text="${uploadError}">짐 사진을 업로드할 수 없습니다.</p>
 
         <div class="field-grid">
             <label>
@@ -73,6 +75,11 @@
         <label>
             요청사항
             <textarea th:field="*{memo}" rows="5" placeholder="큰 가전, 사다리차 필요 여부, 주차 상황 등을 적어주세요."></textarea>
+        </label>
+        <label>
+            짐 사진
+            <input type="file" th:field="*{itemPhotos}" accept="image/jpeg,image/png,image/webp" multiple>
+            <span class="help-text">큰 가구, 가전, 박스 상태를 사진으로 올리면 상담과 견적에 도움이 됩니다.</span>
         </label>
         <div class="form-actions">
             <a class="button button--ghost" th:href="@{/}">취소</a>

@@ -6,6 +6,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 public class ReservationCreateRequest {
 
@@ -35,6 +38,7 @@ public class ReservationCreateRequest {
     private boolean fromElevator;
     private boolean toElevator;
     private String memo;
+    private List<MultipartFile> itemPhotos = new ArrayList<>();
 
     public Reservation toEntity() {
         return new Reservation(
@@ -129,5 +133,13 @@ public class ReservationCreateRequest {
 
     public void setMemo(String memo) {
         this.memo = memo;
+    }
+
+    public List<MultipartFile> getItemPhotos() {
+        return itemPhotos;
+    }
+
+    public void setItemPhotos(List<MultipartFile> itemPhotos) {
+        this.itemPhotos = itemPhotos;
     }
 }

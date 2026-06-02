@@ -51,6 +51,7 @@ public class AdminReservationController {
     @GetMapping("/{id}")
     public String detail(@PathVariable Long id, Model model) {
         model.addAttribute("reservation", reservationService.get(id));
+        model.addAttribute("photos", reservationService.findPhotos(id));
         model.addAttribute("statusHistories", reservationService.findStatusHistories(id));
         model.addAttribute("statuses", ReservationStatus.values());
         return "admin/reservation-detail";
