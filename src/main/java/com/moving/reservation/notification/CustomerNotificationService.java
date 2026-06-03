@@ -13,9 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class CustomerNotificationService {
 
     private final CustomerNotificationRepository customerNotificationRepository;
+    private final EmailNotificationSender emailNotificationSender;
 
-    public CustomerNotificationService(CustomerNotificationRepository customerNotificationRepository) {
+    public CustomerNotificationService(CustomerNotificationRepository customerNotificationRepository,
+                                       EmailNotificationSender emailNotificationSender) {
         this.customerNotificationRepository = customerNotificationRepository;
+        this.emailNotificationSender = emailNotificationSender;
     }
 
     @Transactional
@@ -49,6 +52,35 @@ public class CustomerNotificationService {
 
     public List<CustomerNotification> findByReservationId(Long reservationId) {
         return customerNotificationRepository.findByReservationIdOrderByCreatedAtDesc(reservationId);
+    }
+
+    @Transactional
+    public EmailNotificationSendResult sendReadyEmails(Long reservationId) {
+        List<CustomerNotification> notifications = customerNotificationRepository
+                .findByReservationIdAndChannelAndStatusOrderByCreatedAtAsc(
+                        reservationId,
+                        NotificationChannel.EMAIL,
+                        NotificationStatus.READY
+                );
+
+        int sentCount = 0;
+        int failedCount = 0;
+
+        for (CustomerNotification notification : notifications) {
+            try {
+                emailNotificationSender.send(notification);
+                notification.markSent();
+                sentCount++;
+            } catch (IllegalArgumentException | IllegalStateException exception) {
+                notification.markFailed(exception.getMessage());
+                failedCount++;
+            } catch (RuntimeException exception) {
+                notification.markFailed("이메일 발송 중 오류가 발생했습니다.");
+                failedCount++;
+            }
+        }
+
+        return new EmailNotificationSendResult(sentCount, failedCount);
     }
 
     private void save(Reservation reservation, NotificationType type, String message) {

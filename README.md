@@ -39,6 +39,7 @@ Spring Boot 기반 이사 예약 웹 서비스입니다. 고객은 이사 예약
 - 관리자 로그인 및 로그아웃
 - 예약 상태 변경 이력 관리
 - 이메일 예약 확인 안내
+- SMTP 이메일 실제 발송 연동
 - 관리자 예약 검색 및 상태 필터
 - 관리자 이사일 기간 필터
 - 관리자 빠른 기간 필터
@@ -110,6 +111,23 @@ set KAKAO_REST_API_KEY=발급받은_REST_API_KEY
 ```
 
 API 키가 설정되지 않은 상태에서도 서비스는 실행됩니다. 이 경우 관리자가 이동 거리(km)를 직접 입력하면 견적 계산에 반영됩니다.
+
+## 이메일 발송 설정
+
+예약 접수 시 이메일을 입력하면 이메일 안내 이력이 `발송 준비` 상태로 생성됩니다. 실제 SMTP 발송을 사용하려면 서버 실행 전에 아래 환경변수를 설정합니다.
+
+```bat
+set NOTIFICATION_EMAIL_ENABLED=true
+set NOTIFICATION_EMAIL_FROM=보내는메일@example.com
+set MAIL_HOST=smtp.example.com
+set MAIL_PORT=587
+set MAIL_USERNAME=SMTP_계정
+set MAIL_PASSWORD=SMTP_비밀번호
+set MAIL_SMTP_AUTH=true
+set MAIL_SMTP_STARTTLS_ENABLE=true
+```
+
+SMTP 설정이 꺼져 있으면 애플리케이션은 정상 실행되지만, 관리자 화면에서 이메일 발송을 시도할 때 실패 이력으로 기록됩니다.
 
 ## 주요 URL
 

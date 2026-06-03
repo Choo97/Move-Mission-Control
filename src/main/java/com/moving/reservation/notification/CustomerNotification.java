@@ -36,8 +36,13 @@ public class CustomerNotification {
     @Column(nullable = false, length = 30)
     private NotificationStatus status;
 
-    @Column(nullable = false, length = 30)
+    @Column(nullable = false, length = 120)
     private String recipientPhone;
+
+    @Column(length = 500)
+    private String failureReason;
+
+    private LocalDateTime sentAt;
 
     @Column(nullable = false, length = 1000)
     private String message;
@@ -87,8 +92,27 @@ public class CustomerNotification {
         return recipientPhone;
     }
 
+    public void markSent() {
+        this.status = NotificationStatus.SENT;
+        this.sentAt = LocalDateTime.now();
+        this.failureReason = null;
+    }
+
+    public void markFailed(String failureReason) {
+        this.status = NotificationStatus.FAILED;
+        this.failureReason = failureReason;
+    }
+
     public String getMessage() {
         return message;
+    }
+
+    public String getFailureReason() {
+        return failureReason;
+    }
+
+    public LocalDateTime getSentAt() {
+        return sentAt;
     }
 
     public LocalDateTime getCreatedAt() {

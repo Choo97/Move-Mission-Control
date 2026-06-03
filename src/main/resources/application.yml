@@ -17,6 +17,17 @@ spring:
       hibernate:
         format_sql: true
     open-in-view: false
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:true}
+          starttls:
+            enable: ${MAIL_SMTP_STARTTLS_ENABLE:true}
 
 server:
   port: 8080
@@ -25,3 +36,9 @@ map:
   kakao:
     enabled: ${KAKAO_MAP_ENABLED:false}
     rest-api-key: ${KAKAO_REST_API_KEY:}
+
+notification:
+  email:
+    enabled: ${NOTIFICATION_EMAIL_ENABLED:false}
+    from: ${NOTIFICATION_EMAIL_FROM:}
+    subject-prefix: ${NOTIFICATION_EMAIL_SUBJECT_PREFIX:[Move Mission Control]}
