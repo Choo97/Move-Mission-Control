@@ -54,6 +54,10 @@ public class CustomerNotificationService {
         return customerNotificationRepository.findByReservationIdOrderByCreatedAtDesc(reservationId);
     }
 
+    public List<CustomerNotification> search(NotificationChannel channel, NotificationStatus status, String keyword) {
+        return customerNotificationRepository.search(channel, status, normalizeKeyword(keyword));
+    }
+
     @Transactional
     public EmailNotificationSendResult sendReadyEmails(Long reservationId) {
         List<CustomerNotification> notifications = customerNotificationRepository
@@ -101,5 +105,18 @@ public class CustomerNotificationService {
                 reservation.getEmail(),
                 message
         ));
+    }
+
+    private String normalizeKeyword(String keyword) {
+        if (keyword == null) {
+            return null;
+        }
+
+        String trimmedKeyword = keyword.trim();
+        if (trimmedKeyword.isEmpty()) {
+            return null;
+        }
+
+        return trimmedKeyword.toLowerCase();
     }
 }
