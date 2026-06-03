@@ -94,7 +94,9 @@ public class ReservationController {
             return "redirect:/reservations/search";
         }
 
-        model.addAttribute("reservation", reservationService.get(id));
+        Reservation reservation = reservationService.get(id);
+        model.addAttribute("reservation", reservation);
+        model.addAttribute("estimateLines", reservationService.estimateLines(reservation));
         model.addAttribute("photos", reservationService.findPhotos(id));
         model.addAttribute("review", reviewService.findByReservationId(id).orElse(null));
         return "reservation/detail";

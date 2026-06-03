@@ -1,6 +1,7 @@
 package com.moving.reservation.admin;
 
 import com.moving.reservation.notification.CustomerNotificationService;
+import com.moving.reservation.reservation.Reservation;
 import com.moving.reservation.reservation.ReservationService;
 import com.moving.reservation.reservation.ReservationStatus;
 import java.security.Principal;
@@ -55,7 +56,9 @@ public class AdminReservationController {
 
     @GetMapping("/{id}")
     public String detail(@PathVariable Long id, Model model) {
-        model.addAttribute("reservation", reservationService.get(id));
+        Reservation reservation = reservationService.get(id);
+        model.addAttribute("reservation", reservation);
+        model.addAttribute("estimateLines", reservationService.estimateLines(reservation));
         model.addAttribute("photos", reservationService.findPhotos(id));
         model.addAttribute("statusHistories", reservationService.findStatusHistories(id));
         model.addAttribute("notifications", customerNotificationService.findByReservationId(id));

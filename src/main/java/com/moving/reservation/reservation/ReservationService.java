@@ -107,6 +107,19 @@ public class ReservationService {
         return reservationPhotoRepository.findByReservationIdOrderByUploadedAtAsc(reservationId);
     }
 
+    public List<ReservationEstimateLine> estimateLines(Reservation reservation) {
+        return estimateCalculator.calculateLines(
+                reservation.getMoveType(),
+                reservation.isFromElevator(),
+                reservation.isToElevator(),
+                reservation.getFromFloor(),
+                reservation.getToFloor(),
+                reservation.isFromLadderTruck(),
+                reservation.isToLadderTruck(),
+                reservation.getDistanceKm()
+        );
+    }
+
     public List<Reservation> findCouponUsages() {
         return reservationRepository.findCouponUsages();
     }

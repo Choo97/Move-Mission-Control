@@ -74,6 +74,20 @@
         </div>
     </section>
 
+    <section class="estimate-panel">
+        <div class="section-title">
+            <p class="eyebrow">Estimate Breakdown</p>
+            <h2>견적 산정 내역</h2>
+        </div>
+
+        <ul class="estimate-breakdown">
+            <li th:each="line : ${estimateLines}">
+                <span th:text="${line.label}">원룸 기본가</span>
+                <strong th:text="${#numbers.formatInteger(line.amount, 0, 'COMMA') + '원'}">180,000원</strong>
+            </li>
+        </ul>
+    </section>
+
     <p class="notice" th:if="${updateMessage}" th:text="${updateMessage}">예약 정보가 수정되었습니다.</p>
     <p class="notice" th:if="${reviewMessage}" th:text="${reviewMessage}">리뷰가 등록되었습니다.</p>
 
