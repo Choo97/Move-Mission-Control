@@ -83,6 +83,10 @@ public class CustomerNotification {
         return recipientPhone;
     }
 
+    public String getRecipientContact() {
+        return recipientPhone;
+    }
+
     public String getMessage() {
         return message;
     }

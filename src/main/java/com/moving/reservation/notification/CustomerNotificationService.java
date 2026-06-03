@@ -23,6 +23,13 @@ public class CustomerNotificationService {
         save(reservation, NotificationType.RESERVATION_CREATED,
                 reservation.getCustomerName() + "님, 이사 예약이 접수되었습니다. 예약 번호는 "
                         + reservation.getId() + "번입니다.");
+
+        if (reservation.hasEmail()) {
+            saveEmail(reservation, NotificationType.RESERVATION_CREATED,
+                    "[Move Mission Control] 예약 번호 " + reservation.getId()
+                            + "번 접수 안내: " + reservation.getMoveDate() + " "
+                            + reservation.getMoveTime() + " 이사 예약이 접수되었습니다.");
+        }
     }
 
     @Transactional
@@ -50,6 +57,16 @@ public class CustomerNotificationService {
                 type,
                 NotificationChannel.SMS,
                 reservation.getPhone(),
+                message
+        ));
+    }
+
+    private void saveEmail(Reservation reservation, NotificationType type, String message) {
+        customerNotificationRepository.save(new CustomerNotification(
+                reservation,
+                type,
+                NotificationChannel.EMAIL,
+                reservation.getEmail(),
                 message
         ));
     }

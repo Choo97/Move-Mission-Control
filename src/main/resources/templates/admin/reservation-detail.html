@@ -60,6 +60,10 @@
                 <strong th:text="${reservation.phone}">010-0000-0000</strong>
             </div>
             <div>
+                <span>이메일</span>
+                <strong th:text="${reservation.email == null ? '미입력' : reservation.email}">customer@example.com</strong>
+            </div>
+            <div>
                 <span>일정</span>
                 <strong th:text="${reservation.moveDate + ' ' + reservation.moveTime}">2026-06-01 09:00</strong>
             </div>
@@ -274,7 +278,7 @@
             <li th:each="notification : ${notifications}">
                 <div>
                     <strong th:text="${notification.type.label + ' / ' + notification.status.label}">예약 접수 / 발송 준비</strong>
-                    <span th:text="${notification.channel.label + ' / ' + notification.recipientPhone + ' / ' + #temporals.format(notification.createdAt, 'yyyy-MM-dd HH:mm')}">
+                    <span th:text="${notification.channel.label + ' / ' + notification.recipientContact + ' / ' + #temporals.format(notification.createdAt, 'yyyy-MM-dd HH:mm')}">
                         SMS / 010-0000-0000 / 2026-06-02 10:00
                     </span>
                     <span th:text="${notification.message}">고객 알림 메시지</span>

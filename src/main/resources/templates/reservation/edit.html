@@ -38,6 +38,13 @@
             <small th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></small>
         </label>
 
+        <label>
+            이메일
+            <input type="email" th:field="*{email}" placeholder="customer@example.com" th:disabled="${!reservation.editable}">
+            <span class="help-text">이메일을 입력하면 이후 예약 확인 안내에 사용할 수 있습니다.</span>
+            <small th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+        </label>
+
         <div class="field-grid">
             <label>
                 이사 날짜

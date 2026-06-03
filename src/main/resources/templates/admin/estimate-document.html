@@ -34,6 +34,10 @@
                     <dd th:text="${reservation.phone}">010-0000-0000</dd>
                 </div>
                 <div>
+                    <dt>이메일</dt>
+                    <dd th:text="${reservation.email == null ? '미입력' : reservation.email}">customer@example.com</dd>
+                </div>
+                <div>
                     <dt>이사 일정</dt>
                     <dd th:text="${reservation.moveDate + ' ' + reservation.moveTime}">2026-06-03 09:00</dd>
                 </div>

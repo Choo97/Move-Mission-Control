@@ -172,6 +172,7 @@ public class ReservationService {
                 request.getToFloor(),
                 request.isFromLadderTruck(),
                 request.isToLadderTruck(),
+                request.getEmail(),
                 request.getMemo()
         );
         reservation.applyBaseEstimate(estimateCalculator.calculate(

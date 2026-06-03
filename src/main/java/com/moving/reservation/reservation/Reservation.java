@@ -28,6 +28,9 @@ public class Reservation {
     @Column(nullable = false, length = 30)
     private String phone;
 
+    @Column(length = 120)
+    private String email;
+
     @Column(nullable = false)
     private LocalDate moveDate;
 
@@ -104,12 +107,13 @@ public class Reservation {
     protected Reservation() {
     }
 
-    public Reservation(String customerName, String phone, LocalDate moveDate, LocalTime moveTime,
+    public Reservation(String customerName, String phone, String email, LocalDate moveDate, LocalTime moveTime,
                        String fromAddress, String toAddress, MoveType moveType,
                        boolean fromElevator, boolean toElevator, Integer fromFloor, Integer toFloor,
                        boolean fromLadderTruck, boolean toLadderTruck, String memo) {
         this.customerName = customerName;
         this.phone = phone;
+        this.email = normalizeEmail(email);
         this.moveDate = moveDate;
         this.moveTime = moveTime;
         this.fromAddress = fromAddress;
@@ -181,7 +185,7 @@ public class Reservation {
 
     public void updateDetails(LocalDate moveDate, LocalTime moveTime, String fromAddress, String toAddress,
                               Integer fromFloor, Integer toFloor, boolean fromLadderTruck, boolean toLadderTruck,
-                              String memo) {
+                              String email, String memo) {
         this.moveDate = moveDate;
         this.moveTime = moveTime;
         this.fromAddress = fromAddress;
@@ -191,6 +195,7 @@ public class Reservation {
         this.fromLadderTruck = fromLadderTruck;
         this.toLadderTruck = toLadderTruck;
         this.distanceKm = null;
+        this.email = normalizeEmail(email);
         this.memo = memo;
     }
 
@@ -220,6 +225,10 @@ public class Reservation {
 
     public boolean hasCoupon() {
         return couponCode != null && !couponCode.isBlank();
+    }
+
+    public boolean hasEmail() {
+        return email != null && !email.isBlank();
     }
 
     public boolean hasEstimateAcceptance() {
@@ -255,6 +264,14 @@ public class Reservation {
         this.discountAmount = Math.min(estimatedPrice, discount);
     }
 
+    private String normalizeEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return null;
+        }
+
+        return email.trim();
+    }
+
     public Long getId() {
         return id;
     }
@@ -265,6 +282,10 @@ public class Reservation {
 
     public String getPhone() {
         return phone;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     public LocalDate getMoveDate() {

@@ -42,6 +42,12 @@
                 <small th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></small>
             </label>
             <label>
+                이메일
+                <input type="email" th:field="*{email}" placeholder="customer@example.com">
+                <span class="help-text">입력하면 예약 확인 안내 이메일이 발송 준비 이력에 자동으로 등록됩니다.</span>
+                <small th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+            </label>
+            <label>
                 이사 날짜
                 <input type="date" th:field="*{moveDate}">
                 <small th:if="${#fields.hasErrors('moveDate')}" th:errors="*{moveDate}"></small>

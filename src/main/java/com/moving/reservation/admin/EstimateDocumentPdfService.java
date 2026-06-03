@@ -37,6 +37,7 @@ public class EstimateDocumentPdfService {
             writer.writeSection("고객 정보");
             writer.writeKeyValue("고객명", reservation.getCustomerName());
             writer.writeKeyValue("연락처", reservation.getPhone());
+            writer.writeKeyValue("이메일", reservation.hasEmail() ? reservation.getEmail() : "미입력");
             writer.writeKeyValue("이사 일정", reservation.getMoveDate() + " " + reservation.getMoveTime());
             writer.writeKeyValue("이사 유형", reservation.getMoveType().getLabel());
 

@@ -1,6 +1,7 @@
 package com.moving.reservation.reservation;
 
 import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -14,6 +15,9 @@ public class ReservationUpdateRequest {
     @NotBlank(message = "연락처를 입력해 주세요.")
     @Pattern(regexp = "^[0-9\\-\\s]+$", message = "연락처는 숫자와 하이픈만 입력해 주세요.")
     private String phone;
+
+    @Email(message = "이메일 형식이 올바르지 않습니다.")
+    private String email;
 
     @NotNull(message = "이사 날짜를 선택해 주세요.")
     @FutureOrPresent(message = "오늘 이후 날짜를 선택해 주세요.")
@@ -46,6 +50,7 @@ public class ReservationUpdateRequest {
     public static ReservationUpdateRequest from(Reservation reservation) {
         ReservationUpdateRequest request = new ReservationUpdateRequest();
         request.setMoveDate(reservation.getMoveDate());
+        request.setEmail(reservation.getEmail());
         request.setMoveTime(reservation.getMoveTime());
         request.setFromAddress(reservation.getFromAddress());
         request.setToAddress(reservation.getToAddress());
@@ -63,6 +68,14 @@ public class ReservationUpdateRequest {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public LocalDate getMoveDate() {

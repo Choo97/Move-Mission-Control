@@ -33,6 +33,10 @@
             <strong th:text="${reservation.customerName}">홍길동</strong>
         </div>
         <div>
+            <span>이메일</span>
+            <strong th:text="${reservation.email == null ? '미입력' : reservation.email}">customer@example.com</strong>
+        </div>
+        <div>
             <span>일정</span>
             <strong th:text="${reservation.moveDate + ' ' + reservation.moveTime}">2026-06-01 09:00</strong>
         </div>
