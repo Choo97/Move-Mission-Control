@@ -8,6 +8,10 @@ import java.security.Principal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,11 +28,14 @@ public class AdminReservationController {
 
     private final ReservationService reservationService;
     private final CustomerNotificationService customerNotificationService;
+    private final EstimateDocumentPdfService estimateDocumentPdfService;
 
     public AdminReservationController(ReservationService reservationService,
-                                      CustomerNotificationService customerNotificationService) {
+                                      CustomerNotificationService customerNotificationService,
+                                      EstimateDocumentPdfService estimateDocumentPdfService) {
         this.reservationService = reservationService;
         this.customerNotificationService = customerNotificationService;
+        this.estimateDocumentPdfService = estimateDocumentPdfService;
     }
 
     @GetMapping
@@ -72,6 +79,21 @@ public class AdminReservationController {
         model.addAttribute("reservation", reservation);
         model.addAttribute("estimateLines", reservationService.estimateLines(reservation));
         return "admin/estimate-document";
+    }
+
+    @GetMapping("/{id}/estimate-document.pdf")
+    public ResponseEntity<byte[]> estimateDocumentPdf(@PathVariable Long id) {
+        Reservation reservation = reservationService.get(id);
+        byte[] pdf = estimateDocumentPdfService.generate(reservation, reservationService.estimateLines(reservation));
+        String filename = "estimate-" + id + ".pdf";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                        .filename(filename)
+                        .build()
+                        .toString())
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 
     @PostMapping("/{id}/status")

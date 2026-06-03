@@ -265,6 +265,7 @@
         <a class="button button--ghost" th:href="@{/admin/reservations}">목록으로</a>
         <a class="button button--primary" th:href="@{/reservations/{id}(id=${reservation.id})}">고객 화면 보기</a>
         <a class="button button--ghost" th:href="@{/admin/reservations/{id}/estimate-document(id=${reservation.id})}">견적 확정서</a>
+        <a class="button button--ghost" th:href="@{/admin/reservations/{id}/estimate-document.pdf(id=${reservation.id})}">PDF 다운로드</a>
     </div>
 </main>
 </body>

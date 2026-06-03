@@ -115,6 +115,7 @@
 
     <div class="actions document-actions">
         <a class="button button--ghost" th:href="@{/admin/reservations/{id}(id=${reservation.id})}">예약 상세로</a>
+        <a class="button button--ghost" th:href="@{/admin/reservations/{id}/estimate-document.pdf(id=${reservation.id})}">PDF 다운로드</a>
         <button type="button" onclick="window.print()">인쇄하기</button>
     </div>
 </main>
