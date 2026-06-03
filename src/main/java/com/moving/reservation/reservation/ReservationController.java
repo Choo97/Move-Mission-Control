@@ -1,8 +1,14 @@
 package com.moving.reservation.reservation;
 
+import com.moving.reservation.admin.EstimateDocumentPdfService;
 import com.moving.reservation.review.ReviewService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -22,10 +28,14 @@ public class ReservationController {
 
     private final ReservationService reservationService;
     private final ReviewService reviewService;
+    private final EstimateDocumentPdfService estimateDocumentPdfService;
 
-    public ReservationController(ReservationService reservationService, ReviewService reviewService) {
+    public ReservationController(ReservationService reservationService,
+                                 ReviewService reviewService,
+                                 EstimateDocumentPdfService estimateDocumentPdfService) {
         this.reservationService = reservationService;
         this.reviewService = reviewService;
+        this.estimateDocumentPdfService = estimateDocumentPdfService;
     }
 
     @GetMapping("/new")
@@ -100,6 +110,45 @@ public class ReservationController {
         model.addAttribute("photos", reservationService.findPhotos(id));
         model.addAttribute("review", reviewService.findByReservationId(id).orElse(null));
         return "reservation/detail";
+    }
+
+    @GetMapping("/{id}/estimate-document")
+    public String estimateDocument(@PathVariable Long id,
+                                   Model model,
+                                   HttpSession session,
+                                   Authentication authentication,
+                                   RedirectAttributes redirectAttributes) {
+        if (!hasReservationAccess(id, session, authentication)) {
+            redirectAttributes.addFlashAttribute("searchError", "견적 확정서를 보려면 먼저 예약 조회 인증을 해주세요.");
+            return "redirect:/reservations/search";
+        }
+
+        Reservation reservation = reservationService.get(id);
+        model.addAttribute("reservation", reservation);
+        model.addAttribute("estimateLines", reservationService.estimateLines(reservation));
+        model.addAttribute("customerMode", true);
+        return "admin/estimate-document";
+    }
+
+    @GetMapping("/{id}/estimate-document.pdf")
+    public ResponseEntity<byte[]> estimateDocumentPdf(@PathVariable Long id,
+                                                      HttpSession session,
+                                                      Authentication authentication) {
+        if (!hasReservationAccess(id, session, authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        Reservation reservation = reservationService.get(id);
+        byte[] pdf = estimateDocumentPdfService.generate(reservation, reservationService.estimateLines(reservation));
+        String filename = "estimate-" + id + ".pdf";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                        .filename(filename)
+                        .build()
+                        .toString())
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 
     @GetMapping("/{id}/edit")
