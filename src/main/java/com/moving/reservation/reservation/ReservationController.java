@@ -151,6 +151,26 @@ public class ReservationController {
                 .body(pdf);
     }
 
+    @PostMapping("/{id}/estimate/accept")
+    public String acceptEstimate(@PathVariable Long id,
+                                 RedirectAttributes redirectAttributes,
+                                 HttpSession session,
+                                 Authentication authentication) {
+        if (!hasReservationAccess(id, session, authentication)) {
+            redirectAttributes.addFlashAttribute("searchError", "견적 동의를 하려면 먼저 예약 조회 인증을 해주세요.");
+            return "redirect:/reservations/search";
+        }
+
+        try {
+            reservationService.acceptEstimate(id);
+            redirectAttributes.addFlashAttribute("estimateAcceptMessage", "견적 동의가 완료되었습니다. 예약 상태가 확정으로 변경되었습니다.");
+        } catch (IllegalArgumentException exception) {
+            redirectAttributes.addFlashAttribute("estimateAcceptError", exception.getMessage());
+        }
+
+        return "redirect:/reservations/" + id;
+    }
+
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id,
                            Model model,

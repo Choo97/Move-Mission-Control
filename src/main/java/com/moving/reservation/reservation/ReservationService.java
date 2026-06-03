@@ -143,6 +143,17 @@ public class ReservationService {
     }
 
     @Transactional
+    public void acceptEstimate(Long id) {
+        Reservation reservation = get(id);
+
+        if (!reservation.isEstimateAcceptable()) {
+            throw new IllegalArgumentException("현재 상태에서는 견적을 동의할 수 없습니다.");
+        }
+
+        changeStatus(reservation, ReservationStatus.CONFIRMED, "customer");
+    }
+
+    @Transactional
     public void updateDetails(Long id, ReservationUpdateRequest request) {
         Reservation reservation = reservationRepository.findByIdAndPhone(id, request.getPhone())
                 .orElseThrow(() -> new IllegalArgumentException("예약 번호와 연락처가 일치하지 않습니다."));

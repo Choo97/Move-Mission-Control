@@ -165,6 +165,11 @@ public class Reservation {
         return status == ReservationStatus.RECEIVED || status == ReservationStatus.CONSULTING;
     }
 
+    public boolean isEstimateAcceptable() {
+        return getFinalEstimatedPrice() != null
+                && (status == ReservationStatus.RECEIVED || status == ReservationStatus.CONSULTING);
+    }
+
     public void updateDetails(LocalDate moveDate, LocalTime moveTime, String fromAddress, String toAddress,
                               Integer fromFloor, Integer toFloor, boolean fromLadderTruck, boolean toLadderTruck,
                               String memo) {
