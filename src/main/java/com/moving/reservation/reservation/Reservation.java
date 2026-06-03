@@ -226,6 +226,21 @@ public class Reservation {
         return acceptedEstimatePrice != null && estimateAcceptedAt != null;
     }
 
+    public boolean hasEstimateAcceptanceMismatch() {
+        Integer finalEstimatedPrice = getFinalEstimatedPrice();
+        return hasEstimateAcceptance()
+                && finalEstimatedPrice != null
+                && !acceptedEstimatePrice.equals(finalEstimatedPrice);
+    }
+
+    public int getEstimateAcceptanceDifference() {
+        if (!hasEstimateAcceptance() || getFinalEstimatedPrice() == null) {
+            return 0;
+        }
+
+        return getFinalEstimatedPrice() - acceptedEstimatePrice;
+    }
+
     private void recalculateDiscount() {
         if (estimatedPrice == null || estimatedPrice <= 0 || couponDiscountType == null || couponDiscountValue == null) {
             this.discountAmount = 0;
