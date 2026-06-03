@@ -64,6 +64,45 @@
             </tbody>
         </table>
     </section>
+
+    <section class="history-panel">
+        <div class="section-title">
+            <p class="eyebrow">Change History</p>
+            <h2>견적 기준 변경 이력</h2>
+        </div>
+
+        <p class="empty" th:if="${histories.isEmpty()}">아직 견적 기준 변경 이력이 없습니다.</p>
+
+        <section class="table-shell" th:unless="${histories.isEmpty()}">
+            <table>
+                <thead>
+                <tr>
+                    <th>기준</th>
+                    <th>변경 전</th>
+                    <th>변경 후</th>
+                    <th>변경자</th>
+                    <th>변경 시간</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="history : ${histories}">
+                    <td>
+                        <strong th:text="${history.label}">원룸 기본가</strong>
+                        <span th:text="${history.settingKey.name()}">STUDIO_BASE</span>
+                    </td>
+                    <td th:text="${history.settingKey.name() == 'INCLUDED_DISTANCE_KM'
+                            ? history.previousAmount + 'km'
+                            : #numbers.formatInteger(history.previousAmount, 0, 'COMMA') + '원'}">180,000원</td>
+                    <td th:text="${history.settingKey.name() == 'INCLUDED_DISTANCE_KM'
+                            ? history.changedAmount + 'km'
+                            : #numbers.formatInteger(history.changedAmount, 0, 'COMMA') + '원'}">190,000원</td>
+                    <td th:text="${#strings.isEmpty(history.changedBy) ? '기록 없음' : history.changedBy}">admin</td>
+                    <td th:text="${#temporals.format(history.changedAt, 'yyyy-MM-dd HH:mm')}">2026-06-03 12:00</td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+    </section>
 </main>
 </body>
 </html>

@@ -1,5 +1,6 @@
 package com.moving.reservation.estimate;
 
+import java.security.Principal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,19 +23,21 @@ public class EstimateSettingController {
     @GetMapping
     public String list(Model model) {
         model.addAttribute("settings", estimateSettingService.findAll());
+        model.addAttribute("histories", estimateSettingService.findHistories());
         return "admin/estimate-settings";
     }
 
     @PostMapping("/{id}")
     public String update(@PathVariable Long id,
                          @RequestParam int amount,
+                         Principal principal,
                          RedirectAttributes redirectAttributes) {
         if (amount < 0) {
             redirectAttributes.addFlashAttribute("estimateSettingError", "견적 기준 금액은 0 이상이어야 합니다.");
             return "redirect:/admin/estimate-settings";
         }
 
-        estimateSettingService.update(id, amount);
+        estimateSettingService.update(id, amount, principal.getName());
         redirectAttributes.addFlashAttribute("estimateSettingMessage", "견적 기준이 수정되었습니다.");
         return "redirect:/admin/estimate-settings";
     }

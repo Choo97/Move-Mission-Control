@@ -10,13 +10,20 @@ import org.springframework.transaction.annotation.Transactional;
 public class EstimateSettingService {
 
     private final EstimateSettingRepository estimateSettingRepository;
+    private final EstimateSettingHistoryRepository estimateSettingHistoryRepository;
 
-    public EstimateSettingService(EstimateSettingRepository estimateSettingRepository) {
+    public EstimateSettingService(EstimateSettingRepository estimateSettingRepository,
+                                  EstimateSettingHistoryRepository estimateSettingHistoryRepository) {
         this.estimateSettingRepository = estimateSettingRepository;
+        this.estimateSettingHistoryRepository = estimateSettingHistoryRepository;
     }
 
     public List<EstimateSetting> findAll() {
         return estimateSettingRepository.findAllByOrderBySortOrderAsc();
+    }
+
+    public List<EstimateSettingHistory> findHistories() {
+        return estimateSettingHistoryRepository.findAllByOrderByChangedAtDesc();
     }
 
     public int amount(EstimateSettingKey settingKey) {
@@ -26,10 +33,21 @@ public class EstimateSettingService {
     }
 
     @Transactional
-    public void update(Long id, int amount) {
+    public void update(Long id, int amount, String changedBy) {
         EstimateSetting estimateSetting = estimateSettingRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("견적 기준을 찾을 수 없습니다."));
+        int previousAmount = estimateSetting.getAmount();
+        if (previousAmount == amount) {
+            return;
+        }
+
         estimateSetting.updateAmount(amount);
+        estimateSettingHistoryRepository.save(new EstimateSettingHistory(
+                estimateSetting,
+                previousAmount,
+                amount,
+                changedBy
+        ));
     }
 
     @Transactional
