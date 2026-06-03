@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>견적 확정서 | Move Mission Control</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="document-body">
+<main class="estimate-document">
+    <section class="document-header">
+        <div>
+            <p class="eyebrow">Move Mission Control</p>
+            <h1>견적 확정서</h1>
+            <p>
+                예약 번호
+                <strong th:text="${reservation.id}">1</strong>
+                번 이사 예약의 견적 산정 내용을 정리했습니다.
+            </p>
+        </div>
+        <button type="button" onclick="window.print()">인쇄</button>
+    </section>
+
+    <section class="document-grid">
+        <article>
+            <h2>고객 정보</h2>
+            <dl>
+                <div>
+                    <dt>고객명</dt>
+                    <dd th:text="${reservation.customerName}">홍길동</dd>
+                </div>
+                <div>
+                    <dt>연락처</dt>
+                    <dd th:text="${reservation.phone}">010-0000-0000</dd>
+                </div>
+                <div>
+                    <dt>이사 일정</dt>
+                    <dd th:text="${reservation.moveDate + ' ' + reservation.moveTime}">2026-06-03 09:00</dd>
+                </div>
+                <div>
+                    <dt>이사 유형</dt>
+                    <dd th:text="${reservation.moveType.label}">원룸</dd>
+                </div>
+            </dl>
+        </article>
+
+        <article>
+            <h2>이동 정보</h2>
+            <dl>
+                <div>
+                    <dt>출발지</dt>
+                    <dd th:text="${reservation.fromAddress}">서울시 강남구</dd>
+                </div>
+                <div>
+                    <dt>도착지</dt>
+                    <dd th:text="${reservation.toAddress}">서울시 마포구</dd>
+                </div>
+                <div>
+                    <dt>층수</dt>
+                    <dd th:text="${'출발지 ' + (reservation.fromFloor == null ? 1 : reservation.fromFloor) + '층 / 도착지 '
+                            + (reservation.toFloor == null ? 1 : reservation.toFloor) + '층'}">
+                        출발지 1층 / 도착지 1층
+                    </dd>
+                </div>
+                <div>
+                    <dt>현장 조건</dt>
+                    <dd th:text="${'엘리베이터 출발지 ' + (reservation.fromElevator ? '있음' : '없음')
+                            + ' / 도착지 ' + (reservation.toElevator ? '있음' : '없음')
+                            + ' / 사다리차 출발지 ' + (reservation.fromLadderTruck ? '필요' : '없음')
+                            + ' / 도착지 ' + (reservation.toLadderTruck ? '필요' : '없음')}">
+                        엘리베이터 있음 / 사다리차 없음
+                    </dd>
+                </div>
+                <div>
+                    <dt>이동 거리</dt>
+                    <dd th:text="${reservation.distanceKm == null ? '확인 전' : reservation.distanceKm + 'km'}">확인 전</dd>
+                </div>
+            </dl>
+        </article>
+    </section>
+
+    <section class="document-card">
+        <h2>견적 산정 내역</h2>
+        <ul class="estimate-breakdown">
+            <li th:each="line : ${estimateLines}">
+                <span th:text="${line.label}">원룸 기본가</span>
+                <strong th:text="${#numbers.formatInteger(line.amount, 0, 'COMMA') + '원'}">180,000원</strong>
+            </li>
+        </ul>
+    </section>
+
+    <section class="document-total">
+        <div>
+            <span>기본 견적</span>
+            <strong th:text="${reservation.baseEstimatedPrice == null ? '계산 전' : #numbers.formatInteger(reservation.baseEstimatedPrice, 0, 'COMMA') + '원'}">
+                180,000원
+            </strong>
+        </div>
+        <div>
+            <span>할인</span>
+            <strong th:text="${#numbers.formatInteger(reservation.appliedDiscountAmount, 0, 'COMMA') + '원'}">0원</strong>
+        </div>
+        <div>
+            <span>최종 견적</span>
+            <strong th:text="${reservation.finalEstimatedPrice == null ? '상담 후 안내' : #numbers.formatInteger(reservation.finalEstimatedPrice, 0, 'COMMA') + '원'}">
+                상담 후 안내
+            </strong>
+        </div>
+    </section>
+
+    <section class="document-note">
+        <h2>안내 사항</h2>
+        <p>현장 상황, 추가 짐, 주차 여건, 고객 요청 변경에 따라 최종 금액은 조정될 수 있습니다.</p>
+    </section>
+
+    <div class="actions document-actions">
+        <a class="button button--ghost" th:href="@{/admin/reservations/{id}(id=${reservation.id})}">예약 상세로</a>
+        <button type="button" onclick="window.print()">인쇄하기</button>
+    </div>
+</main>
+</body>
+</html>

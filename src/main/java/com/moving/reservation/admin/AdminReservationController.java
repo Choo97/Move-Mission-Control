@@ -66,6 +66,14 @@ public class AdminReservationController {
         return "admin/reservation-detail";
     }
 
+    @GetMapping("/{id}/estimate-document")
+    public String estimateDocument(@PathVariable Long id, Model model) {
+        Reservation reservation = reservationService.get(id);
+        model.addAttribute("reservation", reservation);
+        model.addAttribute("estimateLines", reservationService.estimateLines(reservation));
+        return "admin/estimate-document";
+    }
+
     @PostMapping("/{id}/status")
     public String updateStatus(@PathVariable Long id, @RequestParam ReservationStatus status, Principal principal) {
         reservationService.updateStatus(id, status, principal.getName());
