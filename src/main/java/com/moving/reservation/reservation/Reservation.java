@@ -91,6 +91,10 @@ public class Reservation {
 
     private Integer discountAmount;
 
+    private Integer acceptedEstimatePrice;
+
+    private LocalDateTime estimateAcceptedAt;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
@@ -170,6 +174,11 @@ public class Reservation {
                 && (status == ReservationStatus.RECEIVED || status == ReservationStatus.CONSULTING);
     }
 
+    public void acceptEstimate() {
+        this.acceptedEstimatePrice = getFinalEstimatedPrice();
+        this.estimateAcceptedAt = LocalDateTime.now();
+    }
+
     public void updateDetails(LocalDate moveDate, LocalTime moveTime, String fromAddress, String toAddress,
                               Integer fromFloor, Integer toFloor, boolean fromLadderTruck, boolean toLadderTruck,
                               String memo) {
@@ -211,6 +220,10 @@ public class Reservation {
 
     public boolean hasCoupon() {
         return couponCode != null && !couponCode.isBlank();
+    }
+
+    public boolean hasEstimateAcceptance() {
+        return acceptedEstimatePrice != null && estimateAcceptedAt != null;
     }
 
     private void recalculateDiscount() {
@@ -329,6 +342,14 @@ public class Reservation {
 
     public Integer getDiscountAmount() {
         return discountAmount;
+    }
+
+    public Integer getAcceptedEstimatePrice() {
+        return acceptedEstimatePrice;
+    }
+
+    public LocalDateTime getEstimateAcceptedAt() {
+        return estimateAcceptedAt;
     }
 
     public LocalDateTime getCreatedAt() {

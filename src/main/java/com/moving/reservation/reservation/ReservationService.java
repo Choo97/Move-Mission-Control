@@ -150,6 +150,7 @@ public class ReservationService {
             throw new IllegalArgumentException("현재 상태에서는 견적을 동의할 수 없습니다.");
         }
 
+        reservation.acceptEstimate();
         changeStatus(reservation, ReservationStatus.CONFIRMED, "customer");
     }
 

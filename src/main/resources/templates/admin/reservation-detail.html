@@ -134,6 +134,18 @@
                     상담 후 안내
                 </strong>
             </div>
+            <div>
+                <span>고객 동의 금액</span>
+                <strong th:text="${reservation.acceptedEstimatePrice == null ? '미동의' : #numbers.formatInteger(reservation.acceptedEstimatePrice, 0, 'COMMA') + '원'}">
+                    미동의
+                </strong>
+            </div>
+            <div>
+                <span>고객 동의 일시</span>
+                <strong th:text="${reservation.estimateAcceptedAt == null ? '미동의' : #temporals.format(reservation.estimateAcceptedAt, 'yyyy-MM-dd HH:mm')}">
+                    미동의
+                </strong>
+            </div>
         </article>
 
         <aside class="admin-action-panel">

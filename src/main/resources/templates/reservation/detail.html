@@ -72,6 +72,14 @@
             <span>최종 견적</span>
             <strong th:text="${reservation.finalEstimatedPrice == null ? '상담 후 안내' : #numbers.formatInteger(reservation.finalEstimatedPrice, 0, 'COMMA') + '원'}">상담 후 안내</strong>
         </div>
+        <div th:if="${reservation.hasEstimateAcceptance()}">
+            <span>동의 금액</span>
+            <strong th:text="${#numbers.formatInteger(reservation.acceptedEstimatePrice, 0, 'COMMA') + '원'}">280,000원</strong>
+        </div>
+        <div th:if="${reservation.hasEstimateAcceptance()}">
+            <span>동의 일시</span>
+            <strong th:text="${#temporals.format(reservation.estimateAcceptedAt, 'yyyy-MM-dd HH:mm')}">2026-06-04 10:00</strong>
+        </div>
     </section>
 
     <section class="estimate-panel">
@@ -99,7 +107,11 @@
             <h2>견적 동의</h2>
         </div>
 
-        <p class="empty" th:if="${reservation.status.name() == 'CONFIRMED'}">이미 견적 동의가 완료되어 예약이 확정되었습니다.</p>
+        <p class="empty" th:if="${reservation.hasEstimateAcceptance()}"
+           th:text="${'이미 ' + #numbers.formatInteger(reservation.acceptedEstimatePrice, 0, 'COMMA') + '원에 동의했습니다. 동의 일시: ' + #temporals.format(reservation.estimateAcceptedAt, 'yyyy-MM-dd HH:mm')}">
+            이미 견적 동의가 완료되었습니다.
+        </p>
+        <p class="empty" th:if="${reservation.status.name() == 'CONFIRMED' && !reservation.hasEstimateAcceptance()}">예약은 확정 상태이지만 고객 동의 기록은 없습니다.</p>
         <p class="empty" th:if="${reservation.finalEstimatedPrice == null}">최종 견적이 정해지면 동의할 수 있습니다.</p>
         <p class="empty" th:if="${reservation.finalEstimatedPrice != null && !reservation.estimateAcceptable && reservation.status.name() != 'CONFIRMED'}">
             현재 상태에서는 고객 견적 동의가 불가능합니다.

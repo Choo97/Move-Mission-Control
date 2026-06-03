@@ -61,6 +61,12 @@ public class EstimateDocumentPdfService {
             writer.writeKeyValue("할인", money(reservation.getAppliedDiscountAmount()));
             writer.writeKeyValue("최종 견적", reservation.getFinalEstimatedPrice() == null ? "상담 후 안내" : money(reservation.getFinalEstimatedPrice()));
 
+            if (reservation.hasEstimateAcceptance()) {
+                writer.writeSection("고객 동의 기록");
+                writer.writeKeyValue("동의 금액", money(reservation.getAcceptedEstimatePrice()));
+                writer.writeKeyValue("동의 일시", reservation.getEstimateAcceptedAt().toString().replace("T", " "));
+            }
+
             writer.writeSection("안내 사항");
             writer.writeText("현장 상황, 추가 짐, 주차 여건, 고객 요청 변경에 따라 최종 금액은 조정될 수 있습니다.", 11);
             writer.close();
