@@ -504,6 +504,43 @@ small {
     margin-bottom: 18px;
 }
 
+.lookup-guide {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.lookup-guide div {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: var(--shadow);
+    padding: 20px;
+}
+
+.lookup-guide span {
+    color: var(--blue-strong);
+    font-weight: 900;
+}
+
+.lookup-guide strong {
+    display: block;
+    margin-top: 10px;
+    color: var(--navy);
+}
+
+.lookup-guide p,
+.lookup-help p {
+    margin: 8px 0 0;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.lookup-help {
+    margin-top: 18px;
+}
+
 .status-steps {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1040,6 +1077,7 @@ td button {
     .table-edit-form,
     .customer-summary,
     .status-steps,
+    .lookup-guide,
     .filter-panel,
     .admin-detail-layout {
         grid-template-columns: 1fr;
