@@ -28,6 +28,12 @@ public class ReviewService {
         return reviewRepository.findAllWithReservationOrderByCreatedAtDesc();
     }
 
+    public List<Review> findRecent() {
+        return findAll().stream()
+                .limit(3)
+                .toList();
+    }
+
     public double averageRating() {
         return reviewRepository.averageRating();
     }

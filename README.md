@@ -42,6 +42,8 @@ Spring Boot 기반 이사 예약 웹 서비스입니다. 고객은 이사 예약
 - SMTP 이메일 실제 발송 연동
 - 알림 발송 성공 및 실패 상태 필터
 - 실패 이메일 재발송
+- 관리자 운영 대시보드 개선
+- 자주 묻는 질문 페이지
 - 관리자 예약 검색 및 상태 필터
 - 관리자 이사일 기간 필터
 - 관리자 빠른 기간 필터
@@ -70,7 +72,6 @@ Spring Boot 기반 이사 예약 웹 서비스입니다. 고객은 이사 예약
 - SMS 또는 카카오 알림톡 발송
 - 결제 기능
 - 쿠폰 만료일 및 사용 횟수 제한
-- 자주 묻는 질문 페이지
 - PostgreSQL 전환 검토
 - 파일 저장소 S3 또는 NCP Object Storage 연동
 - 배포 환경 구성
@@ -135,6 +136,7 @@ SMTP 설정이 꺼져 있으면 애플리케이션은 정상 실행되지만, �
 ```text
 메인 화면       http://localhost:8081/
 예약 신청       http://localhost:8081/reservations/new
+자주 묻는 질문  http://localhost:8081/faq
 관리자 화면     http://localhost:8081/admin/reservations
 ```
 

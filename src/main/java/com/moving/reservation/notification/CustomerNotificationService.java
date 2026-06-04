@@ -58,6 +58,10 @@ public class CustomerNotificationService {
         return customerNotificationRepository.search(channel, status, normalizeKeyword(keyword));
     }
 
+    public long countFailedEmails() {
+        return customerNotificationRepository.countByChannelAndStatus(NotificationChannel.EMAIL, NotificationStatus.FAILED);
+    }
+
     @Transactional
     public EmailNotificationSendResult sendReadyEmails(Long reservationId) {
         return sendEmailsByStatus(reservationId, NotificationStatus.READY);

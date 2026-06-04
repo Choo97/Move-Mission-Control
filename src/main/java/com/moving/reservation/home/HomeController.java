@@ -19,4 +19,9 @@ public class HomeController {
         model.addAttribute("summary", reservationService.summary());
         return "home";
     }
+
+    @GetMapping("/faq")
+    public String faq() {
+        return "faq";
+    }
 }

@@ -649,6 +649,74 @@ small {
     padding: 24px;
 }
 
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.dashboard-panel,
+.faq-list article {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: var(--shadow);
+    padding: 22px;
+}
+
+.dashboard-panel--notice {
+    background: linear-gradient(180deg, var(--white), var(--surface-soft));
+}
+
+.dashboard-list {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dashboard-list a {
+    display: grid;
+    gap: 6px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 12px;
+}
+
+.dashboard-list li:last-child a {
+    border-bottom: 0;
+    padding-bottom: 0;
+}
+
+.dashboard-list strong {
+    color: var(--navy);
+}
+
+.dashboard-list span {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.faq-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.faq-list h2 {
+    margin: 0 0 12px;
+    color: var(--navy);
+    font-size: 22px;
+}
+
+.faq-list p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.7;
+}
+
 .section-title {
     margin-bottom: 18px;
 }
@@ -689,7 +757,7 @@ small {
 
 .stats {
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 14px;
     margin-bottom: 18px;
 }
@@ -829,6 +897,8 @@ td button {
     .field-grid,
     .address-control,
     .stats,
+    .dashboard-grid,
+    .faq-list,
     .filter-panel,
     .admin-detail-layout {
         grid-template-columns: 1fr;

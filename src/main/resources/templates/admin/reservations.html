@@ -38,10 +38,70 @@
     <section class="stats">
         <div><span th:text="${summary.today()}">0</span><p>오늘 예약</p></div>
         <div><span th:text="${summary.received()}">0</span><p>접수 대기</p></div>
+        <div><span th:text="${summary.consulting()}">0</span><p>상담중</p></div>
+        <div><span th:text="${summary.confirmed()}">0</span><p>확정 일정</p></div>
+        <div><span th:text="${failedEmailCount}">0</span><p>이메일 실패</p></div>
         <div><span th:text="${summary.completed()}">0</span><p>완료 예약</p></div>
         <div><span th:text="${#numbers.formatDecimal(summary.averageRating(), 1, 1)}">0.0</span><p>평균 평점</p></div>
         <div><span th:text="${summary.couponUsages()}">0</span><p>쿠폰 사용</p></div>
         <div><span th:text="${summary.total()}">0</span><p>전체 예약</p></div>
+    </section>
+
+    <section class="dashboard-grid">
+        <article class="dashboard-panel">
+            <div class="section-title">
+                <p class="eyebrow">Recent Reservations</p>
+                <h2>최근 접수 예약</h2>
+            </div>
+            <p class="empty" th:if="${recentReservations.isEmpty()}">최근 접수된 예약이 없습니다.</p>
+            <ul class="dashboard-list" th:unless="${recentReservations.isEmpty()}">
+                <li th:each="recent : ${recentReservations}">
+                    <a th:href="@{/admin/reservations/{id}(id=${recent.id})}">
+                        <strong th:text="${recent.customerName + ' / ' + recent.moveType.label}">홍길동 / 원룸</strong>
+                        <span th:text="${recent.moveDate + ' ' + recent.moveTime + ' / ' + recent.status.label}">
+                            2026-06-01 09:00 / 접수
+                        </span>
+                    </a>
+                </li>
+            </ul>
+        </article>
+
+        <article class="dashboard-panel">
+            <div class="section-title">
+                <p class="eyebrow">Latest Reviews</p>
+                <h2>최근 고객 리뷰</h2>
+            </div>
+            <p class="empty" th:if="${recentReviews.isEmpty()}">아직 등록된 리뷰가 없습니다.</p>
+            <ul class="dashboard-list" th:unless="${recentReviews.isEmpty()}">
+                <li th:each="review : ${recentReviews}">
+                    <a th:href="@{/admin/reservations/{id}(id=${review.reservation.id})}">
+                        <strong th:text="${'평점 ' + review.rating + '점 / ' + review.reservation.customerName}">평점 5점 / 홍길동</strong>
+                        <span th:text="${review.content}">리뷰 내용</span>
+                    </a>
+                </li>
+            </ul>
+        </article>
+
+        <article class="dashboard-panel dashboard-panel--notice">
+            <div class="section-title">
+                <p class="eyebrow">Action Needed</p>
+                <h2>운영 확인 항목</h2>
+            </div>
+            <ul class="dashboard-list">
+                <li>
+                    <a th:href="@{/admin/reservations(status='RECEIVED')}">
+                        <strong th:text="${summary.received() + '건 접수 대기'}">0건 접수 대기</strong>
+                        <span>상담 전 예약을 먼저 확인하세요.</span>
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{/admin/notifications(channel='EMAIL', status='FAILED')}">
+                        <strong th:text="${failedEmailCount + '건 이메일 실패'}">0건 이메일 실패</strong>
+                        <span>실패한 이메일은 재발송할 수 있습니다.</span>
+                    </a>
+                </li>
+            </ul>
+        </article>
     </section>
 
     <form class="filter-panel filter-panel--wide" th:action="@{/admin/reservations}" method="get">

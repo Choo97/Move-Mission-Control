@@ -15,6 +15,8 @@ public interface CustomerNotificationRepository extends JpaRepository<CustomerNo
             NotificationStatus status
     );
 
+    long countByChannelAndStatus(NotificationChannel channel, NotificationStatus status);
+
     @Query("""
             select notification
             from CustomerNotification notification

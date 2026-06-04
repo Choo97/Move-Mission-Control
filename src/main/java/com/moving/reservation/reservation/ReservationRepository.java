@@ -11,6 +11,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     List<Reservation> findAllByOrderByMoveDateAscMoveTimeAsc();
 
+    List<Reservation> findTop5ByOrderByCreatedAtDesc();
+
     @Query("""
             select reservation
             from Reservation reservation

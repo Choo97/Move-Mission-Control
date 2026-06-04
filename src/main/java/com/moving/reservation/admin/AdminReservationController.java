@@ -5,6 +5,7 @@ import com.moving.reservation.notification.EmailNotificationSendResult;
 import com.moving.reservation.reservation.Reservation;
 import com.moving.reservation.reservation.ReservationService;
 import com.moving.reservation.reservation.ReservationStatus;
+import com.moving.reservation.review.ReviewService;
 import java.security.Principal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -29,13 +30,16 @@ public class AdminReservationController {
 
     private final ReservationService reservationService;
     private final CustomerNotificationService customerNotificationService;
+    private final ReviewService reviewService;
     private final EstimateDocumentPdfService estimateDocumentPdfService;
 
     public AdminReservationController(ReservationService reservationService,
                                       CustomerNotificationService customerNotificationService,
+                                      ReviewService reviewService,
                                       EstimateDocumentPdfService estimateDocumentPdfService) {
         this.reservationService = reservationService;
         this.customerNotificationService = customerNotificationService;
+        this.reviewService = reviewService;
         this.estimateDocumentPdfService = estimateDocumentPdfService;
     }
 
@@ -49,6 +53,9 @@ public class AdminReservationController {
 
         model.addAttribute("reservations", reservationService.search(status, keyword, startDate, endDate));
         model.addAttribute("summary", reservationService.summary());
+        model.addAttribute("recentReservations", reservationService.findRecent());
+        model.addAttribute("recentReviews", reviewService.findRecent());
+        model.addAttribute("failedEmailCount", customerNotificationService.countFailedEmails());
         model.addAttribute("statuses", ReservationStatus.values());
         model.addAttribute("selectedStatus", status);
         model.addAttribute("keyword", keyword);

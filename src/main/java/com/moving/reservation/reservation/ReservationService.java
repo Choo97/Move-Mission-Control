@@ -95,6 +95,10 @@ public class ReservationService {
         return reservationRepository.findAllByOrderByMoveDateAscMoveTimeAsc();
     }
 
+    public List<Reservation> findRecent() {
+        return reservationRepository.findTop5ByOrderByCreatedAtDesc();
+    }
+
     public List<Reservation> search(ReservationStatus status, String keyword, LocalDate startDate, LocalDate endDate) {
         return reservationRepository.search(status, normalizeKeyword(keyword), startDate, endDate);
     }

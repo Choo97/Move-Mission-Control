@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>자주 묻는 질문 | Move Mission Control</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" th:href="@{/}">Move Mission Control</a>
+    <nav>
+        <a th:href="@{/reservations/new}">예약하기</a>
+        <a th:href="@{/reservations/search}">예약조회</a>
+        <a th:href="@{/faq}">FAQ</a>
+        <a th:href="@{/admin/reservations}">관리자</a>
+    </nav>
+</header>
+
+<main class="page">
+    <section class="page-heading">
+        <p class="eyebrow">Customer Help</p>
+        <h1>자주 묻는 질문</h1>
+        <p>이사 예약 전후에 고객이 자주 확인하는 내용을 정리했습니다.</p>
+    </section>
+
+    <section class="faq-list">
+        <article>
+            <h2>예약 후에는 어떻게 확인하나요?</h2>
+            <p>예약 완료 화면에 표시되는 예약 번호와 입력한 연락처로 `예약조회` 화면에서 확인할 수 있습니다.</p>
+        </article>
+        <article>
+            <h2>견적은 바로 확정되나요?</h2>
+            <p>기본 견적은 자동으로 계산되지만, 실제 작업 조건에 따라 관리자가 최종 견적을 조정할 수 있습니다.</p>
+        </article>
+        <article>
+            <h2>짐 사진은 왜 업로드하나요?</h2>
+            <p>짐의 양과 특이사항을 미리 확인하면 상담과 견적 안내가 더 정확해집니다.</p>
+        </article>
+        <article>
+            <h2>예약 수정이나 취소는 언제까지 가능한가요?</h2>
+            <p>예약 상태가 접수 또는 상담중일 때 고객 화면에서 수정과 취소가 가능합니다.</p>
+        </article>
+        <article>
+            <h2>이메일 안내를 받으려면 어떻게 해야 하나요?</h2>
+            <p>예약 신청 시 이메일을 입력하면 예약 확인 안내 메일 발송 대상으로 등록됩니다.</p>
+        </article>
+        <article>
+            <h2>쿠폰은 어디에 입력하나요?</h2>
+            <p>예약 신청 화면의 쿠폰 입력란에 쿠폰 코드를 입력하면 견적에 할인이 반영됩니다.</p>
+        </article>
+    </section>
+
+    <div class="actions">
+        <a class="button button--primary" th:href="@{/reservations/new}">예약 시작하기</a>
+        <a class="button button--ghost" th:href="@{/reservations/search}">내 예약 조회</a>
+    </div>
+</main>
+</body>
+</html>
