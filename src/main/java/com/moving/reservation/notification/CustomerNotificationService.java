@@ -60,11 +60,20 @@ public class CustomerNotificationService {
 
     @Transactional
     public EmailNotificationSendResult sendReadyEmails(Long reservationId) {
+        return sendEmailsByStatus(reservationId, NotificationStatus.READY);
+    }
+
+    @Transactional
+    public EmailNotificationSendResult resendFailedEmails(Long reservationId) {
+        return sendEmailsByStatus(reservationId, NotificationStatus.FAILED);
+    }
+
+    private EmailNotificationSendResult sendEmailsByStatus(Long reservationId, NotificationStatus status) {
         List<CustomerNotification> notifications = customerNotificationRepository
                 .findByReservationIdAndChannelAndStatusOrderByCreatedAtAsc(
                         reservationId,
                         NotificationChannel.EMAIL,
-                        NotificationStatus.READY
+                        status
                 );
 
         int sentCount = 0;

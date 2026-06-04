@@ -153,4 +153,23 @@ public class AdminReservationController {
 
         return "redirect:/admin/reservations/" + id;
     }
+
+    @PostMapping("/{id}/notifications/email/resend-failed")
+    public String resendFailedEmails(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        EmailNotificationSendResult result = customerNotificationService.resendFailedEmails(id);
+
+        if (result.sentCount() > 0) {
+            redirectAttributes.addFlashAttribute("emailSendMessage", result.sentCount() + "건의 실패 이메일을 재발송했습니다.");
+        }
+
+        if (result.failedCount() > 0) {
+            redirectAttributes.addFlashAttribute("emailSendError", result.failedCount() + "건의 실패 이메일 재발송에 실패했습니다. 알림 이력을 확인해 주세요.");
+        }
+
+        if (result.sentCount() == 0 && result.failedCount() == 0) {
+            redirectAttributes.addFlashAttribute("emailSendMessage", "재발송할 실패 이메일 알림이 없습니다.");
+        }
+
+        return "redirect:/admin/reservations/" + id;
+    }
 }

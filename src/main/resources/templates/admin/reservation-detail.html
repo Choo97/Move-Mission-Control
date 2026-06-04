@@ -223,6 +223,11 @@
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <button type="submit">준비된 이메일 발송</button>
             </form>
+
+            <form th:action="@{/admin/reservations/{id}/notifications/email/resend-failed(id=${reservation.id})}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button type="submit">실패 이메일 재발송</button>
+            </form>
         </aside>
     </section>
 
