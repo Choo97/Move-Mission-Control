@@ -33,6 +33,7 @@
 
         <p class="alert" th:if="${param.error}">아이디 또는 비밀번호가 올바르지 않습니다.</p>
         <p class="notice" th:if="${param.logout}">로그아웃되었습니다.</p>
+        <p class="notice" th:if="${param.expired}">보안을 위해 로그인 세션이 만료되었습니다. 다시 로그인해 주세요.</p>
         <p class="notice" th:if="${param.passwordChanged}">비밀번호가 변경되었습니다. 새 비밀번호로 다시 로그인해 주세요.</p>
 
         <label>
