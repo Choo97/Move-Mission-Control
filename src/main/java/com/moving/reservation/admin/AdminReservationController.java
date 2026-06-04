@@ -34,17 +34,20 @@ public class AdminReservationController {
     private final ReviewService reviewService;
     private final EstimateDocumentPdfService estimateDocumentPdfService;
     private final AdminAccountService adminAccountService;
+    private final AdminAuditLogService adminAuditLogService;
 
     public AdminReservationController(ReservationService reservationService,
                                       CustomerNotificationService customerNotificationService,
                                       ReviewService reviewService,
                                       EstimateDocumentPdfService estimateDocumentPdfService,
-                                      AdminAccountService adminAccountService) {
+                                      AdminAccountService adminAccountService,
+                                      AdminAuditLogService adminAuditLogService) {
         this.reservationService = reservationService;
         this.customerNotificationService = customerNotificationService;
         this.reviewService = reviewService;
         this.estimateDocumentPdfService = estimateDocumentPdfService;
         this.adminAccountService = adminAccountService;
+        this.adminAuditLogService = adminAuditLogService;
     }
 
     @GetMapping
@@ -84,6 +87,7 @@ public class AdminReservationController {
         model.addAttribute("photos", reservationService.findPhotos(id));
         model.addAttribute("statusHistories", reservationService.findStatusHistories(id));
         model.addAttribute("notifications", customerNotificationService.findByReservationId(id));
+        model.addAttribute("auditLogs", adminAuditLogService.findByReservationId(id));
         model.addAttribute("statuses", ReservationStatus.values());
         return "admin/reservation-detail";
     }
@@ -117,7 +121,14 @@ public class AdminReservationController {
                                Principal principal,
                                RedirectAttributes redirectAttributes) {
         try {
+            Reservation reservation = reservationService.get(id);
             reservationService.updateStatus(id, status, principal.getName());
+            adminAuditLogService.record(
+                    reservation,
+                    "예약 상태 변경",
+                    "예약 상태를 '" + status.getLabel() + "'(으)로 변경했습니다.",
+                    principal.getName()
+            );
         } catch (IllegalArgumentException exception) {
             redirectAttributes.addFlashAttribute("statusError", exception.getMessage());
         }
@@ -125,22 +136,45 @@ public class AdminReservationController {
     }
 
     @PostMapping("/{id}/estimate")
-    public String updateEstimate(@PathVariable Long id, @RequestParam Integer estimatedPrice) {
+    public String updateEstimate(@PathVariable Long id, @RequestParam Integer estimatedPrice, Principal principal) {
+        Reservation reservation = reservationService.get(id);
         reservationService.updateEstimate(id, estimatedPrice);
+        adminAuditLogService.record(
+                reservation,
+                "견적 금액 저장",
+                "견적 금액을 " + String.format("%,d", estimatedPrice) + "원으로 저장했습니다.",
+                principal.getName()
+        );
         return "redirect:/admin/reservations/" + id;
     }
 
     @PostMapping("/{id}/distance")
-    public String updateDistance(@PathVariable Long id, @RequestParam(required = false) Integer distanceKm) {
+    public String updateDistance(@PathVariable Long id,
+                                 @RequestParam(required = false) Integer distanceKm,
+                                 Principal principal) {
+        Reservation reservation = reservationService.get(id);
         reservationService.updateDistance(id, distanceKm);
+        adminAuditLogService.record(
+                reservation,
+                "이동 거리 저장",
+                distanceKm == null ? "이동 거리를 확인 전으로 저장했습니다." : "이동 거리를 " + distanceKm + "km로 저장했습니다.",
+                principal.getName()
+        );
         return "redirect:/admin/reservations/" + id;
     }
 
     @PostMapping("/{id}/distance/calculate")
-    public String calculateDistance(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String calculateDistance(@PathVariable Long id, Principal principal, RedirectAttributes redirectAttributes) {
+        Reservation reservation = reservationService.get(id);
         try {
             int distanceKm = reservationService.calculateAndUpdateDistance(id);
             redirectAttributes.addFlashAttribute("distanceMessage", distanceKm + "km 이동 거리를 자동 계산해 견적에 반영했습니다.");
+            adminAuditLogService.record(
+                    reservation,
+                    "이동 거리 자동 계산",
+                    "지도 API로 이동 거리를 " + distanceKm + "km로 계산해 저장했습니다.",
+                    principal.getName()
+            );
         } catch (IllegalArgumentException | IllegalStateException exception) {
             redirectAttributes.addFlashAttribute("distanceError", exception.getMessage());
         }
@@ -152,13 +186,27 @@ public class AdminReservationController {
     public String updateAdminMemo(@PathVariable Long id,
                                   @RequestParam(required = false) String adminMemo,
                                   Principal principal) {
+        Reservation reservation = reservationService.get(id);
         reservationService.updateAdminMemo(id, adminMemo, principal.getName());
+        adminAuditLogService.record(
+                reservation,
+                "관리자 메모 저장",
+                "관리자 메모를 저장했습니다.",
+                principal.getName()
+        );
         return "redirect:/admin/reservations/" + id;
     }
 
     @PostMapping("/{id}/notifications/email/send")
-    public String sendReadyEmails(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String sendReadyEmails(@PathVariable Long id, Principal principal, RedirectAttributes redirectAttributes) {
+        Reservation reservation = reservationService.get(id);
         EmailNotificationSendResult result = customerNotificationService.sendReadyEmails(id);
+        adminAuditLogService.record(
+                reservation,
+                "준비 이메일 발송",
+                result.sentCount() + "건 발송, " + result.failedCount() + "건 실패로 처리했습니다.",
+                principal.getName()
+        );
 
         if (result.sentCount() > 0) {
             redirectAttributes.addFlashAttribute("emailSendMessage", result.sentCount() + "건의 이메일을 발송했습니다.");
@@ -176,8 +224,15 @@ public class AdminReservationController {
     }
 
     @PostMapping("/{id}/notifications/email/resend-failed")
-    public String resendFailedEmails(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String resendFailedEmails(@PathVariable Long id, Principal principal, RedirectAttributes redirectAttributes) {
+        Reservation reservation = reservationService.get(id);
         EmailNotificationSendResult result = customerNotificationService.resendFailedEmails(id);
+        adminAuditLogService.record(
+                reservation,
+                "실패 이메일 재발송",
+                result.sentCount() + "건 재발송, " + result.failedCount() + "건 실패로 처리했습니다.",
+                principal.getName()
+        );
 
         if (result.sentCount() > 0) {
             redirectAttributes.addFlashAttribute("emailSendMessage", result.sentCount() + "건의 실패 이메일을 재발송했습니다.");
