@@ -14,6 +14,22 @@
     --shadow: 0 18px 50px rgba(20, 78, 130, 0.12);
 }
 
+[data-theme="coral"] {
+    --bg: #fff7f1;
+    --surface: #ffffff;
+    --surface-soft: #fff0e5;
+    --line: #f5d5c3;
+    --text: #2b1d18;
+    --muted: #7f675d;
+    --blue: #f97316;
+    --blue-strong: #c2410c;
+    --navy: #3a1f16;
+    --red: #dc2626;
+    --orange: #ea580c;
+    --white: #ffffff;
+    --shadow: 0 18px 50px rgba(175, 72, 27, 0.14);
+}
+
 * {
     box-sizing: border-box;
 }
@@ -26,6 +42,12 @@ body {
             url("https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=1800&q=80") center/cover fixed;
     color: var(--text);
     font-family: Arial, "Noto Sans KR", sans-serif;
+}
+
+[data-theme="coral"] body {
+    background:
+            linear-gradient(135deg, rgba(255, 238, 225, 0.96), rgba(255, 255, 255, 0.92)),
+            url("https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1800&q=80") center/cover fixed;
 }
 
 a {
@@ -51,9 +73,37 @@ a {
     justify-content: space-between;
     gap: 24px;
     padding: 18px clamp(20px, 5vw, 72px);
-    border-bottom: 1px solid rgba(8, 127, 192, 0.14);
+    border-bottom: 1px solid color-mix(in srgb, var(--blue-strong) 18%, transparent);
     background: rgba(255, 255, 255, 0.88);
     backdrop-filter: blur(18px);
+}
+
+.theme-switcher {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 20;
+    display: flex;
+    gap: 6px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: var(--shadow);
+    padding: 6px;
+}
+
+.theme-switcher button {
+    border-radius: 999px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 8px 12px;
+}
+
+.theme-switcher button:hover,
+.theme-switcher button.is-active {
+    background: var(--blue);
+    color: var(--white);
 }
 
 .brand {
@@ -331,7 +381,7 @@ textarea {
 input:focus,
 select:focus,
 textarea:focus {
-    outline: 3px solid rgba(38, 169, 232, 0.18);
+    outline: 3px solid color-mix(in srgb, var(--blue) 20%, transparent);
     border-color: var(--blue);
 }
 
@@ -361,7 +411,7 @@ small {
 
 .notice {
     margin: 0;
-    border: 1px solid rgba(38, 169, 232, 0.28);
+    border: 1px solid color-mix(in srgb, var(--blue) 28%, transparent);
     border-radius: 6px;
     background: var(--surface-soft);
     color: var(--blue-strong);
@@ -608,7 +658,7 @@ small {
 .status-steps li.is-current {
     border-color: var(--blue);
     background: var(--white);
-    box-shadow: 0 0 0 3px rgba(38, 169, 232, 0.16);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 16%, transparent);
 }
 
 .status-steps strong,
@@ -1212,6 +1262,11 @@ td button {
 
     .document-header {
         display: grid;
+    }
+
+    .theme-switcher {
+        right: 12px;
+        bottom: 12px;
     }
 }
 
