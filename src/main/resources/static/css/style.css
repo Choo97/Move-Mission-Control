@@ -892,6 +892,31 @@ small {
     margin-bottom: 18px;
 }
 
+.security-warning {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 18px;
+    border: 1px solid rgba(245, 158, 11, 0.36);
+    border-radius: 8px;
+    background: #fff8e6;
+    box-shadow: var(--shadow);
+    padding: 22px;
+}
+
+.security-warning h2 {
+    margin: 0;
+    color: var(--navy);
+    font-size: 24px;
+}
+
+.security-warning p:not(.eyebrow) {
+    margin: 8px 0 0;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
 .dashboard-panel,
 .faq-list article {
     border: 1px solid var(--line);
@@ -1145,6 +1170,7 @@ td button {
     .field-grid,
     .address-control,
     .stats,
+    .security-warning,
     .dashboard-grid,
     .faq-list,
     .table-edit-form,

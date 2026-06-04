@@ -48,3 +48,11 @@ notification:
     enabled: ${NOTIFICATION_EMAIL_ENABLED:false}
     from: ${NOTIFICATION_EMAIL_FROM:}
     subject-prefix: ${NOTIFICATION_EMAIL_SUBJECT_PREFIX:[Move Mission Control]}
+
+admin:
+  initial:
+    username: ${ADMIN_INITIAL_USERNAME:admin}
+    password: ${ADMIN_INITIAL_PASSWORD:admin1234}
+    role: ${ADMIN_INITIAL_ROLE:ADMIN}
+  security:
+    unsafe-default-password: admin1234

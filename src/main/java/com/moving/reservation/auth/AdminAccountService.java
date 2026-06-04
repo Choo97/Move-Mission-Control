@@ -1,6 +1,7 @@
 package com.moving.reservation.auth;
 
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -12,14 +13,24 @@ public class AdminAccountService {
 
     private final AdminUserRepository adminUserRepository;
     private final PasswordEncoder passwordEncoder;
+    private final String unsafeDefaultPassword;
 
-    public AdminAccountService(AdminUserRepository adminUserRepository, PasswordEncoder passwordEncoder) {
+    public AdminAccountService(AdminUserRepository adminUserRepository,
+                               PasswordEncoder passwordEncoder,
+                               @Value("${admin.security.unsafe-default-password}") String unsafeDefaultPassword) {
         this.adminUserRepository = adminUserRepository;
         this.passwordEncoder = passwordEncoder;
+        this.unsafeDefaultPassword = unsafeDefaultPassword;
     }
 
     public List<AdminUser> findAll() {
         return adminUserRepository.findAllByOrderByUsernameAsc();
+    }
+
+    public boolean usesUnsafeDefaultPassword(String username) {
+        return adminUserRepository.findByUsername(username)
+                .map(adminUser -> passwordEncoder.matches(unsafeDefaultPassword, adminUser.getPassword()))
+                .orElse(false);
     }
 
     @Transactional

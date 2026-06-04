@@ -1,5 +1,6 @@
 package com.moving.reservation.admin;
 
+import com.moving.reservation.auth.AdminAccountService;
 import com.moving.reservation.notification.CustomerNotificationService;
 import com.moving.reservation.notification.EmailNotificationSendResult;
 import com.moving.reservation.reservation.Reservation;
@@ -32,15 +33,18 @@ public class AdminReservationController {
     private final CustomerNotificationService customerNotificationService;
     private final ReviewService reviewService;
     private final EstimateDocumentPdfService estimateDocumentPdfService;
+    private final AdminAccountService adminAccountService;
 
     public AdminReservationController(ReservationService reservationService,
                                       CustomerNotificationService customerNotificationService,
                                       ReviewService reviewService,
-                                      EstimateDocumentPdfService estimateDocumentPdfService) {
+                                      EstimateDocumentPdfService estimateDocumentPdfService,
+                                      AdminAccountService adminAccountService) {
         this.reservationService = reservationService;
         this.customerNotificationService = customerNotificationService;
         this.reviewService = reviewService;
         this.estimateDocumentPdfService = estimateDocumentPdfService;
+        this.adminAccountService = adminAccountService;
     }
 
     @GetMapping
@@ -48,6 +52,7 @@ public class AdminReservationController {
                        @RequestParam(required = false) String keyword,
                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+                       Principal principal,
                        Model model) {
         LocalDate currentDate = LocalDate.now();
 
@@ -66,6 +71,8 @@ public class AdminReservationController {
         model.addAttribute("weekEnd", currentDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)));
         model.addAttribute("monthStart", currentDate.withDayOfMonth(1));
         model.addAttribute("monthEnd", currentDate.with(TemporalAdjusters.lastDayOfMonth()));
+        model.addAttribute("usesUnsafeDefaultPassword",
+                principal != null && adminAccountService.usesUnsafeDefaultPassword(principal.getName()));
         return "admin/reservations";
     }
 
