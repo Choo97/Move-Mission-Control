@@ -175,7 +175,9 @@ public class Reservation {
 
     public boolean isEstimateAcceptable() {
         return getFinalEstimatedPrice() != null
-                && (status == ReservationStatus.RECEIVED || status == ReservationStatus.CONSULTING);
+                && (status == ReservationStatus.RECEIVED
+                || status == ReservationStatus.CONSULTING
+                || status == ReservationStatus.ESTIMATE_SENT);
     }
 
     public void acceptEstimate() {

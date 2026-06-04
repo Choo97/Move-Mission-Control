@@ -40,6 +40,7 @@
         <div><span th:text="${summary.today()}">0</span><p>오늘 예약</p></div>
         <div><span th:text="${summary.received()}">0</span><p>접수 대기</p></div>
         <div><span th:text="${summary.consulting()}">0</span><p>상담중</p></div>
+        <div><span th:text="${summary.estimateSent()}">0</span><p>견적안내</p></div>
         <div><span th:text="${summary.confirmed()}">0</span><p>확정 일정</p></div>
         <div><span th:text="${failedEmailCount}">0</span><p>이메일 실패</p></div>
         <div><span th:text="${summary.completed()}">0</span><p>완료 예약</p></div>
@@ -175,7 +176,7 @@
                     <form th:action="@{/admin/reservations/{id}/status(id=${reservation.id})}" method="post">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                         <select name="status">
-                            <option th:each="status : ${statuses}"
+                            <option th:each="status : ${reservation.status.selectableStatuses}"
                                     th:value="${status}"
                                     th:text="${status.label}"
                                     th:selected="${status == reservation.status}"></option>

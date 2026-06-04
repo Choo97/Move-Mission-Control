@@ -105,8 +105,15 @@ public class AdminReservationController {
     }
 
     @PostMapping("/{id}/status")
-    public String updateStatus(@PathVariable Long id, @RequestParam ReservationStatus status, Principal principal) {
-        reservationService.updateStatus(id, status, principal.getName());
+    public String updateStatus(@PathVariable Long id,
+                               @RequestParam ReservationStatus status,
+                               Principal principal,
+                               RedirectAttributes redirectAttributes) {
+        try {
+            reservationService.updateStatus(id, status, principal.getName());
+        } catch (IllegalArgumentException exception) {
+            redirectAttributes.addFlashAttribute("statusError", exception.getMessage());
+        }
         return "redirect:/admin/reservations/" + id;
     }
 

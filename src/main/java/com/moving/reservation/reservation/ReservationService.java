@@ -190,6 +190,11 @@ public class ReservationService {
             throw new IllegalArgumentException("현재 상태에서는 견적을 동의할 수 없습니다.");
         }
 
+        if (reservation.getStatus() != ReservationStatus.ESTIMATE_SENT
+                && reservation.getStatus().canTransitionTo(ReservationStatus.ESTIMATE_SENT)) {
+            changeStatus(reservation, ReservationStatus.ESTIMATE_SENT, "customer");
+        }
+
         reservation.acceptEstimate();
         changeStatus(reservation, ReservationStatus.CONFIRMED, "customer");
     }
@@ -253,6 +258,10 @@ public class ReservationService {
             return;
         }
 
+        if (!previousStatus.canTransitionTo(status)) {
+            throw new IllegalArgumentException("현재 상태에서는 '" + status.getLabel() + "'(으)로 변경할 수 없습니다.");
+        }
+
         reservation.updateStatus(status);
         statusHistoryRepository.save(new ReservationStatusHistory(reservation, previousStatus, status, changedBy));
         customerNotificationService.prepareStatusChanged(reservation, status);
@@ -275,6 +284,9 @@ public class ReservationService {
     public void updateEstimate(Long id, Integer estimatedPrice) {
         Reservation reservation = get(id);
         reservation.updateEstimate(estimatedPrice);
+        if (reservation.getStatus().canTransitionTo(ReservationStatus.ESTIMATE_SENT)) {
+            changeStatus(reservation, ReservationStatus.ESTIMATE_SENT, "admin");
+        }
         customerNotificationService.prepareEstimateUpdated(reservation);
     }
 
@@ -290,6 +302,7 @@ public class ReservationService {
                 reservationRepository.count(),
                 reservationRepository.countByStatus(ReservationStatus.RECEIVED),
                 reservationRepository.countByStatus(ReservationStatus.CONSULTING),
+                reservationRepository.countByStatus(ReservationStatus.ESTIMATE_SENT),
                 reservationRepository.countByStatus(ReservationStatus.CONFIRMED),
                 reservationRepository.countByStatus(ReservationStatus.COMPLETED),
                 reservationRepository.countByMoveDate(currentDate),

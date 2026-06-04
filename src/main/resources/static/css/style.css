@@ -587,7 +587,7 @@ small {
 
 .status-steps {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 10px;
     margin: 0;
     padding: 0;
@@ -601,6 +601,10 @@ small {
     padding: 14px;
 }
 
+.status-steps li.is-done {
+    background: rgba(255, 255, 255, 0.82);
+}
+
 .status-steps li.is-current {
     border-color: var(--blue);
     background: var(--white);
@@ -608,7 +612,8 @@ small {
 }
 
 .status-steps strong,
-.status-steps span {
+.status-steps span,
+.status-steps small {
     display: block;
 }
 
@@ -620,6 +625,15 @@ small {
     margin-top: 6px;
     color: var(--muted);
     font-size: 14px;
+    line-height: 1.5;
+}
+
+.status-steps small {
+    margin-top: 10px;
+    color: var(--blue-strong);
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.45;
 }
 
 .customer-actions {
@@ -633,6 +647,21 @@ small {
     background: rgba(255, 255, 255, 0.92);
     box-shadow: var(--shadow);
     padding: 24px;
+}
+
+.status-flow-panel {
+    margin-bottom: 18px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: var(--shadow);
+    padding: 24px;
+}
+
+.status-flow-panel .section-title p:not(.eyebrow) {
+    margin: 8px 0 0;
+    color: var(--muted);
+    line-height: 1.6;
 }
 
 .estimate-panel {
