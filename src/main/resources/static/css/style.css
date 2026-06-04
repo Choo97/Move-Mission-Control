@@ -1118,6 +1118,10 @@ small {
     grid-template-columns: 160px minmax(220px, 1fr) 170px 170px auto;
 }
 
+.filter-panel--audit {
+    grid-template-columns: 170px 150px minmax(220px, 1fr) 160px 160px auto;
+}
+
 .quick-filters {
     display: flex;
     grid-column: 1 / -1;
@@ -1240,6 +1244,7 @@ td button {
     .lookup-guide,
     .admin-layout-guide,
     .filter-panel,
+    .filter-panel--audit,
     .admin-detail-layout {
         grid-template-columns: 1fr;
     }
