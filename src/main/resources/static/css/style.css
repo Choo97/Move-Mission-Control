@@ -472,6 +472,41 @@ small {
     padding: 24px;
 }
 
+.estimate-preview {
+    display: grid;
+    gap: 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: linear-gradient(180deg, var(--white), var(--surface-soft));
+    padding: 22px;
+}
+
+.estimate-preview-total {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.estimate-preview-total div {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--white);
+    padding: 16px;
+}
+
+.estimate-preview-total span,
+.estimate-preview-total small {
+    display: block;
+    color: var(--muted);
+}
+
+.estimate-preview-total strong {
+    display: block;
+    margin-top: 8px;
+    color: var(--navy);
+    font-size: 24px;
+}
+
 .estimate-breakdown {
     display: grid;
     gap: 10px;
@@ -928,7 +963,8 @@ td button {
 
     .document-header,
     .document-grid,
-    .document-total {
+    .document-total,
+    .estimate-preview-total {
         grid-template-columns: 1fr;
     }
 

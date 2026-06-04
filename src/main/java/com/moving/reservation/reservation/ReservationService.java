@@ -124,6 +124,42 @@ public class ReservationService {
         );
     }
 
+    public ReservationEstimatePreviewResponse previewEstimate(MoveType moveType,
+                                                              boolean fromElevator,
+                                                              boolean toElevator,
+                                                              Integer fromFloor,
+                                                              Integer toFloor,
+                                                              boolean fromLadderTruck,
+                                                              boolean toLadderTruck,
+                                                              Integer distanceKm,
+                                                              String couponCode) {
+        List<ReservationEstimateLine> estimateLines = estimateCalculator.calculateLines(
+                moveType,
+                fromElevator,
+                toElevator,
+                fromFloor,
+                toFloor,
+                fromLadderTruck,
+                toLadderTruck,
+                distanceKm
+        );
+        int estimatedPrice = estimateLines.stream()
+                .mapToInt(ReservationEstimateLine::amount)
+                .sum();
+        Coupon coupon = couponService.findActiveByCode(couponCode);
+        int discountAmount = coupon == null ? 0 : coupon.calculateDiscount(estimatedPrice);
+
+        return new ReservationEstimatePreviewResponse(
+                estimateLines.stream()
+                        .map(line -> new ReservationEstimatePreviewLine(line.label(), line.amount()))
+                        .toList(),
+                estimatedPrice,
+                discountAmount,
+                Math.max(0, estimatedPrice - discountAmount),
+                coupon == null ? null : coupon.getName()
+        );
+    }
+
     public List<Reservation> findCouponUsages() {
         return reservationRepository.findCouponUsages();
     }

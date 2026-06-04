@@ -45,6 +45,33 @@ public class ReservationController {
         return "reservation/new";
     }
 
+    @GetMapping("/estimate-preview")
+    public ResponseEntity<?> estimatePreview(@RequestParam MoveType moveType,
+                                             @RequestParam(defaultValue = "false") boolean fromElevator,
+                                             @RequestParam(defaultValue = "false") boolean toElevator,
+                                             @RequestParam(required = false) Integer fromFloor,
+                                             @RequestParam(required = false) Integer toFloor,
+                                             @RequestParam(defaultValue = "false") boolean fromLadderTruck,
+                                             @RequestParam(defaultValue = "false") boolean toLadderTruck,
+                                             @RequestParam(required = false) Integer distanceKm,
+                                             @RequestParam(required = false) String couponCode) {
+        try {
+            return ResponseEntity.ok(reservationService.previewEstimate(
+                    moveType,
+                    fromElevator,
+                    toElevator,
+                    fromFloor,
+                    toFloor,
+                    fromLadderTruck,
+                    toLadderTruck,
+                    distanceKm,
+                    couponCode
+            ));
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.badRequest().body(exception.getMessage());
+        }
+    }
+
     @GetMapping("/search")
     public String searchForm(Model model) {
         if (!model.containsAttribute("reservationSearchRequest")) {
