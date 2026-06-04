@@ -466,6 +466,85 @@ small {
     gap: 12px;
 }
 
+.customer-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.customer-summary div,
+.guide-panel {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: var(--shadow);
+    padding: 22px;
+}
+
+.customer-summary span {
+    display: block;
+    color: var(--muted);
+    margin-bottom: 8px;
+}
+
+.customer-summary strong {
+    display: block;
+    color: var(--navy);
+    font-size: 30px;
+}
+
+.customer-summary p {
+    margin: 10px 0 0;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.guide-panel {
+    margin-bottom: 18px;
+}
+
+.status-steps {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.status-steps li {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface-soft);
+    padding: 14px;
+}
+
+.status-steps li.is-current {
+    border-color: var(--blue);
+    background: var(--white);
+    box-shadow: 0 0 0 3px rgba(38, 169, 232, 0.16);
+}
+
+.status-steps strong,
+.status-steps span {
+    display: block;
+}
+
+.status-steps strong {
+    color: var(--navy);
+}
+
+.status-steps span {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.customer-actions {
+    margin: 0 0 18px;
+}
+
 .photo-panel {
     margin-top: 18px;
     border: 1px solid var(--line);
@@ -959,6 +1038,8 @@ td button {
     .dashboard-grid,
     .faq-list,
     .table-edit-form,
+    .customer-summary,
+    .status-steps,
     .filter-panel,
     .admin-detail-layout {
         grid-template-columns: 1fr;
