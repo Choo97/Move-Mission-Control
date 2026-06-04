@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import java.time.LocalDateTime;
 
 @Entity
 public class AdminUser {
@@ -23,6 +24,11 @@ public class AdminUser {
     private String role;
 
     private Boolean enabled;
+
+    @Column(nullable = false)
+    private int failedLoginCount;
+
+    private LocalDateTime lockedUntil;
 
     protected AdminUser() {
     }
@@ -54,8 +60,33 @@ public class AdminUser {
         return enabled == null || enabled;
     }
 
+    public int getFailedLoginCount() {
+        return failedLoginCount;
+    }
+
+    public LocalDateTime getLockedUntil() {
+        return lockedUntil;
+    }
+
+    public boolean isLoginLocked() {
+        return lockedUntil != null && lockedUntil.isAfter(LocalDateTime.now());
+    }
+
     public void changePassword(String password) {
         this.password = password;
+    }
+
+    public void recordLoginFailure(int maxFailureCount, int lockMinutes) {
+        this.failedLoginCount++;
+
+        if (this.failedLoginCount >= maxFailureCount) {
+            this.lockedUntil = LocalDateTime.now().plusMinutes(lockMinutes);
+        }
+    }
+
+    public void resetLoginFailures() {
+        this.failedLoginCount = 0;
+        this.lockedUntil = null;
     }
 
     public void activate() {

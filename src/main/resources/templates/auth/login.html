@@ -31,10 +31,17 @@
     <form class="form-shell" th:action="@{/login}" method="post">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 
-        <p class="alert" th:if="${param.error}">아이디 또는 비밀번호가 올바르지 않습니다.</p>
+        <p class="alert" th:if="${param.error}"
+           th:text="${'아이디 또는 비밀번호가 올바르지 않습니다. ' + maxFailureCount + '회 실패하면 ' + lockMinutes + '분 동안 로그인이 제한됩니다.'}">
+            아이디 또는 비밀번호가 올바르지 않습니다.
+        </p>
         <p class="notice" th:if="${param.logout}">로그아웃되었습니다.</p>
         <p class="notice" th:if="${param.expired}">보안을 위해 로그인 세션이 만료되었습니다. 다시 로그인해 주세요.</p>
         <p class="notice" th:if="${param.passwordChanged}">비밀번호가 변경되었습니다. 새 비밀번호로 다시 로그인해 주세요.</p>
+        <p class="notice"
+           th:text="${'보안을 위해 로그인 실패 ' + maxFailureCount + '회부터 ' + lockMinutes + '분 동안 관리자 로그인이 제한됩니다.'}">
+            로그인 실패 제한 안내
+        </p>
 
         <label>
             아이디

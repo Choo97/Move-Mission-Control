@@ -56,3 +56,6 @@ admin:
     role: ${ADMIN_INITIAL_ROLE:ADMIN}
   security:
     unsafe-default-password: admin1234
+    login:
+      max-failure-count: ${ADMIN_LOGIN_MAX_FAILURE_COUNT:5}
+      lock-minutes: ${ADMIN_LOGIN_LOCK_MINUTES:10}

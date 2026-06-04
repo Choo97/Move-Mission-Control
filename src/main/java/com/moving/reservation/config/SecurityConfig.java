@@ -1,5 +1,7 @@
 package com.moving.reservation.config;
 
+import com.moving.reservation.auth.AdminAuthenticationFailureHandler;
+import com.moving.reservation.auth.AdminAuthenticationSuccessHandler;
 import com.moving.reservation.auth.AdminUserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +20,9 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   AdminAuthenticationFailureHandler adminAuthenticationFailureHandler,
+                                                   AdminAuthenticationSuccessHandler adminAuthenticationSuccessHandler) throws Exception {
         http
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers(new AntPathRequestMatcher("/reservations", "POST"))
@@ -32,7 +36,8 @@ public class SecurityConfig {
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .defaultSuccessUrl("/admin/reservations", true)
+                        .successHandler(adminAuthenticationSuccessHandler)
+                        .failureHandler(adminAuthenticationFailureHandler)
                         .permitAll()
                 )
                 .logout(logout -> logout
@@ -58,6 +63,7 @@ public class SecurityConfig {
                         .username(adminUser.getUsername())
                         .password(adminUser.getPassword())
                         .disabled(!adminUser.isEnabled())
+                        .accountLocked(adminUser.isLoginLocked())
                         .roles(adminUser.getRole())
                         .build())
                 .orElseThrow(() -> new UsernameNotFoundException("관리자 계정을 찾을 수 없습니다."));
