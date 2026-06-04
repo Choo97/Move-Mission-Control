@@ -10,11 +10,11 @@
     const savedTheme = localStorage.getItem(storageKey);
     const initialTheme = themes.some((theme) => theme.value === requestedTheme)
         ? requestedTheme
-        : savedTheme || 'sky';
+        : savedTheme || 'coral';
 
     function applyTheme(theme) {
-        if (theme === 'coral') {
-            document.documentElement.dataset.theme = 'coral';
+        if (theme === 'sky') {
+            document.documentElement.dataset.theme = 'sky';
         } else {
             document.documentElement.removeAttribute('data-theme');
         }
