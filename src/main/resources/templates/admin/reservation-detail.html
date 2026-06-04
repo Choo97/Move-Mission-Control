@@ -40,8 +40,26 @@
         </p>
     </section>
 
+    <section class="admin-layout-guide">
+        <div>
+            <span>01</span>
+            <strong>고객/이사 정보</strong>
+            <p>상담을 시작할 때 가장 먼저 확인하므로 왼쪽 상단에 배치했습니다.</p>
+        </div>
+        <div>
+            <span>02</span>
+            <strong>처리 변경</strong>
+            <p>상태, 견적, 거리, 메모, 이메일 작업은 즉시 수정해야 하므로 오른쪽에 모았습니다.</p>
+        </div>
+        <div>
+            <span>03</span>
+            <strong>기록 확인</strong>
+            <p>사진, 상태 변경, 알림 이력은 확인용 기록이라 상세 정보 아래에 배치했습니다.</p>
+        </div>
+    </section>
+
     <section class="admin-detail-layout">
-        <article class="detail-panel">
+        <article class="admin-detail-main">
             <p class="notice" th:if="${distanceMessage}" th:text="${distanceMessage}">이동 거리가 자동 계산되었습니다.</p>
             <p class="notice" th:if="${emailSendMessage}" th:text="${emailSendMessage}">이메일을 발송했습니다.</p>
             <p class="alert" th:if="${distanceError}" th:text="${distanceError}">이동 거리를 자동 계산할 수 없습니다.</p>
@@ -51,123 +69,166 @@
                 고객 동의 금액과 현재 최종 견적이 다릅니다.
             </p>
 
-            <div>
-                <span>현재 상태</span>
-                <strong th:text="${reservation.status.label}">접수</strong>
-            </div>
-            <div>
-                <span>고객명</span>
-                <strong th:text="${reservation.customerName}">홍길동</strong>
-            </div>
-            <div>
-                <span>연락처</span>
-                <strong th:text="${reservation.phone}">010-0000-0000</strong>
-            </div>
-            <div>
-                <span>이메일</span>
-                <strong th:text="${reservation.email == null ? '미입력' : reservation.email}">customer@example.com</strong>
-            </div>
-            <div>
-                <span>일정</span>
-                <strong th:text="${reservation.moveDate + ' ' + reservation.moveTime}">2026-06-01 09:00</strong>
-            </div>
-            <div>
-                <span>이사 유형</span>
-                <strong th:text="${reservation.moveType.label}">원룸</strong>
-            </div>
-            <div>
-                <span>출발 주소</span>
-                <strong th:text="${reservation.fromAddress}">서울시 강남구</strong>
-            </div>
-            <div>
-                <span>도착 주소</span>
-                <strong th:text="${reservation.toAddress}">서울시 마포구</strong>
-            </div>
-            <div>
-                <span>엘리베이터</span>
-                <strong th:text="${'출발지 ' + (reservation.fromElevator ? '있음' : '없음') + ' / 도착지 ' + (reservation.toElevator ? '있음' : '없음')}">
-                    출발지 있음 / 도착지 없음
-                </strong>
-            </div>
-            <div>
-                <span>층수</span>
-                <strong th:text="${'출발지 ' + (reservation.fromFloor == null ? 1 : reservation.fromFloor) + '층'
-                        + ' / 도착지 ' + (reservation.toFloor == null ? 1 : reservation.toFloor) + '층'}">
-                    출발지 1층 / 도착지 1층
-                </strong>
-            </div>
-            <div>
-                <span>사다리차</span>
-                <strong th:text="${'출발지 ' + (reservation.fromLadderTruck ? '필요' : '없음') + ' / 도착지 ' + (reservation.toLadderTruck ? '필요' : '없음')}">
-                    출발지 없음 / 도착지 없음
-                </strong>
-            </div>
-            <div>
-                <span>이동 거리</span>
-                <strong th:text="${reservation.distanceKm == null ? '확인 전' : reservation.distanceKm + 'km'}">확인 전</strong>
-            </div>
-            <div>
-                <span>요청사항</span>
-                <strong th:text="${#strings.isEmpty(reservation.memo) ? '없음' : reservation.memo}">요청사항</strong>
-            </div>
-            <div>
-                <span>관리자 메모</span>
-                <strong th:text="${#strings.isEmpty(reservation.adminMemo) ? '없음' : reservation.adminMemo}">관리자 메모</strong>
-            </div>
-            <div>
-                <span>메모 수정자</span>
-                <strong th:text="${#strings.isEmpty(reservation.adminMemoUpdatedBy) ? '없음' : reservation.adminMemoUpdatedBy}">admin</strong>
-            </div>
-            <div>
-                <span>견적</span>
-                <strong th:text="${reservation.estimatedPrice == null ? '상담 후 안내' : #numbers.formatInteger(reservation.estimatedPrice, 0, 'COMMA') + '원'}">
-                    상담 후 안내
-                </strong>
-            </div>
-            <div>
-                <span>기본 견적</span>
-                <strong th:text="${reservation.baseEstimatedPrice == null ? '계산 전' : #numbers.formatInteger(reservation.baseEstimatedPrice, 0, 'COMMA') + '원'}">
-                    계산 전
-                </strong>
-            </div>
-            <div>
-                <span>쿠폰</span>
-                <strong th:text="${reservation.hasCoupon() ? reservation.couponCode + ' / ' + reservation.couponName : '미적용'}">미적용</strong>
-            </div>
-            <div>
-                <span>할인</span>
-                <strong th:text="${reservation.estimatedPrice == null ? '견적 입력 후 계산' : #numbers.formatInteger(reservation.appliedDiscountAmount, 0, 'COMMA') + '원'}">
-                    견적 입력 후 계산
-                </strong>
-            </div>
-            <div>
-                <span>최종 견적</span>
-                <strong th:text="${reservation.finalEstimatedPrice == null ? '상담 후 안내' : #numbers.formatInteger(reservation.finalEstimatedPrice, 0, 'COMMA') + '원'}">
-                    상담 후 안내
-                </strong>
-            </div>
-            <div>
-                <span>고객 동의 금액</span>
-                <strong th:text="${reservation.acceptedEstimatePrice == null ? '미동의' : #numbers.formatInteger(reservation.acceptedEstimatePrice, 0, 'COMMA') + '원'}">
-                    미동의
-                </strong>
-            </div>
-            <div>
-                <span>고객 동의 일시</span>
-                <strong th:text="${reservation.estimateAcceptedAt == null ? '미동의' : #temporals.format(reservation.estimateAcceptedAt, 'yyyy-MM-dd HH:mm')}">
-                    미동의
-                </strong>
-            </div>
-            <div th:if="${reservation.hasEstimateAcceptanceMismatch()}">
-                <span>동의 대비 차이</span>
-                <strong th:text="${(reservation.estimateAcceptanceDifference > 0 ? '+' : '') + #numbers.formatInteger(reservation.estimateAcceptanceDifference, 0, 'COMMA') + '원'}">
-                    +20,000원
-                </strong>
-            </div>
+            <section class="admin-info-panel">
+                <div class="section-title">
+                    <p class="eyebrow">Customer</p>
+                    <h2>고객 정보</h2>
+                    <p>상담 연락과 본인 확인에 먼저 쓰는 정보라 가장 위에 배치했습니다.</p>
+                </div>
+                <div class="detail-panel">
+                    <div>
+                        <span>현재 상태</span>
+                        <strong th:text="${reservation.status.label}">접수</strong>
+                    </div>
+                    <div>
+                        <span>고객명</span>
+                        <strong th:text="${reservation.customerName}">홍길동</strong>
+                    </div>
+                    <div>
+                        <span>연락처</span>
+                        <strong th:text="${reservation.phone}">010-0000-0000</strong>
+                    </div>
+                    <div>
+                        <span>이메일</span>
+                        <strong th:text="${reservation.email == null ? '미입력' : reservation.email}">customer@example.com</strong>
+                    </div>
+                </div>
+            </section>
+
+            <section class="admin-info-panel">
+                <div class="section-title">
+                    <p class="eyebrow">Move Route</p>
+                    <h2>이사 정보</h2>
+                    <p>일정, 주소, 현장 조건은 상담 중 계속 확인하므로 고객 정보 바로 아래에 배치했습니다.</p>
+                </div>
+                <div class="detail-panel">
+                    <div>
+                        <span>일정</span>
+                        <strong th:text="${reservation.moveDate + ' ' + reservation.moveTime}">2026-06-01 09:00</strong>
+                    </div>
+                    <div>
+                        <span>이사 유형</span>
+                        <strong th:text="${reservation.moveType.label}">원룸</strong>
+                    </div>
+                    <div>
+                        <span>출발 주소</span>
+                        <strong th:text="${reservation.fromAddress}">서울시 강남구</strong>
+                    </div>
+                    <div>
+                        <span>도착 주소</span>
+                        <strong th:text="${reservation.toAddress}">서울시 마포구</strong>
+                    </div>
+                    <div>
+                        <span>엘리베이터</span>
+                        <strong th:text="${'출발지 ' + (reservation.fromElevator ? '있음' : '없음') + ' / 도착지 ' + (reservation.toElevator ? '있음' : '없음')}">
+                            출발지 있음 / 도착지 없음
+                        </strong>
+                    </div>
+                    <div>
+                        <span>층수</span>
+                        <strong th:text="${'출발지 ' + (reservation.fromFloor == null ? 1 : reservation.fromFloor) + '층'
+                                + ' / 도착지 ' + (reservation.toFloor == null ? 1 : reservation.toFloor) + '층'}">
+                            출발지 1층 / 도착지 1층
+                        </strong>
+                    </div>
+                    <div>
+                        <span>사다리차</span>
+                        <strong th:text="${'출발지 ' + (reservation.fromLadderTruck ? '필요' : '없음') + ' / 도착지 ' + (reservation.toLadderTruck ? '필요' : '없음')}">
+                            출발지 없음 / 도착지 없음
+                        </strong>
+                    </div>
+                    <div>
+                        <span>이동 거리</span>
+                        <strong th:text="${reservation.distanceKm == null ? '확인 전' : reservation.distanceKm + 'km'}">확인 전</strong>
+                    </div>
+                    <div>
+                        <span>요청사항</span>
+                        <strong th:text="${#strings.isEmpty(reservation.memo) ? '없음' : reservation.memo}">요청사항</strong>
+                    </div>
+                </div>
+            </section>
+
+            <section class="admin-info-panel">
+                <div class="section-title">
+                    <p class="eyebrow">Estimate</p>
+                    <h2>견적/쿠폰</h2>
+                    <p>금액 판단은 상담 후반에 필요하므로 고객과 이사 조건 확인 다음에 배치했습니다.</p>
+                </div>
+                <div class="detail-panel">
+                    <div>
+                        <span>견적</span>
+                        <strong th:text="${reservation.estimatedPrice == null ? '상담 후 안내' : #numbers.formatInteger(reservation.estimatedPrice, 0, 'COMMA') + '원'}">
+                            상담 후 안내
+                        </strong>
+                    </div>
+                    <div>
+                        <span>기본 견적</span>
+                        <strong th:text="${reservation.baseEstimatedPrice == null ? '계산 전' : #numbers.formatInteger(reservation.baseEstimatedPrice, 0, 'COMMA') + '원'}">
+                            계산 전
+                        </strong>
+                    </div>
+                    <div>
+                        <span>쿠폰</span>
+                        <strong th:text="${reservation.hasCoupon() ? reservation.couponCode + ' / ' + reservation.couponName : '미적용'}">미적용</strong>
+                    </div>
+                    <div>
+                        <span>할인</span>
+                        <strong th:text="${reservation.estimatedPrice == null ? '견적 입력 후 계산' : #numbers.formatInteger(reservation.appliedDiscountAmount, 0, 'COMMA') + '원'}">
+                            견적 입력 후 계산
+                        </strong>
+                    </div>
+                    <div>
+                        <span>최종 견적</span>
+                        <strong th:text="${reservation.finalEstimatedPrice == null ? '상담 후 안내' : #numbers.formatInteger(reservation.finalEstimatedPrice, 0, 'COMMA') + '원'}">
+                            상담 후 안내
+                        </strong>
+                    </div>
+                    <div>
+                        <span>고객 동의 금액</span>
+                        <strong th:text="${reservation.acceptedEstimatePrice == null ? '미동의' : #numbers.formatInteger(reservation.acceptedEstimatePrice, 0, 'COMMA') + '원'}">
+                            미동의
+                        </strong>
+                    </div>
+                    <div>
+                        <span>고객 동의 일시</span>
+                        <strong th:text="${reservation.estimateAcceptedAt == null ? '미동의' : #temporals.format(reservation.estimateAcceptedAt, 'yyyy-MM-dd HH:mm')}">
+                            미동의
+                        </strong>
+                    </div>
+                    <div th:if="${reservation.hasEstimateAcceptanceMismatch()}">
+                        <span>동의 대비 차이</span>
+                        <strong th:text="${(reservation.estimateAcceptanceDifference > 0 ? '+' : '') + #numbers.formatInteger(reservation.estimateAcceptanceDifference, 0, 'COMMA') + '원'}">
+                            +20,000원
+                        </strong>
+                    </div>
+                </div>
+            </section>
+
+            <section class="admin-info-panel">
+                <div class="section-title">
+                    <p class="eyebrow">Internal Memo</p>
+                    <h2>관리자 메모</h2>
+                    <p>상담 내용과 주의사항은 내부 기록이므로 고객 정보와 분리했습니다.</p>
+                </div>
+                <div class="detail-panel">
+                    <div>
+                        <span>관리자 메모</span>
+                        <strong th:text="${#strings.isEmpty(reservation.adminMemo) ? '없음' : reservation.adminMemo}">관리자 메모</strong>
+                    </div>
+                    <div>
+                        <span>메모 수정자</span>
+                        <strong th:text="${#strings.isEmpty(reservation.adminMemoUpdatedBy) ? '없음' : reservation.adminMemoUpdatedBy}">admin</strong>
+                    </div>
+                </div>
+            </section>
         </article>
 
         <aside class="admin-action-panel">
-            <h2>처리 변경</h2>
+            <div class="section-title">
+                <p class="eyebrow">Actions</p>
+                <h2>처리 변경</h2>
+                <p>운영자가 자주 누르는 저장 작업이라 오른쪽에 고정해 두었습니다.</p>
+            </div>
 
             <form th:action="@{/admin/reservations/{id}/status(id=${reservation.id})}" method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
