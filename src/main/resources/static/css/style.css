@@ -296,6 +296,18 @@ dd {
     gap: 18px;
 }
 
+.form-section {
+    display: grid;
+    gap: 18px;
+    border-top: 1px solid var(--line);
+    padding-top: 22px;
+}
+
+.form-section:first-of-type {
+    border-top: 0;
+    padding-top: 0;
+}
+
 label {
     display: grid;
     gap: 8px;

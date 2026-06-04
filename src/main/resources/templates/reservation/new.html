@@ -32,97 +32,135 @@
 
         <p class="alert" th:if="${uploadError}" th:text="${uploadError}">짐 사진을 업로드할 수 없습니다.</p>
 
-        <div class="field-grid">
-            <label>
-                이름
-                <input type="text" th:field="*{customerName}" placeholder="홍길동">
-                <small th:if="${#fields.hasErrors('customerName')}" th:errors="*{customerName}"></small>
-            </label>
-            <label>
-                연락처
-                <input type="text" th:field="*{phone}" placeholder="010-1234-5678">
-                <small th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></small>
-            </label>
-            <label>
-                이메일
-                <input type="email" th:field="*{email}" placeholder="customer@example.com">
-                <span class="help-text">입력하면 예약 확인 안내 이메일이 발송 준비 이력에 자동으로 등록됩니다.</span>
-                <small th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
-            </label>
-            <label>
-                이사 날짜
-                <input type="date" th:field="*{moveDate}">
-                <small th:if="${#fields.hasErrors('moveDate')}" th:errors="*{moveDate}"></small>
-            </label>
-            <label>
-                희망 시간
-                <input type="time" th:field="*{moveTime}">
-                <small th:if="${#fields.hasErrors('moveTime')}" th:errors="*{moveTime}"></small>
-            </label>
-            <label>
-                출발 주소
-                <div class="address-control">
-                    <input type="text" th:field="*{fromAddress}" placeholder="주소 검색 후 상세주소를 이어서 입력">
-                    <button class="button button--ghost" type="button" data-address-target="fromAddress">주소 검색</button>
-                </div>
-                <span class="help-text">주소를 선택한 뒤 동, 호수, 층수 등 상세주소를 이어서 입력해 주세요.</span>
-                <small th:if="${#fields.hasErrors('fromAddress')}" th:errors="*{fromAddress}"></small>
-            </label>
-            <label>
-                도착 주소
-                <div class="address-control">
-                    <input type="text" th:field="*{toAddress}" placeholder="주소 검색 후 상세주소를 이어서 입력">
-                    <button class="button button--ghost" type="button" data-address-target="toAddress">주소 검색</button>
-                </div>
-                <span class="help-text">주소를 선택한 뒤 동, 호수, 층수 등 상세주소를 이어서 입력해 주세요.</span>
-                <small th:if="${#fields.hasErrors('toAddress')}" th:errors="*{toAddress}"></small>
-            </label>
-            <label>
-                이사 유형
-                <select th:field="*{moveType}">
-                    <option value="">선택</option>
-                    <option th:each="type : ${moveTypes}" th:value="${type}" th:text="${type.label}"></option>
-                </select>
-                <small th:if="${#fields.hasErrors('moveType')}" th:errors="*{moveType}"></small>
-            </label>
+        <section class="form-section">
+            <div class="section-title">
+                <p class="eyebrow">01 Customer</p>
+                <h2>고객 정보</h2>
+            </div>
+            <div class="field-grid">
+                <label>
+                    이름
+                    <input type="text" th:field="*{customerName}" placeholder="홍길동">
+                    <small th:if="${#fields.hasErrors('customerName')}" th:errors="*{customerName}"></small>
+                </label>
+                <label>
+                    연락처
+                    <input type="text" th:field="*{phone}" placeholder="010-1234-5678">
+                    <small th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></small>
+                </label>
+                <label>
+                    이메일
+                    <input type="email" th:field="*{email}" placeholder="customer@example.com">
+                    <span class="help-text">입력하면 예약 확인 안내 이메일이 발송 준비 이력에 자동으로 등록됩니다.</span>
+                    <small th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+                </label>
+            </div>
+        </section>
+
+        <section class="form-section">
+            <div class="section-title">
+                <p class="eyebrow">02 Schedule</p>
+                <h2>이사 일정</h2>
+            </div>
+            <div class="field-grid">
+                <label>
+                    이사 날짜
+                    <input type="date" th:field="*{moveDate}">
+                    <small th:if="${#fields.hasErrors('moveDate')}" th:errors="*{moveDate}"></small>
+                </label>
+                <label>
+                    희망 시간
+                    <input type="time" th:field="*{moveTime}">
+                    <small th:if="${#fields.hasErrors('moveTime')}" th:errors="*{moveTime}"></small>
+                </label>
+            </div>
+        </section>
+
+        <section class="form-section">
+            <div class="section-title">
+                <p class="eyebrow">03 Route</p>
+                <h2>출발지와 도착지</h2>
+            </div>
+            <div class="field-grid">
+                <label>
+                    출발 주소
+                    <div class="address-control">
+                        <input type="text" th:field="*{fromAddress}" placeholder="주소 검색 후 상세주소를 이어서 입력">
+                        <button class="button button--ghost" type="button" data-address-target="fromAddress">주소 검색</button>
+                    </div>
+                    <span class="help-text">주소를 선택한 뒤 동, 호수, 층수 등 상세주소를 이어서 입력해 주세요.</span>
+                    <small th:if="${#fields.hasErrors('fromAddress')}" th:errors="*{fromAddress}"></small>
+                </label>
+                <label>
+                    도착 주소
+                    <div class="address-control">
+                        <input type="text" th:field="*{toAddress}" placeholder="주소 검색 후 상세주소를 이어서 입력">
+                        <button class="button button--ghost" type="button" data-address-target="toAddress">주소 검색</button>
+                    </div>
+                    <span class="help-text">주소를 선택한 뒤 동, 호수, 층수 등 상세주소를 이어서 입력해 주세요.</span>
+                    <small th:if="${#fields.hasErrors('toAddress')}" th:errors="*{toAddress}"></small>
+                </label>
+            </div>
+        </section>
+
+        <section class="form-section">
+            <div class="section-title">
+                <p class="eyebrow">04 Estimate Options</p>
+                <h2>견적 옵션</h2>
+            </div>
+            <div class="field-grid">
+                <label>
+                    이사 유형
+                    <select th:field="*{moveType}">
+                        <option value="">선택</option>
+                        <option th:each="type : ${moveTypes}" th:value="${type}" th:text="${type.label}"></option>
+                    </select>
+                    <small th:if="${#fields.hasErrors('moveType')}" th:errors="*{moveType}"></small>
+                </label>
+                <label>
+                    출발지 층수
+                    <input type="number" th:field="*{fromFloor}" min="1" max="50" placeholder="예: 3">
+                    <small th:if="${#fields.hasErrors('fromFloor')}" th:errors="*{fromFloor}"></small>
+                </label>
+                <label>
+                    도착지 층수
+                    <input type="number" th:field="*{toFloor}" min="1" max="50" placeholder="예: 5">
+                    <small th:if="${#fields.hasErrors('toFloor')}" th:errors="*{toFloor}"></small>
+                </label>
+                <label>
+                    예상 이동 거리(km)
+                    <input type="number" id="previewDistanceKm" min="0" step="1" placeholder="예: 18">
+                    <span class="help-text">예약 전 예상 견적 확인용입니다. 실제 예약 접수 후 관리자가 지도 API 또는 상담으로 최종 거리를 확정합니다.</span>
+                </label>
+            </div>
             <div class="checks">
                 <label><input type="checkbox" th:field="*{fromElevator}"> 출발지 엘리베이터</label>
                 <label><input type="checkbox" th:field="*{toElevator}"> 도착지 엘리베이터</label>
-            </div>
-            <label>
-                출발지 층수
-                <input type="number" th:field="*{fromFloor}" min="1" max="50" placeholder="예: 3">
-                <small th:if="${#fields.hasErrors('fromFloor')}" th:errors="*{fromFloor}"></small>
-            </label>
-            <label>
-                도착지 층수
-                <input type="number" th:field="*{toFloor}" min="1" max="50" placeholder="예: 5">
-                <small th:if="${#fields.hasErrors('toFloor')}" th:errors="*{toFloor}"></small>
-            </label>
-            <div class="checks">
                 <label><input type="checkbox" th:field="*{fromLadderTruck}"> 출발지 사다리차 필요</label>
                 <label><input type="checkbox" th:field="*{toLadderTruck}"> 도착지 사다리차 필요</label>
             </div>
+        </section>
+
+        <section class="form-section">
+            <div class="section-title">
+                <p class="eyebrow">05 Details</p>
+                <h2>추가 정보</h2>
+            </div>
             <label>
-                예상 이동 거리(km)
-                <input type="number" id="previewDistanceKm" min="0" step="1" placeholder="예: 18">
-                <span class="help-text">예약 전 예상 견적 확인용입니다. 실제 예약 접수 후 관리자가 지도 API 또는 상담으로 최종 거리를 확정합니다.</span>
+                요청사항
+                <textarea th:field="*{memo}" rows="5" placeholder="큰 가전, 사다리차 필요 여부, 주차 상황 등을 적어주세요."></textarea>
             </label>
-        </div>
-        <label>
-            요청사항
-            <textarea th:field="*{memo}" rows="5" placeholder="큰 가전, 사다리차 필요 여부, 주차 상황 등을 적어주세요."></textarea>
-        </label>
-        <label>
-            쿠폰 코드
-            <input type="text" th:field="*{couponCode}" placeholder="예: MOVE10">
-            <span class="help-text">관리자가 발급한 쿠폰 코드가 있으면 입력해 주세요. 견적 입력 시 할인액이 자동 계산됩니다.</span>
-        </label>
-        <label>
-            짐 사진
-            <input type="file" th:field="*{itemPhotos}" accept="image/jpeg,image/png,image/webp" multiple>
-            <span class="help-text">큰 가구, 가전, 박스 상태를 사진으로 올리면 상담과 견적에 도움이 됩니다.</span>
-        </label>
+            <label>
+                쿠폰 코드
+                <input type="text" th:field="*{couponCode}" placeholder="예: MOVE10">
+                <span class="help-text">관리자가 발급한 쿠폰 코드가 있으면 입력해 주세요. 견적 입력 시 할인액이 자동 계산됩니다.</span>
+            </label>
+            <label>
+                짐 사진
+                <input type="file" th:field="*{itemPhotos}" accept="image/jpeg,image/png,image/webp" multiple>
+                <span class="help-text">큰 가구, 가전, 박스 상태를 사진으로 올리면 상담과 견적에 도움이 됩니다.</span>
+            </label>
+        </section>
 
         <section class="estimate-preview" data-estimate-preview-panel>
             <div class="section-title">
