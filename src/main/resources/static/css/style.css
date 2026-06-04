@@ -881,6 +881,18 @@ td button {
     padding: 9px 12px;
 }
 
+.table-edit-form {
+    display: grid;
+    grid-template-columns: 84px minmax(180px, 1fr);
+    gap: 8px;
+    min-width: 420px;
+}
+
+.table-edit-form textarea,
+.table-edit-form button {
+    grid-column: 1 / -1;
+}
+
 .empty {
     color: var(--muted);
     text-align: center;
@@ -899,6 +911,7 @@ td button {
     .stats,
     .dashboard-grid,
     .faq-list,
+    .table-edit-form,
     .filter-panel,
     .admin-detail-layout {
         grid-template-columns: 1fr;
