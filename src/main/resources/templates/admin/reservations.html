@@ -191,12 +191,13 @@
                 <th>유형</th>
                 <th>경로</th>
                 <th>상태</th>
+                <th>확인</th>
                 <th>견적</th>
             </tr>
             </thead>
             <tbody>
             <tr th:if="${reservations.isEmpty()}">
-                <td colspan="7" class="empty">조건에 맞는 예약이 없습니다.</td>
+                <td colspan="8" class="empty">조건에 맞는 예약이 없습니다.</td>
             </tr>
             <tr th:each="reservation : ${reservations}">
                 <td>
@@ -224,6 +225,24 @@
                         </select>
                         <button type="submit">변경</button>
                     </form>
+                </td>
+                <td>
+                    <div class="priority-badges">
+                        <span class="priority-badge priority-badge--urgent"
+                              th:if="${reservation.status.name() == 'RECEIVED'}">긴급 확인</span>
+                        <span class="priority-badge priority-badge--work"
+                              th:if="${reservation.status.name() == 'CONSULTING'}">상담 진행</span>
+                        <span class="priority-badge priority-badge--wait"
+                              th:if="${reservation.status.name() == 'ESTIMATE_SENT' and !reservation.hasEstimateAcceptance()}">동의 대기</span>
+                        <span class="priority-badge priority-badge--distance"
+                              th:if="${reservation.distanceKm == null and reservation.status.name() != 'COMPLETED' and reservation.status.name() != 'CANCELED'}">거리 필요</span>
+                        <span class="priority-badge priority-badge--today"
+                              th:if="${reservation.moveDate == today}">오늘 이사</span>
+                        <span class="priority-badge priority-badge--done"
+                              th:if="${reservation.status.name() == 'COMPLETED'}">완료</span>
+                        <span class="priority-badge priority-badge--muted"
+                              th:if="${reservation.status.name() == 'CANCELED'}">취소</span>
+                    </div>
                 </td>
                 <td>
                     <form th:action="@{/admin/reservations/{id}/estimate(id=${reservation.id})}" method="post">

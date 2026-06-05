@@ -1302,9 +1302,66 @@ small {
     background: var(--white);
 }
 
+.priority-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-width: 150px;
+}
+
+.priority-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface-soft);
+    color: var(--blue-strong);
+    font-size: 12px;
+    font-weight: 900;
+    padding: 6px 10px;
+    white-space: nowrap;
+}
+
+.priority-badge--urgent {
+    border-color: rgba(220, 38, 38, 0.28);
+    background: #fff1f2;
+    color: var(--red);
+}
+
+.priority-badge--work {
+    border-color: color-mix(in srgb, var(--blue) 35%, transparent);
+    background: var(--surface-soft);
+    color: var(--blue-strong);
+}
+
+.priority-badge--wait {
+    border-color: rgba(234, 88, 12, 0.28);
+    background: #fff7ed;
+    color: var(--orange);
+}
+
+.priority-badge--distance {
+    border-color: rgba(245, 158, 11, 0.34);
+    background: #fffbeb;
+    color: #b45309;
+}
+
+.priority-badge--today {
+    border-color: color-mix(in srgb, var(--blue-strong) 26%, transparent);
+    background: var(--white);
+    color: var(--navy);
+}
+
+.priority-badge--done,
+.priority-badge--muted {
+    background: var(--white);
+    color: var(--muted);
+}
+
 table {
     width: 100%;
-    min-width: 980px;
+    min-width: 1080px;
     border-collapse: collapse;
 }
 
