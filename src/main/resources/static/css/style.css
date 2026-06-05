@@ -613,6 +613,30 @@ small {
     gap: 12px;
 }
 
+.admin-action-panel .action-form {
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.admin-action-panel .action-form.is-recommended {
+    border-color: color-mix(in srgb, var(--blue) 42%, transparent);
+    background: linear-gradient(180deg, var(--surface-soft), var(--white));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 12%, transparent);
+}
+
+.admin-action-panel .action-form.is-recommended button {
+    background: var(--blue-strong);
+}
+
+.action-reason {
+    margin: 0;
+    color: var(--blue-strong);
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.5;
+}
+
 .cancel-panel {
     display: grid;
     gap: 16px;

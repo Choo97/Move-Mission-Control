@@ -290,7 +290,15 @@
                 <p>운영자가 자주 누르는 저장 작업이라 오른쪽에 고정해 두었습니다.</p>
             </div>
 
-            <form th:action="@{/admin/reservations/{id}/status(id=${reservation.id})}" method="post">
+            <form class="action-form"
+                  th:classappend="${reservation.status.name() == 'RECEIVED' or reservation.status.name() == 'ESTIMATE_SENT' or reservation.moveDate == today ? 'is-recommended' : ''}"
+                  th:action="@{/admin/reservations/{id}/status(id=${reservation.id})}" method="post">
+                <p class="action-reason"
+                   th:if="${reservation.status.name() == 'RECEIVED'}">상담을 시작했다면 상태를 상담중으로 바꾸는 것이 첫 처리입니다.</p>
+                <p class="action-reason"
+                   th:if="${reservation.status.name() == 'ESTIMATE_SENT' and !reservation.hasEstimateAcceptance()}">고객 동의가 확인되면 상태를 확정으로 바꿉니다.</p>
+                <p class="action-reason"
+                   th:if="${reservation.moveDate == today and reservation.status.name() == 'CONFIRMED'}">오늘 이사가 끝나면 완료 상태로 변경합니다.</p>
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <label>
                     예약 상태
@@ -304,7 +312,13 @@
                 <button type="submit">상태 저장</button>
             </form>
 
-            <form th:action="@{/admin/reservations/{id}/estimate(id=${reservation.id})}" method="post">
+            <form class="action-form"
+                  th:classappend="${reservation.status.name() == 'CONSULTING' or reservation.hasEstimateAcceptanceMismatch() ? 'is-recommended' : ''}"
+                  th:action="@{/admin/reservations/{id}/estimate(id=${reservation.id})}" method="post">
+                <p class="action-reason"
+                   th:if="${reservation.status.name() == 'CONSULTING'}">상담으로 조건이 확정되면 견적을 저장해 고객에게 안내합니다.</p>
+                <p class="action-reason"
+                   th:if="${reservation.hasEstimateAcceptanceMismatch()}">고객 동의 금액과 현재 견적이 다르므로 금액을 다시 확인해야 합니다.</p>
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <label>
                     견적 금액
@@ -317,7 +331,11 @@
                 <button type="submit">견적 저장</button>
             </form>
 
-            <form th:action="@{/admin/reservations/{id}/distance(id=${reservation.id})}" method="post">
+            <form class="action-form"
+                  th:classappend="${reservation.distanceKm == null and reservation.status.name() != 'COMPLETED' and reservation.status.name() != 'CANCELED' ? 'is-recommended' : ''}"
+                  th:action="@{/admin/reservations/{id}/distance(id=${reservation.id})}" method="post">
+                <p class="action-reason"
+                   th:if="${reservation.distanceKm == null and reservation.status.name() != 'COMPLETED' and reservation.status.name() != 'CANCELED'}">거리값이 없으면 최종 견적이 흔들릴 수 있어 먼저 확인하는 것이 좋습니다.</p>
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <label>
                     이동 거리(km)
@@ -327,12 +345,14 @@
                 <button type="submit">거리 저장</button>
             </form>
 
-            <form th:action="@{/admin/reservations/{id}/distance/calculate(id=${reservation.id})}" method="post">
+            <form class="action-form"
+                  th:classappend="${reservation.distanceKm == null and reservation.status.name() != 'COMPLETED' and reservation.status.name() != 'CANCELED' ? 'is-recommended' : ''}"
+                  th:action="@{/admin/reservations/{id}/distance/calculate(id=${reservation.id})}" method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <button type="submit">지도 API로 거리 자동 계산</button>
             </form>
 
-            <form th:action="@{/admin/reservations/{id}/memo(id=${reservation.id})}" method="post">
+            <form class="action-form" th:action="@{/admin/reservations/{id}/memo(id=${reservation.id})}" method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <label>
                     관리자 메모
@@ -341,12 +361,16 @@
                 <button type="submit">메모 저장</button>
             </form>
 
-            <form th:action="@{/admin/reservations/{id}/notifications/email/send(id=${reservation.id})}" method="post">
+            <form class="action-form"
+                  th:classappend="${reservation.status.name() == 'ESTIMATE_SENT' and !reservation.hasEstimateAcceptance() ? 'is-recommended' : ''}"
+                  th:action="@{/admin/reservations/{id}/notifications/email/send(id=${reservation.id})}" method="post">
+                <p class="action-reason"
+                   th:if="${reservation.status.name() == 'ESTIMATE_SENT' and !reservation.hasEstimateAcceptance()}">견적 동의를 기다리는 예약은 안내 이메일을 먼저 확인합니다.</p>
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <button type="submit">준비된 이메일 발송</button>
             </form>
 
-            <form th:action="@{/admin/reservations/{id}/notifications/email/resend-failed(id=${reservation.id})}" method="post">
+            <form class="action-form" th:action="@{/admin/reservations/{id}/notifications/email/resend-failed(id=${reservation.id})}" method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <button type="submit">실패 이메일 재발송</button>
             </form>
