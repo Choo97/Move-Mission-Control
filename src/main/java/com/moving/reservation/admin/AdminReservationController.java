@@ -101,6 +101,7 @@ public class AdminReservationController {
     public String detail(@PathVariable Long id, Model model) {
         Reservation reservation = reservationService.get(id);
         model.addAttribute("reservation", reservation);
+        model.addAttribute("today", LocalDate.now());
         model.addAttribute("estimateLines", reservationService.estimateLines(reservation));
         model.addAttribute("photos", reservationService.findPhotos(id));
         model.addAttribute("statusHistories", reservationService.findStatusHistories(id));

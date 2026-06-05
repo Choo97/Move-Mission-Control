@@ -777,6 +777,55 @@ small {
     padding: 24px;
 }
 
+.detail-task-panel {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 18px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: var(--shadow);
+    padding: 24px;
+}
+
+.detail-task-panel .section-title {
+    margin-bottom: 0;
+}
+
+.detail-task-panel .section-title p:not(.eyebrow) {
+    margin: 8px 0 0;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.priority-badges--detail {
+    min-width: 0;
+}
+
+.detail-task-list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.detail-task-list li {
+    display: grid;
+    gap: 6px;
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
+}
+
+.detail-task-list strong {
+    color: var(--navy);
+}
+
+.detail-task-list span {
+    color: var(--muted);
+    line-height: 1.6;
+}
+
 .status-flow-panel .section-title p:not(.eyebrow) {
     margin: 8px 0 0;
     color: var(--muted);
