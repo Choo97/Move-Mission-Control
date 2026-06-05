@@ -9,6 +9,8 @@ import com.moving.reservation.reservation.ReservationSort;
 import com.moving.reservation.reservation.ReservationStatus;
 import com.moving.reservation.reservation.ReservationSummary;
 import com.moving.reservation.review.ReviewService;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.Principal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -137,6 +139,8 @@ public class AdminReservationController {
     @PostMapping("/{id}/status")
     public String updateStatus(@PathVariable Long id,
                                @RequestParam ReservationStatus status,
+                               @RequestParam(defaultValue = "detail") String returnTo,
+                               @RequestParam(required = false) String returnQuery,
                                Principal principal,
                                RedirectAttributes redirectAttributes) {
         try {
@@ -148,10 +152,37 @@ public class AdminReservationController {
                     "예약 상태를 '" + status.getLabel() + "'(으)로 변경했습니다.",
                     principal.getName()
             );
+            redirectAttributes.addFlashAttribute("statusMessage",
+                    "예약 " + id + "번 상태를 '" + status.getLabel() + "'(으)로 변경했습니다.");
         } catch (IllegalArgumentException exception) {
             redirectAttributes.addFlashAttribute("statusError", exception.getMessage());
         }
+
+        if ("list".equals(returnTo)) {
+            return "redirect:" + listRedirectUrl(returnQuery);
+        }
+
         return "redirect:/admin/reservations/" + id;
+    }
+
+    private String listRedirectUrl(String returnQuery) {
+        if (returnQuery == null || returnQuery.isBlank()) {
+            return "/admin/reservations";
+        }
+
+        try {
+            URI uri = new URI(returnQuery);
+            String path = uri.getPath();
+
+            if (!"/admin/reservations".equals(path)) {
+                return "/admin/reservations";
+            }
+
+            String query = uri.getRawQuery();
+            return query == null || query.isBlank() ? path : path + "?" + query;
+        } catch (URISyntaxException exception) {
+            return "/admin/reservations";
+        }
     }
 
     @PostMapping("/{id}/estimate")

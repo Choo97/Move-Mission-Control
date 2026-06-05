@@ -28,6 +28,9 @@
         <a class="button button--primary" th:href="@{/admin/account/password}">비밀번호 변경</a>
     </section>
 
+    <p class="notice" th:if="${statusMessage}" th:text="${statusMessage}">상태가 변경되었습니다.</p>
+    <p class="alert" th:if="${statusError}" th:text="${statusError}">상태를 변경할 수 없습니다.</p>
+
     <section class="stats">
         <div><span th:text="${summary.today()}">0</span><p>오늘 예약</p></div>
         <div><span th:text="${summary.received()}">0</span><p>접수 대기</p></div>
@@ -219,6 +222,9 @@
                           th:data-reservation-id="${reservation.id}"
                           th:action="@{/admin/reservations/{id}/status(id=${reservation.id})}" method="post">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <input type="hidden" name="returnTo" value="list">
+                        <input type="hidden" name="returnQuery"
+                               th:value="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, needsDistance=${needsDistance}, sort=${selectedSort})}">
                         <select name="status">
                             <option th:each="status : ${reservation.status.selectableStatuses}"
                                     th:value="${status}"
