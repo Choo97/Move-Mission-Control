@@ -1253,7 +1253,7 @@ small {
 }
 
 .filter-panel--reservation {
-    grid-template-columns: 150px minmax(220px, 1fr) 155px 155px 130px auto;
+    grid-template-columns: 140px minmax(200px, 1fr) 150px 150px 120px 150px auto;
 }
 
 .filter-panel--audit {

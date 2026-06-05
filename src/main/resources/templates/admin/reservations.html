@@ -160,15 +160,24 @@
             거리 확인 필요
             <input type="checkbox" name="needsDistance" value="true" th:checked="${needsDistance}">
         </label>
+        <label>
+            정렬
+            <select name="sort">
+                <option th:each="sort : ${sorts}"
+                        th:value="${sort}"
+                        th:text="${sort.label}"
+                        th:selected="${sort == selectedSort}"></option>
+            </select>
+        </label>
         <div class="filter-actions">
             <button type="submit">검색</button>
             <a class="button button--ghost" th:href="@{/admin/reservations}">초기화</a>
         </div>
         <div class="quick-filters">
-            <a th:href="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${today}, endDate=${today})}">오늘</a>
-            <a th:href="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${weekStart}, endDate=${weekEnd})}">이번 주</a>
-            <a th:href="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${monthStart}, endDate=${monthEnd})}">이번 달</a>
-            <a th:href="@{/admin/reservations(needsDistance=true)}">거리 확인 필요</a>
+            <a th:href="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${today}, endDate=${today}, needsDistance=${needsDistance}, sort=${selectedSort})}">오늘</a>
+            <a th:href="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${weekStart}, endDate=${weekEnd}, needsDistance=${needsDistance}, sort=${selectedSort})}">이번 주</a>
+            <a th:href="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${monthStart}, endDate=${monthEnd}, needsDistance=${needsDistance}, sort=${selectedSort})}">이번 달</a>
+            <a th:href="@{/admin/reservations(needsDistance=true, sort=${selectedSort})}">거리 확인 필요</a>
         </div>
     </form>
 

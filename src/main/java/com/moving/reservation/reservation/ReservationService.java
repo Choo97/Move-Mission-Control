@@ -6,6 +6,7 @@ import com.moving.reservation.map.KakaoDistanceService;
 import com.moving.reservation.notification.CustomerNotificationService;
 import com.moving.reservation.review.ReviewService;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -100,7 +101,7 @@ public class ReservationService {
     }
 
     public List<Reservation> search(ReservationStatus status, String keyword, LocalDate startDate, LocalDate endDate) {
-        return search(status, keyword, startDate, endDate, false);
+        return search(status, keyword, startDate, endDate, false, ReservationSort.PRIORITY);
     }
 
     public List<Reservation> search(ReservationStatus status,
@@ -108,7 +109,18 @@ public class ReservationService {
                                     LocalDate startDate,
                                     LocalDate endDate,
                                     Boolean needsDistance) {
-        return reservationRepository.search(status, normalizeKeyword(keyword), startDate, endDate, needsDistance);
+        return search(status, keyword, startDate, endDate, needsDistance, ReservationSort.PRIORITY);
+    }
+
+    public List<Reservation> search(ReservationStatus status,
+                                    String keyword,
+                                    LocalDate startDate,
+                                    LocalDate endDate,
+                                    Boolean needsDistance,
+                                    ReservationSort sort) {
+        return reservationRepository.search(status, normalizeKeyword(keyword), startDate, endDate, needsDistance).stream()
+                .sorted(comparator(sort))
+                .toList();
     }
 
     public List<ReservationStatusHistory> findStatusHistories(Long reservationId) {
@@ -343,5 +355,35 @@ public class ReservationService {
         }
 
         return trimmedKeyword.toLowerCase();
+    }
+
+    private Comparator<Reservation> comparator(ReservationSort sort) {
+        ReservationSort selectedSort = sort == null ? ReservationSort.PRIORITY : sort;
+
+        return switch (selectedSort) {
+            case PRIORITY -> Comparator
+                    .comparingInt(this::priorityRank)
+                    .thenComparing(Reservation::getMoveDate)
+                    .thenComparing(Reservation::getMoveTime)
+                    .thenComparing(Reservation::getId);
+            case MOVE_DATE -> Comparator
+                    .comparing(Reservation::getMoveDate)
+                    .thenComparing(Reservation::getMoveTime)
+                    .thenComparing(Reservation::getId);
+            case CREATED_DESC -> Comparator
+                    .comparing(Reservation::getCreatedAt, Comparator.reverseOrder())
+                    .thenComparing(Reservation::getId, Comparator.reverseOrder());
+        };
+    }
+
+    private int priorityRank(Reservation reservation) {
+        return switch (reservation.getStatus()) {
+            case RECEIVED -> 1;
+            case CONSULTING -> 2;
+            case ESTIMATE_SENT -> 3;
+            case CONFIRMED -> 4;
+            case COMPLETED -> 5;
+            case CANCELED -> 6;
+        };
     }
 }

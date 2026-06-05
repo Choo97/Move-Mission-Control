@@ -5,6 +5,7 @@ import com.moving.reservation.notification.CustomerNotificationService;
 import com.moving.reservation.notification.EmailNotificationSendResult;
 import com.moving.reservation.reservation.Reservation;
 import com.moving.reservation.reservation.ReservationService;
+import com.moving.reservation.reservation.ReservationSort;
 import com.moving.reservation.reservation.ReservationStatus;
 import com.moving.reservation.reservation.ReservationSummary;
 import com.moving.reservation.review.ReviewService;
@@ -57,13 +58,16 @@ public class AdminReservationController {
                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
                        @RequestParam(required = false) Boolean needsDistance,
+                       @RequestParam(required = false) ReservationSort sort,
                        Principal principal,
                        Model model) {
         LocalDate currentDate = LocalDate.now();
         long failedEmailCount = customerNotificationService.countFailedEmails();
         ReservationSummary summary = reservationService.summary();
 
-        model.addAttribute("reservations", reservationService.search(status, keyword, startDate, endDate, needsDistance));
+        ReservationSort selectedSort = sort == null ? ReservationSort.PRIORITY : sort;
+
+        model.addAttribute("reservations", reservationService.search(status, keyword, startDate, endDate, needsDistance, selectedSort));
         model.addAttribute("summary", summary);
         model.addAttribute("recentReservations", reservationService.findRecent());
         model.addAttribute("recentReviews", reviewService.findRecent());
@@ -76,7 +80,9 @@ public class AdminReservationController {
                 failedEmailCount
         ));
         model.addAttribute("statuses", ReservationStatus.values());
+        model.addAttribute("sorts", ReservationSort.values());
         model.addAttribute("selectedStatus", status);
+        model.addAttribute("selectedSort", selectedSort);
         model.addAttribute("keyword", keyword);
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
