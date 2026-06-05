@@ -6,6 +6,7 @@ import com.moving.reservation.notification.EmailNotificationSendResult;
 import com.moving.reservation.reservation.Reservation;
 import com.moving.reservation.reservation.ReservationService;
 import com.moving.reservation.reservation.ReservationStatus;
+import com.moving.reservation.reservation.ReservationSummary;
 import com.moving.reservation.review.ReviewService;
 import java.security.Principal;
 import java.time.DayOfWeek;
@@ -55,20 +56,31 @@ public class AdminReservationController {
                        @RequestParam(required = false) String keyword,
                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+                       @RequestParam(required = false) Boolean needsDistance,
                        Principal principal,
                        Model model) {
         LocalDate currentDate = LocalDate.now();
+        long failedEmailCount = customerNotificationService.countFailedEmails();
+        ReservationSummary summary = reservationService.summary();
 
-        model.addAttribute("reservations", reservationService.search(status, keyword, startDate, endDate));
-        model.addAttribute("summary", reservationService.summary());
+        model.addAttribute("reservations", reservationService.search(status, keyword, startDate, endDate, needsDistance));
+        model.addAttribute("summary", summary);
         model.addAttribute("recentReservations", reservationService.findRecent());
         model.addAttribute("recentReviews", reviewService.findRecent());
-        model.addAttribute("failedEmailCount", customerNotificationService.countFailedEmails());
+        model.addAttribute("failedEmailCount", failedEmailCount);
+        model.addAttribute("taskSummary", new AdminDashboardTaskSummary(
+                summary.received(),
+                summary.consulting(),
+                reservationService.countEstimateAcceptancePending(),
+                reservationService.countDistancePending(),
+                failedEmailCount
+        ));
         model.addAttribute("statuses", ReservationStatus.values());
         model.addAttribute("selectedStatus", status);
         model.addAttribute("keyword", keyword);
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
+        model.addAttribute("needsDistance", Boolean.TRUE.equals(needsDistance));
         model.addAttribute("today", currentDate);
         model.addAttribute("weekStart", currentDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)));
         model.addAttribute("weekEnd", currentDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)));

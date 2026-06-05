@@ -1011,6 +1011,71 @@ small {
     margin-bottom: 18px;
 }
 
+.task-board {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 18px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: var(--shadow);
+    padding: 22px;
+}
+
+.task-board .section-title {
+    margin-bottom: 0;
+}
+
+.task-board .section-title p:not(.eyebrow) {
+    margin: 8px 0 0;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.task-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.task-card {
+    display: grid;
+    gap: 8px;
+    min-height: 150px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: linear-gradient(180deg, var(--white), var(--surface-soft));
+    padding: 18px;
+}
+
+.task-card:hover {
+    border-color: var(--blue);
+    background: var(--white);
+}
+
+.task-card span,
+.task-card small {
+    color: var(--muted);
+}
+
+.task-card span {
+    font-weight: 800;
+}
+
+.task-card strong {
+    color: var(--blue-strong);
+    font-size: 38px;
+    line-height: 1;
+}
+
+.task-card small {
+    line-height: 1.5;
+}
+
+.task-card--warning strong {
+    color: var(--red);
+}
+
 .security-warning {
     display: flex;
     align-items: center;
@@ -1187,8 +1252,16 @@ small {
     grid-template-columns: 160px minmax(220px, 1fr) 170px 170px auto;
 }
 
+.filter-panel--reservation {
+    grid-template-columns: 150px minmax(220px, 1fr) 155px 155px 130px auto;
+}
+
 .filter-panel--audit {
     grid-template-columns: 170px 150px minmax(220px, 1fr) 160px 160px auto;
+}
+
+.checkbox-field input {
+    width: auto;
 }
 
 .quick-filters {
@@ -1316,6 +1389,7 @@ td button {
     .stats,
     .security-warning,
     .dashboard-grid,
+    .task-grid,
     .faq-list,
     .table-edit-form,
     .customer-summary,
@@ -1323,6 +1397,7 @@ td button {
     .lookup-guide,
     .admin-layout-guide,
     .filter-panel,
+    .filter-panel--reservation,
     .filter-panel--audit,
     .admin-detail-layout {
         grid-template-columns: 1fr;

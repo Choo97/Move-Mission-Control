@@ -41,6 +41,41 @@
         <div><span th:text="${summary.total()}">0</span><p>전체 예약</p></div>
     </section>
 
+    <section class="task-board">
+        <div class="section-title">
+            <p class="eyebrow">Today Tasks</p>
+            <h2>오늘 해야 할 일</h2>
+            <p th:text="${taskSummary.totalCount() + '건의 운영 확인 항목이 있습니다.'}">0건의 운영 확인 항목이 있습니다.</p>
+        </div>
+        <div class="task-grid">
+            <a class="task-card" th:href="@{/admin/reservations(status='RECEIVED')}">
+                <span>접수 대기</span>
+                <strong th:text="${taskSummary.receivedCount()}">0</strong>
+                <small>상담 전 고객 연락이 필요합니다.</small>
+            </a>
+            <a class="task-card" th:href="@{/admin/reservations(status='CONSULTING')}">
+                <span>상담중</span>
+                <strong th:text="${taskSummary.consultingCount()}">0</strong>
+                <small>주소, 짐 양, 현장 조건을 확정합니다.</small>
+            </a>
+            <a class="task-card" th:href="@{/admin/reservations(status='ESTIMATE_SENT')}">
+                <span>고객 동의 대기</span>
+                <strong th:text="${taskSummary.estimateAcceptancePendingCount()}">0</strong>
+                <small>견적 안내 후 고객 동의가 필요합니다.</small>
+            </a>
+            <a class="task-card" th:href="@{/admin/reservations(needsDistance=true)}">
+                <span>거리 확인 필요</span>
+                <strong th:text="${taskSummary.distancePendingCount()}">0</strong>
+                <small>실제 거리 확인 후 견적 정확도를 높입니다.</small>
+            </a>
+            <a class="task-card task-card--warning" th:href="@{/admin/notifications(channel='EMAIL', status='FAILED')}">
+                <span>이메일 실패</span>
+                <strong th:text="${taskSummary.failedEmailCount()}">0</strong>
+                <small>실패한 안내 메일은 재발송합니다.</small>
+            </a>
+        </div>
+    </section>
+
     <section class="dashboard-grid">
         <article class="dashboard-panel">
             <div class="section-title">
@@ -98,7 +133,7 @@
         </article>
     </section>
 
-    <form class="filter-panel filter-panel--wide" th:action="@{/admin/reservations}" method="get">
+    <form class="filter-panel filter-panel--reservation" th:action="@{/admin/reservations}" method="get">
         <label>
             상태
             <select name="status">
@@ -121,6 +156,10 @@
             종료일
             <input type="date" name="endDate" th:value="${endDate}">
         </label>
+        <label class="checkbox-field">
+            거리 확인 필요
+            <input type="checkbox" name="needsDistance" value="true" th:checked="${needsDistance}">
+        </label>
         <div class="filter-actions">
             <button type="submit">검색</button>
             <a class="button button--ghost" th:href="@{/admin/reservations}">초기화</a>
@@ -129,6 +168,7 @@
             <a th:href="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${today}, endDate=${today})}">오늘</a>
             <a th:href="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${weekStart}, endDate=${weekEnd})}">이번 주</a>
             <a th:href="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${monthStart}, endDate=${monthEnd})}">이번 달</a>
+            <a th:href="@{/admin/reservations(needsDistance=true)}">거리 확인 필요</a>
         </div>
     </form>
 

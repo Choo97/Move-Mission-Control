@@ -100,7 +100,15 @@ public class ReservationService {
     }
 
     public List<Reservation> search(ReservationStatus status, String keyword, LocalDate startDate, LocalDate endDate) {
-        return reservationRepository.search(status, normalizeKeyword(keyword), startDate, endDate);
+        return search(status, keyword, startDate, endDate, false);
+    }
+
+    public List<Reservation> search(ReservationStatus status,
+                                    String keyword,
+                                    LocalDate startDate,
+                                    LocalDate endDate,
+                                    Boolean needsDistance) {
+        return reservationRepository.search(status, normalizeKeyword(keyword), startDate, endDate, needsDistance);
     }
 
     public List<ReservationStatusHistory> findStatusHistories(Long reservationId) {
@@ -309,6 +317,19 @@ public class ReservationService {
                 reservationRepository.countCouponUsages(),
                 reviewService.averageRating()
         );
+    }
+
+    public long countEstimateAcceptancePending() {
+        return reservationRepository.countByStatusAndEstimateAcceptedAtIsNull(ReservationStatus.ESTIMATE_SENT);
+    }
+
+    public long countDistancePending() {
+        return reservationRepository.countByStatusInAndDistanceKmIsNull(List.of(
+                ReservationStatus.RECEIVED,
+                ReservationStatus.CONSULTING,
+                ReservationStatus.ESTIMATE_SENT,
+                ReservationStatus.CONFIRMED
+        ));
     }
 
     private String normalizeKeyword(String keyword) {
