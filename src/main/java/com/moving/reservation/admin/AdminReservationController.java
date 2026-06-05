@@ -186,7 +186,12 @@ public class AdminReservationController {
     }
 
     @PostMapping("/{id}/estimate")
-    public String updateEstimate(@PathVariable Long id, @RequestParam Integer estimatedPrice, Principal principal) {
+    public String updateEstimate(@PathVariable Long id,
+                                 @RequestParam Integer estimatedPrice,
+                                 @RequestParam(defaultValue = "detail") String returnTo,
+                                 @RequestParam(required = false) String returnQuery,
+                                 Principal principal,
+                                 RedirectAttributes redirectAttributes) {
         Reservation reservation = reservationService.get(id);
         reservationService.updateEstimate(id, estimatedPrice);
         adminAuditLogService.record(
@@ -195,6 +200,13 @@ public class AdminReservationController {
                 "견적 금액을 " + String.format("%,d", estimatedPrice) + "원으로 저장했습니다.",
                 principal.getName()
         );
+        redirectAttributes.addFlashAttribute("estimateMessage",
+                "예약 " + id + "번 견적을 " + String.format("%,d", estimatedPrice) + "원으로 저장했습니다.");
+
+        if ("list".equals(returnTo)) {
+            return "redirect:" + listRedirectUrl(returnQuery);
+        }
+
         return "redirect:/admin/reservations/" + id;
     }
 

@@ -122,6 +122,7 @@
             <p class="notice" th:if="${distanceMessage}" th:text="${distanceMessage}">이동 거리가 자동 계산되었습니다.</p>
             <p class="notice" th:if="${emailSendMessage}" th:text="${emailSendMessage}">이메일을 발송했습니다.</p>
             <p class="notice" th:if="${statusMessage}" th:text="${statusMessage}">상태가 변경되었습니다.</p>
+            <p class="notice" th:if="${estimateMessage}" th:text="${estimateMessage}">견적이 저장되었습니다.</p>
             <p class="alert" th:if="${statusError}" th:text="${statusError}">상태를 변경할 수 없습니다.</p>
             <p class="alert" th:if="${distanceError}" th:text="${distanceError}">이동 거리를 자동 계산할 수 없습니다.</p>
             <p class="alert" th:if="${emailSendError}" th:text="${emailSendError}">이메일 발송에 실패했습니다.</p>

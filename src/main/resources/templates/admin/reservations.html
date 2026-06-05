@@ -29,6 +29,7 @@
     </section>
 
     <p class="notice" th:if="${statusMessage}" th:text="${statusMessage}">상태가 변경되었습니다.</p>
+    <p class="notice" th:if="${estimateMessage}" th:text="${estimateMessage}">견적이 저장되었습니다.</p>
     <p class="alert" th:if="${statusError}" th:text="${statusError}">상태를 변경할 수 없습니다.</p>
 
     <section class="stats">
@@ -255,6 +256,9 @@
                 <td>
                     <form th:action="@{/admin/reservations/{id}/estimate(id=${reservation.id})}" method="post">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <input type="hidden" name="returnTo" value="list">
+                        <input type="hidden" name="returnQuery"
+                               th:value="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, needsDistance=${needsDistance}, sort=${selectedSort})}">
                         <input type="number" name="estimatedPrice" min="0" step="10000" th:value="${reservation.estimatedPrice}">
                         <button type="submit">저장</button>
                     </form>
