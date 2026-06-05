@@ -126,6 +126,75 @@ nav a:hover {
     color: var(--blue-strong);
 }
 
+.admin-nav {
+    gap: 12px;
+}
+
+.nav-group {
+    position: relative;
+}
+
+.nav-group summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    list-style: none;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface-soft);
+    color: var(--navy);
+    cursor: pointer;
+    font-weight: 800;
+    padding: 8px 12px;
+}
+
+.nav-group summary::-webkit-details-marker {
+    display: none;
+}
+
+.nav-group summary::after {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid var(--blue-strong);
+    border-bottom: 2px solid var(--blue-strong);
+    transform: rotate(45deg) translateY(-2px);
+}
+
+.nav-group[open] summary {
+    border-color: var(--blue);
+    background: var(--white);
+    color: var(--blue-strong);
+}
+
+.nav-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 10px);
+    z-index: 30;
+    display: grid;
+    min-width: 170px;
+    gap: 4px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--white);
+    box-shadow: var(--shadow);
+    padding: 8px;
+}
+
+.nav-menu a {
+    border-radius: 6px;
+    color: var(--muted);
+    font-weight: 700;
+    padding: 10px 12px;
+    white-space: nowrap;
+}
+
+.nav-menu a:hover {
+    background: var(--surface-soft);
+    color: var(--blue-strong);
+}
+
 .nav-form {
     margin: 0;
 }
@@ -1228,6 +1297,16 @@ td button {
     .site-header,
     .hero {
         align-items: start;
+    }
+
+    .site-header,
+    nav {
+        flex-wrap: wrap;
+    }
+
+    .nav-menu {
+        left: 0;
+        right: auto;
     }
 
     .hero,
