@@ -291,6 +291,8 @@
             </div>
 
             <form class="action-form"
+                  data-status-confirm
+                  th:data-reservation-id="${reservation.id}"
                   th:classappend="${reservation.status.name() == 'RECEIVED' or reservation.status.name() == 'ESTIMATE_SENT' or reservation.moveDate == today ? 'is-recommended' : ''}"
                   th:action="@{/admin/reservations/{id}/status(id=${reservation.id})}" method="post">
                 <p class="action-reason"
@@ -484,5 +486,6 @@
     </div>
 </main>
 <script th:src="@{/js/theme.js}"></script>
+<script th:src="@{/js/status-confirm.js}"></script>
 </body>
 </html>

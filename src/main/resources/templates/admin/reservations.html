@@ -215,7 +215,9 @@
                 <td th:text="${reservation.moveType.label}">원룸</td>
                 <td th:text="${reservation.fromAddress + ' -> ' + reservation.toAddress}">출발 -> 도착</td>
                 <td>
-                    <form th:action="@{/admin/reservations/{id}/status(id=${reservation.id})}" method="post">
+                    <form data-status-confirm
+                          th:data-reservation-id="${reservation.id}"
+                          th:action="@{/admin/reservations/{id}/status(id=${reservation.id})}" method="post">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                         <select name="status">
                             <option th:each="status : ${reservation.status.selectableStatuses}"
@@ -257,5 +259,6 @@
     </section>
 </main>
 <script th:src="@{/js/theme.js}"></script>
+<script th:src="@{/js/status-confirm.js}"></script>
 </body>
 </html>
