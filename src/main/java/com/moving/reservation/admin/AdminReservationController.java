@@ -213,7 +213,10 @@ public class AdminReservationController {
     @PostMapping("/{id}/distance")
     public String updateDistance(@PathVariable Long id,
                                  @RequestParam(required = false) Integer distanceKm,
-                                 Principal principal) {
+                                 @RequestParam(defaultValue = "detail") String returnTo,
+                                 @RequestParam(required = false) String returnQuery,
+                                 Principal principal,
+                                 RedirectAttributes redirectAttributes) {
         Reservation reservation = reservationService.get(id);
         reservationService.updateDistance(id, distanceKm);
         adminAuditLogService.record(
@@ -222,6 +225,15 @@ public class AdminReservationController {
                 distanceKm == null ? "이동 거리를 확인 전으로 저장했습니다." : "이동 거리를 " + distanceKm + "km로 저장했습니다.",
                 principal.getName()
         );
+        redirectAttributes.addFlashAttribute("distanceMessage",
+                distanceKm == null
+                        ? "예약 " + id + "번 이동 거리를 확인 전으로 저장했습니다."
+                        : "예약 " + id + "번 이동 거리를 " + distanceKm + "km로 저장했습니다.");
+
+        if ("list".equals(returnTo)) {
+            return "redirect:" + listRedirectUrl(returnQuery);
+        }
+
         return "redirect:/admin/reservations/" + id;
     }
 

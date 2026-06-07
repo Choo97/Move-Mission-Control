@@ -30,6 +30,7 @@
 
     <p class="notice" th:if="${statusMessage}" th:text="${statusMessage}">상태가 변경되었습니다.</p>
     <p class="notice" th:if="${estimateMessage}" th:text="${estimateMessage}">견적이 저장되었습니다.</p>
+    <p class="notice" th:if="${distanceMessage}" th:text="${distanceMessage}">거리가 저장되었습니다.</p>
     <p class="alert" th:if="${statusError}" th:text="${statusError}">상태를 변경할 수 없습니다.</p>
 
     <section class="stats">
@@ -194,6 +195,7 @@
                 <th>일정</th>
                 <th>유형</th>
                 <th>경로</th>
+                <th>거리</th>
                 <th>상태</th>
                 <th>확인</th>
                 <th>견적</th>
@@ -201,7 +203,7 @@
             </thead>
             <tbody>
             <tr th:if="${reservations.isEmpty()}">
-                <td colspan="8" class="empty">조건에 맞는 예약이 없습니다.</td>
+                <td colspan="9" class="empty">조건에 맞는 예약이 없습니다.</td>
             </tr>
             <tr th:each="reservation : ${reservations}">
                 <td>
@@ -218,6 +220,17 @@
                 <td th:text="${reservation.moveDate + ' ' + reservation.moveTime}">2026-06-01 09:00</td>
                 <td th:text="${reservation.moveType.label}">원룸</td>
                 <td th:text="${reservation.fromAddress + ' -> ' + reservation.toAddress}">출발 -> 도착</td>
+                <td>
+                    <form th:action="@{/admin/reservations/{id}/distance(id=${reservation.id})}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <input type="hidden" name="returnTo" value="list">
+                        <input type="hidden" name="returnQuery"
+                               th:value="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, needsDistance=${needsDistance}, sort=${selectedSort})}">
+                        <input type="number" name="distanceKm" min="0" step="1" th:value="${reservation.distanceKm}" placeholder="km">
+                        <button type="submit">저장</button>
+                    </form>
+                    <span th:text="${reservation.distanceKm == null ? '확인 전' : reservation.distanceKm + 'km'}">확인 전</span>
+                </td>
                 <td>
                     <form data-status-confirm
                           th:data-reservation-id="${reservation.id}"
