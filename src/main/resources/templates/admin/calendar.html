@@ -32,6 +32,15 @@
 
     <section class="calendar-layout">
         <article class="calendar-panel">
+            <div class="calendar-legend" aria-label="예약 상태 색상">
+                <span class="calendar-status calendar-status--received">접수</span>
+                <span class="calendar-status calendar-status--consulting">상담중</span>
+                <span class="calendar-status calendar-status--estimate_sent">견적안내</span>
+                <span class="calendar-status calendar-status--confirmed">확정</span>
+                <span class="calendar-status calendar-status--completed">완료</span>
+                <span class="calendar-status calendar-status--canceled">취소</span>
+            </div>
+
             <div class="calendar-weekdays">
                 <span>일</span>
                 <span>월</span>
@@ -57,6 +66,8 @@
                         <div class="calendar-day-items" th:if="${day.reservations().size() > 0}">
                             <a th:each="reservation, iterStat : ${day.reservations()}"
                                th:if="${iterStat.index < 2}"
+                               class="calendar-item"
+                               th:classappend="${' calendar-status--' + #strings.toLowerCase(reservation.status.name())}"
                                th:href="@{/admin/reservations/{id}(id=${reservation.id})}"
                                th:text="${reservation.moveTime + ' ' + reservation.customerName}">
                                 09:00 홍길동
@@ -81,6 +92,7 @@
             <div class="agenda-list" th:unless="${selectedReservations.isEmpty()}">
                 <a class="agenda-item"
                    th:each="reservation : ${selectedReservations}"
+                   th:classappend="${' agenda-item--' + #strings.toLowerCase(reservation.status.name())}"
                    th:href="@{/admin/reservations/{id}(id=${reservation.id})}">
                     <span th:text="${reservation.moveTime + ' / ' + reservation.status.label}">09:00 / 접수</span>
                     <strong th:text="${reservation.customerName + ' / ' + reservation.moveType.label}">홍길동 / 원룸</strong>

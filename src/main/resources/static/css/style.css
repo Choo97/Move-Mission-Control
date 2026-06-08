@@ -1319,6 +1319,27 @@ small {
     padding: 18px;
 }
 
+.calendar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.calendar-status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface-soft);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 900;
+    padding: 6px 10px;
+    white-space: nowrap;
+}
+
 .calendar-weekdays,
 .calendar-grid {
     display: grid;
@@ -1400,8 +1421,63 @@ small {
     white-space: nowrap;
 }
 
+.calendar-day-items .calendar-item {
+    border-left: 4px solid var(--line);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.64);
+    padding: 4px 6px;
+}
+
 .calendar-day-items a:hover {
     color: var(--blue-strong);
+}
+
+.calendar-status--received,
+.calendar-item.calendar-status--received,
+.agenda-item--received {
+    border-color: rgba(234, 88, 12, 0.32);
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.calendar-status--consulting,
+.calendar-item.calendar-status--consulting,
+.agenda-item--consulting {
+    border-color: color-mix(in srgb, var(--blue) 38%, transparent);
+    background: var(--surface-soft);
+    color: var(--blue-strong);
+}
+
+.calendar-status--estimate_sent,
+.calendar-item.calendar-status--estimate_sent,
+.agenda-item--estimate_sent {
+    border-color: rgba(245, 158, 11, 0.34);
+    background: #fffbeb;
+    color: #b45309;
+}
+
+.calendar-status--confirmed,
+.calendar-item.calendar-status--confirmed,
+.agenda-item--confirmed {
+    border-color: rgba(37, 99, 235, 0.28);
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.calendar-status--completed,
+.calendar-item.calendar-status--completed,
+.agenda-item--completed {
+    border-color: rgba(22, 163, 74, 0.28);
+    background: #f0fdf4;
+    color: #15803d;
+}
+
+.calendar-status--canceled,
+.calendar-item.calendar-status--canceled,
+.agenda-item--canceled {
+    border-color: rgba(100, 116, 139, 0.24);
+    background: #f8fafc;
+    color: #64748b;
 }
 
 .agenda-list {
@@ -1421,6 +1497,36 @@ small {
 .agenda-item:hover {
     border-color: var(--blue);
     background: var(--white);
+}
+
+.agenda-item.agenda-item--received {
+    border-color: rgba(234, 88, 12, 0.32);
+    background: #fff7ed;
+}
+
+.agenda-item.agenda-item--consulting {
+    border-color: color-mix(in srgb, var(--blue) 38%, transparent);
+    background: var(--surface-soft);
+}
+
+.agenda-item.agenda-item--estimate_sent {
+    border-color: rgba(245, 158, 11, 0.34);
+    background: #fffbeb;
+}
+
+.agenda-item.agenda-item--confirmed {
+    border-color: rgba(37, 99, 235, 0.28);
+    background: #eff6ff;
+}
+
+.agenda-item.agenda-item--completed {
+    border-color: rgba(22, 163, 74, 0.28);
+    background: #f0fdf4;
+}
+
+.agenda-item.agenda-item--canceled {
+    border-color: rgba(100, 116, 139, 0.24);
+    background: #f8fafc;
 }
 
 .agenda-item span,
