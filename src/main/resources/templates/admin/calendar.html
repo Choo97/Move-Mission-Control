@@ -115,19 +115,27 @@
             <p class="empty" th:if="${selectedReservations.isEmpty()}">선택한 날짜에 예약이 없습니다.</p>
 
             <div class="agenda-list" th:unless="${selectedReservations.isEmpty()}">
-                <a class="agenda-item"
-                   th:each="reservation : ${selectedReservations}"
-                   th:classappend="${' agenda-item--' + #strings.toLowerCase(reservation.status.name())}"
-                   th:href="@{/admin/reservations/{id}(id=${reservation.id})}">
-                    <span th:text="${reservation.moveTime + ' / ' + reservation.status.label}">09:00 / 접수</span>
-                    <strong th:text="${reservation.customerName + ' / ' + reservation.moveType.label}">홍길동 / 원룸</strong>
-                    <small th:text="${reservation.fromAddress + ' -> ' + reservation.toAddress}">출발 -> 도착</small>
-                </a>
+                <article class="agenda-item"
+                         th:each="reservation : ${selectedReservations}"
+                         th:classappend="${' agenda-item--' + #strings.toLowerCase(reservation.status.name())}">
+                    <a th:href="@{/admin/reservations/{id}(id=${reservation.id})}">
+                        <span th:text="${reservation.moveTime + ' / ' + reservation.status.label}">09:00 / 접수</span>
+                        <strong th:text="${reservation.customerName + ' / ' + reservation.moveType.label}">홍길동 / 원룸</strong>
+                        <small th:text="${reservation.fromAddress + ' -> ' + reservation.toAddress}">출발 -> 도착</small>
+                    </a>
+                    <div class="agenda-actions">
+                        <a th:href="@{/admin/reservations/{id}(id=${reservation.id})}">상세</a>
+                        <a th:href="@{/admin/reservations(startDate=${selectedDate}, endDate=${selectedDate}, sort='MOVE_DATE')}">날짜 목록</a>
+                        <a th:href="@{/admin/reservations/export.csv(startDate=${selectedDate}, endDate=${selectedDate}, sort='MOVE_DATE')}">CSV</a>
+                    </div>
+                </article>
             </div>
 
             <div class="actions">
                 <a class="button button--primary"
                    th:href="@{/admin/reservations(startDate=${selectedDate}, endDate=${selectedDate}, sort='MOVE_DATE')}">선택 날짜 목록 보기</a>
+                <a class="button button--ghost"
+                   th:href="@{/admin/reservations/export.csv(startDate=${selectedDate}, endDate=${selectedDate}, sort='MOVE_DATE')}">선택 날짜 CSV</a>
                 <a class="button button--ghost" th:href="@{/admin/calendar}">오늘로 이동</a>
             </div>
         </aside>

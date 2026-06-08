@@ -1545,9 +1545,15 @@ small {
     padding: 14px;
 }
 
-.agenda-item:hover {
+.agenda-item:hover,
+.agenda-item:focus-within {
     border-color: var(--blue);
     background: var(--white);
+}
+
+.agenda-item > a {
+    display: grid;
+    gap: 6px;
 }
 
 .agenda-item.agenda-item--received {
@@ -1591,6 +1597,28 @@ small {
 
 .agenda-item small {
     line-height: 1.45;
+}
+
+.agenda-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.agenda-actions a {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--blue-strong);
+    font-size: 12px;
+    font-weight: 900;
+    padding: 6px 9px;
+}
+
+.agenda-actions a:hover {
+    border-color: var(--blue);
+    background: var(--white);
 }
 
 .audit-list div {
