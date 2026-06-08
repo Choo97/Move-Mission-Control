@@ -174,15 +174,24 @@
                         th:selected="${sort == selectedSort}"></option>
             </select>
         </label>
+        <label>
+            표시 건수
+            <select name="size">
+                <option th:each="pageSize : ${pageSizes}"
+                        th:value="${pageSize}"
+                        th:text="${pageSize + '개'}"
+                        th:selected="${pageSize == selectedSize}"></option>
+            </select>
+        </label>
         <div class="filter-actions">
             <button type="submit">검색</button>
             <a class="button button--ghost" th:href="@{/admin/reservations}">초기화</a>
         </div>
         <div class="quick-filters">
-            <a th:href="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${today}, endDate=${today}, needsDistance=${needsDistance}, sort=${selectedSort})}">오늘</a>
-            <a th:href="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${weekStart}, endDate=${weekEnd}, needsDistance=${needsDistance}, sort=${selectedSort})}">이번 주</a>
-            <a th:href="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${monthStart}, endDate=${monthEnd}, needsDistance=${needsDistance}, sort=${selectedSort})}">이번 달</a>
-            <a th:href="@{/admin/reservations(needsDistance=true, sort=${selectedSort})}">거리 확인 필요</a>
+            <a th:href="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${today}, endDate=${today}, needsDistance=${needsDistance}, sort=${selectedSort}, size=${selectedSize})}">오늘</a>
+            <a th:href="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${weekStart}, endDate=${weekEnd}, needsDistance=${needsDistance}, sort=${selectedSort}, size=${selectedSize})}">이번 주</a>
+            <a th:href="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${monthStart}, endDate=${monthEnd}, needsDistance=${needsDistance}, sort=${selectedSort}, size=${selectedSize})}">이번 달</a>
+            <a th:href="@{/admin/reservations(needsDistance=true, sort=${selectedSort}, size=${selectedSize})}">거리 확인 필요</a>
         </div>
     </form>
 
@@ -230,7 +239,7 @@
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                         <input type="hidden" name="returnTo" value="list">
                         <input type="hidden" name="returnQuery"
-                               th:value="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, needsDistance=${needsDistance}, sort=${selectedSort}, page=${reservationPage.number})}">
+                               th:value="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, needsDistance=${needsDistance}, sort=${selectedSort}, page=${reservationPage.number}, size=${selectedSize})}">
                         <input type="number" name="distanceKm" min="0" step="1" th:value="${reservation.distanceKm}" placeholder="km">
                         <button type="submit">저장</button>
                     </form>
@@ -243,7 +252,7 @@
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                         <input type="hidden" name="returnTo" value="list">
                         <input type="hidden" name="returnQuery"
-                               th:value="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, needsDistance=${needsDistance}, sort=${selectedSort}, page=${reservationPage.number})}">
+                               th:value="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, needsDistance=${needsDistance}, sort=${selectedSort}, page=${reservationPage.number}, size=${selectedSize})}">
                         <select name="status">
                             <option th:each="status : ${reservation.status.selectableStatuses}"
                                     th:value="${status}"
@@ -276,7 +285,7 @@
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                         <input type="hidden" name="returnTo" value="list">
                         <input type="hidden" name="returnQuery"
-                               th:value="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, needsDistance=${needsDistance}, sort=${selectedSort}, page=${reservationPage.number})}">
+                               th:value="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, needsDistance=${needsDistance}, sort=${selectedSort}, page=${reservationPage.number}, size=${selectedSize})}">
                         <input type="number" name="estimatedPrice" min="0" step="10000" th:value="${reservation.estimatedPrice}">
                         <button type="submit">저장</button>
                     </form>
@@ -288,13 +297,13 @@
 
     <nav class="pagination" th:if="${reservationPage.totalPages > 1}" aria-label="예약 목록 페이지">
         <a th:classappend="${reservationPage.first} ? ' is-disabled'"
-           th:href="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, needsDistance=${needsDistance}, sort=${selectedSort}, page=${reservationPage.number - 1})}">이전</a>
+           th:href="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, needsDistance=${needsDistance}, sort=${selectedSort}, page=${reservationPage.number - 1}, size=${selectedSize})}">이전</a>
         <a th:each="pageNumber : ${pageNumbers}"
            th:classappend="${pageNumber == reservationPage.number} ? ' is-active'"
-           th:href="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, needsDistance=${needsDistance}, sort=${selectedSort}, page=${pageNumber})}"
+           th:href="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, needsDistance=${needsDistance}, sort=${selectedSort}, page=${pageNumber}, size=${selectedSize})}"
            th:text="${pageNumber + 1}">1</a>
         <a th:classappend="${reservationPage.last} ? ' is-disabled'"
-           th:href="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, needsDistance=${needsDistance}, sort=${selectedSort}, page=${reservationPage.number + 1})}">다음</a>
+           th:href="@{/admin/reservations(status=${selectedStatus}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, needsDistance=${needsDistance}, sort=${selectedSort}, page=${reservationPage.number + 1}, size=${selectedSize})}">다음</a>
     </nav>
 </main>
 <script th:src="@{/js/theme.js}"></script>

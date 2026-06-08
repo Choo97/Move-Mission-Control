@@ -46,7 +46,8 @@ public class AdminReservationController {
     private final EstimateDocumentPdfService estimateDocumentPdfService;
     private final AdminAccountService adminAccountService;
     private final AdminAuditLogService adminAuditLogService;
-    private static final int RESERVATION_PAGE_SIZE = 10;
+    private static final int DEFAULT_RESERVATION_PAGE_SIZE = 10;
+    private static final List<Integer> RESERVATION_PAGE_SIZES = List.of(10, 20, 50);
 
     public AdminReservationController(ReservationService reservationService,
                                       CustomerNotificationService customerNotificationService,
@@ -70,6 +71,7 @@ public class AdminReservationController {
                        @RequestParam(required = false) Boolean needsDistance,
                        @RequestParam(required = false) ReservationSort sort,
                        @RequestParam(defaultValue = "0") int page,
+                       @RequestParam(defaultValue = "10") int size,
                        Principal principal,
                        Model model) {
         LocalDate currentDate = LocalDate.now();
@@ -77,6 +79,7 @@ public class AdminReservationController {
         ReservationSummary summary = reservationService.summary();
 
         ReservationSort selectedSort = sort == null ? ReservationSort.PRIORITY : sort;
+        int selectedSize = selectedPageSize(size);
         Page<Reservation> reservationPage = reservationService.searchPage(
                 status,
                 keyword,
@@ -84,10 +87,10 @@ public class AdminReservationController {
                 endDate,
                 needsDistance,
                 selectedSort,
-                PageRequest.of(Math.max(page, 0), RESERVATION_PAGE_SIZE)
+                PageRequest.of(Math.max(page, 0), selectedSize)
         );
         List<Integer> pageNumbers = pageNumbers(reservationPage);
-        String currentListUrl = currentListUrl(status, keyword, startDate, endDate, needsDistance, selectedSort, reservationPage.getNumber());
+        String currentListUrl = currentListUrl(status, keyword, startDate, endDate, needsDistance, selectedSort, reservationPage.getNumber(), selectedSize);
 
         model.addAttribute("reservations", reservationPage.getContent());
         model.addAttribute("reservationPage", reservationPage);
@@ -106,8 +109,10 @@ public class AdminReservationController {
         ));
         model.addAttribute("statuses", ReservationStatus.values());
         model.addAttribute("sorts", ReservationSort.values());
+        model.addAttribute("pageSizes", RESERVATION_PAGE_SIZES);
         model.addAttribute("selectedStatus", status);
         model.addAttribute("selectedSort", selectedSort);
+        model.addAttribute("selectedSize", selectedSize);
         model.addAttribute("keyword", keyword);
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
@@ -135,6 +140,10 @@ public class AdminReservationController {
         return IntStream.rangeClosed(startPage, endPage)
                 .boxed()
                 .toList();
+    }
+
+    private int selectedPageSize(int size) {
+        return RESERVATION_PAGE_SIZES.contains(size) ? size : DEFAULT_RESERVATION_PAGE_SIZE;
     }
 
     @GetMapping("/{id}")
@@ -246,7 +255,8 @@ public class AdminReservationController {
                                   LocalDate endDate,
                                   Boolean needsDistance,
                                   ReservationSort sort,
-                                  int page) {
+                                  int page,
+                                  int size) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/reservations");
 
         if (status != null) {
@@ -275,6 +285,10 @@ public class AdminReservationController {
 
         if (page > 0) {
             builder.queryParam("page", page);
+        }
+
+        if (size != DEFAULT_RESERVATION_PAGE_SIZE) {
+            builder.queryParam("size", size);
         }
 
         return builder.build().encode().toUriString();
