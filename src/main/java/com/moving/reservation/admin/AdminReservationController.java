@@ -11,6 +11,7 @@ import com.moving.reservation.reservation.ReservationSummary;
 import com.moving.reservation.review.ReviewService;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -32,6 +33,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriUtils;
 
 @Controller
 @RequestMapping("/admin/reservations")
@@ -84,10 +87,12 @@ public class AdminReservationController {
                 PageRequest.of(Math.max(page, 0), RESERVATION_PAGE_SIZE)
         );
         List<Integer> pageNumbers = pageNumbers(reservationPage);
+        String currentListUrl = currentListUrl(status, keyword, startDate, endDate, needsDistance, selectedSort, reservationPage.getNumber());
 
         model.addAttribute("reservations", reservationPage.getContent());
         model.addAttribute("reservationPage", reservationPage);
         model.addAttribute("pageNumbers", pageNumbers);
+        model.addAttribute("currentListUrl", currentListUrl);
         model.addAttribute("summary", summary);
         model.addAttribute("recentReservations", reservationService.findRecent());
         model.addAttribute("recentReviews", reviewService.findRecent());
@@ -133,9 +138,15 @@ public class AdminReservationController {
     }
 
     @GetMapping("/{id}")
-    public String detail(@PathVariable Long id, Model model) {
+    public String detail(@PathVariable Long id,
+                         @RequestParam(required = false) String returnQuery,
+                         Model model) {
         Reservation reservation = reservationService.get(id);
+        String backToListUrl = listRedirectUrl(returnQuery);
+
         model.addAttribute("reservation", reservation);
+        model.addAttribute("returnQuery", backToListUrl);
+        model.addAttribute("backToListUrl", backToListUrl);
         model.addAttribute("today", LocalDate.now());
         model.addAttribute("estimateLines", reservationService.estimateLines(reservation));
         model.addAttribute("photos", reservationService.findPhotos(id));
@@ -195,7 +206,7 @@ public class AdminReservationController {
             return "redirect:" + listRedirectUrl(returnQuery);
         }
 
-        return "redirect:/admin/reservations/" + id;
+        return "redirect:" + detailRedirectUrl(id, returnQuery);
     }
 
     private String listRedirectUrl(String returnQuery) {
@@ -216,6 +227,57 @@ public class AdminReservationController {
         } catch (URISyntaxException exception) {
             return "/admin/reservations";
         }
+    }
+
+    private String detailRedirectUrl(Long id, String returnQuery) {
+        String listUrl = listRedirectUrl(returnQuery);
+
+        if ("/admin/reservations".equals(listUrl)) {
+            return "/admin/reservations/" + id;
+        }
+
+        return "/admin/reservations/" + id
+                + "?returnQuery=" + UriUtils.encodeQueryParam(listUrl, StandardCharsets.UTF_8);
+    }
+
+    private String currentListUrl(ReservationStatus status,
+                                  String keyword,
+                                  LocalDate startDate,
+                                  LocalDate endDate,
+                                  Boolean needsDistance,
+                                  ReservationSort sort,
+                                  int page) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/admin/reservations");
+
+        if (status != null) {
+            builder.queryParam("status", status);
+        }
+
+        if (keyword != null && !keyword.isBlank()) {
+            builder.queryParam("keyword", keyword);
+        }
+
+        if (startDate != null) {
+            builder.queryParam("startDate", startDate);
+        }
+
+        if (endDate != null) {
+            builder.queryParam("endDate", endDate);
+        }
+
+        if (Boolean.TRUE.equals(needsDistance)) {
+            builder.queryParam("needsDistance", true);
+        }
+
+        if (sort != null) {
+            builder.queryParam("sort", sort);
+        }
+
+        if (page > 0) {
+            builder.queryParam("page", page);
+        }
+
+        return builder.build().encode().toUriString();
     }
 
     @PostMapping("/{id}/estimate")
@@ -240,7 +302,7 @@ public class AdminReservationController {
             return "redirect:" + listRedirectUrl(returnQuery);
         }
 
-        return "redirect:/admin/reservations/" + id;
+        return "redirect:" + detailRedirectUrl(id, returnQuery);
     }
 
     @PostMapping("/{id}/distance")
@@ -267,11 +329,14 @@ public class AdminReservationController {
             return "redirect:" + listRedirectUrl(returnQuery);
         }
 
-        return "redirect:/admin/reservations/" + id;
+        return "redirect:" + detailRedirectUrl(id, returnQuery);
     }
 
     @PostMapping("/{id}/distance/calculate")
-    public String calculateDistance(@PathVariable Long id, Principal principal, RedirectAttributes redirectAttributes) {
+    public String calculateDistance(@PathVariable Long id,
+                                    @RequestParam(required = false) String returnQuery,
+                                    Principal principal,
+                                    RedirectAttributes redirectAttributes) {
         Reservation reservation = reservationService.get(id);
         try {
             int distanceKm = reservationService.calculateAndUpdateDistance(id);
@@ -286,12 +351,13 @@ public class AdminReservationController {
             redirectAttributes.addFlashAttribute("distanceError", exception.getMessage());
         }
 
-        return "redirect:/admin/reservations/" + id;
+        return "redirect:" + detailRedirectUrl(id, returnQuery);
     }
 
     @PostMapping("/{id}/memo")
     public String updateAdminMemo(@PathVariable Long id,
                                   @RequestParam(required = false) String adminMemo,
+                                  @RequestParam(required = false) String returnQuery,
                                   Principal principal) {
         Reservation reservation = reservationService.get(id);
         reservationService.updateAdminMemo(id, adminMemo, principal.getName());
@@ -301,11 +367,14 @@ public class AdminReservationController {
                 "관리자 메모를 저장했습니다.",
                 principal.getName()
         );
-        return "redirect:/admin/reservations/" + id;
+        return "redirect:" + detailRedirectUrl(id, returnQuery);
     }
 
     @PostMapping("/{id}/notifications/email/send")
-    public String sendReadyEmails(@PathVariable Long id, Principal principal, RedirectAttributes redirectAttributes) {
+    public String sendReadyEmails(@PathVariable Long id,
+                                  @RequestParam(required = false) String returnQuery,
+                                  Principal principal,
+                                  RedirectAttributes redirectAttributes) {
         Reservation reservation = reservationService.get(id);
         EmailNotificationSendResult result = customerNotificationService.sendReadyEmails(id);
         adminAuditLogService.record(
@@ -327,11 +396,14 @@ public class AdminReservationController {
             redirectAttributes.addFlashAttribute("emailSendMessage", "발송 준비 상태의 이메일 알림이 없습니다.");
         }
 
-        return "redirect:/admin/reservations/" + id;
+        return "redirect:" + detailRedirectUrl(id, returnQuery);
     }
 
     @PostMapping("/{id}/notifications/email/resend-failed")
-    public String resendFailedEmails(@PathVariable Long id, Principal principal, RedirectAttributes redirectAttributes) {
+    public String resendFailedEmails(@PathVariable Long id,
+                                     @RequestParam(required = false) String returnQuery,
+                                     Principal principal,
+                                     RedirectAttributes redirectAttributes) {
         Reservation reservation = reservationService.get(id);
         EmailNotificationSendResult result = customerNotificationService.resendFailedEmails(id);
         adminAuditLogService.record(
@@ -353,6 +425,6 @@ public class AdminReservationController {
             redirectAttributes.addFlashAttribute("emailSendMessage", "재발송할 실패 이메일 알림이 없습니다.");
         }
 
-        return "redirect:/admin/reservations/" + id;
+        return "redirect:" + detailRedirectUrl(id, returnQuery);
     }
 }
