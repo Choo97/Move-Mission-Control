@@ -8,6 +8,10 @@ import com.moving.reservation.review.ReviewService;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -121,6 +125,26 @@ public class ReservationService {
         return reservationRepository.search(status, normalizeKeyword(keyword), startDate, endDate, needsDistance).stream()
                 .sorted(comparator(sort))
                 .toList();
+    }
+
+    public Page<Reservation> searchPage(ReservationStatus status,
+                                        String keyword,
+                                        LocalDate startDate,
+                                        LocalDate endDate,
+                                        Boolean needsDistance,
+                                        ReservationSort sort,
+                                        Pageable pageable) {
+        List<Reservation> reservations = search(status, keyword, startDate, endDate, needsDistance, sort);
+        int pageSize = pageable.getPageSize();
+        int pageNumber = Math.max(pageable.getPageNumber(), 0);
+        int start = Math.min(pageNumber * pageSize, reservations.size());
+        int end = Math.min(start + pageSize, reservations.size());
+
+        return new PageImpl<>(
+                reservations.subList(start, end),
+                PageRequest.of(pageNumber, pageSize),
+                reservations.size()
+        );
     }
 
     public List<ReservationStatusHistory> findStatusHistories(Long reservationId) {

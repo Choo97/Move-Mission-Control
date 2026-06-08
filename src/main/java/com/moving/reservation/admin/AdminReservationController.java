@@ -15,6 +15,10 @@ import java.security.Principal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
+import java.util.List;
+import java.util.stream.IntStream;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -39,6 +43,7 @@ public class AdminReservationController {
     private final EstimateDocumentPdfService estimateDocumentPdfService;
     private final AdminAccountService adminAccountService;
     private final AdminAuditLogService adminAuditLogService;
+    private static final int RESERVATION_PAGE_SIZE = 10;
 
     public AdminReservationController(ReservationService reservationService,
                                       CustomerNotificationService customerNotificationService,
@@ -61,6 +66,7 @@ public class AdminReservationController {
                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
                        @RequestParam(required = false) Boolean needsDistance,
                        @RequestParam(required = false) ReservationSort sort,
+                       @RequestParam(defaultValue = "0") int page,
                        Principal principal,
                        Model model) {
         LocalDate currentDate = LocalDate.now();
@@ -68,8 +74,20 @@ public class AdminReservationController {
         ReservationSummary summary = reservationService.summary();
 
         ReservationSort selectedSort = sort == null ? ReservationSort.PRIORITY : sort;
+        Page<Reservation> reservationPage = reservationService.searchPage(
+                status,
+                keyword,
+                startDate,
+                endDate,
+                needsDistance,
+                selectedSort,
+                PageRequest.of(Math.max(page, 0), RESERVATION_PAGE_SIZE)
+        );
+        List<Integer> pageNumbers = pageNumbers(reservationPage);
 
-        model.addAttribute("reservations", reservationService.search(status, keyword, startDate, endDate, needsDistance, selectedSort));
+        model.addAttribute("reservations", reservationPage.getContent());
+        model.addAttribute("reservationPage", reservationPage);
+        model.addAttribute("pageNumbers", pageNumbers);
         model.addAttribute("summary", summary);
         model.addAttribute("recentReservations", reservationService.findRecent());
         model.addAttribute("recentReviews", reviewService.findRecent());
@@ -97,6 +115,21 @@ public class AdminReservationController {
         model.addAttribute("usesUnsafeDefaultPassword",
                 principal != null && adminAccountService.usesUnsafeDefaultPassword(principal.getName()));
         return "admin/reservations";
+    }
+
+    private List<Integer> pageNumbers(Page<?> page) {
+        int totalPages = page.getTotalPages();
+
+        if (totalPages == 0) {
+            return List.of();
+        }
+
+        int startPage = Math.max(0, Math.min(page.getNumber() - 2, totalPages - 5));
+        int endPage = Math.min(totalPages - 1, startPage + 4);
+
+        return IntStream.rangeClosed(startPage, endPage)
+                .boxed()
+                .toList();
     }
 
     @GetMapping("/{id}")
