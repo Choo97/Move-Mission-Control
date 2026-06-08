@@ -41,30 +41,26 @@
         </div>
     </section>
 
-    <section class="guide-panel">
+    <section class="guide-panel customer-progress-panel">
         <div class="section-title">
-            <p class="eyebrow">Next Step</p>
-            <h2>진행 안내</h2>
+            <p class="eyebrow">Reservation Progress</p>
+            <h2>예약 진행 상태</h2>
+            <p th:text="${customerNextGuide}">예약 진행 안내</p>
         </div>
-        <ol class="status-steps">
-            <li th:classappend="${reservation.status.name() == 'RECEIVED'} ? 'is-current' : ''">
-                <strong>접수</strong>
-                <span>예약 내용 확인</span>
-            </li>
-            <li th:classappend="${reservation.status.name() == 'CONSULTING'} ? 'is-current' : ''">
-                <strong>상담중</strong>
-                <span>일정과 현장 조건 확인</span>
-            </li>
-            <li th:classappend="${reservation.status.name() == 'CONFIRMED'} ? 'is-current' : ''">
-                <strong>확정</strong>
-                <span>견적 동의 및 일정 확정</span>
-            </li>
-            <li th:classappend="${reservation.status.name() == 'COMPLETED'} ? 'is-current' : ''">
-                <strong>완료</strong>
-                <span>이사 완료 및 리뷰 작성</span>
+
+        <ol class="customer-progress-steps" th:classappend="${reservation.status.name() == 'CANCELED'} ? 'is-canceled' : ''">
+            <li th:each="step : ${customerSteps}"
+                th:classappend="${step.done()} ? 'is-done' : (${step.current()} ? 'is-current' : '')">
+                <span th:text="${step.done() ? '완료' : (step.current() ? '현재' : '예정')}">현재</span>
+                <strong th:text="${step.label()}">접수</strong>
+                <small th:text="${step.description()}">예약이 접수되었습니다.</small>
             </li>
         </ol>
-        <p class="help-text" th:if="${reservation.status.name() == 'CANCELED'}">현재 예약은 취소 상태입니다.</p>
+
+        <div class="customer-next-card" th:classappend="${reservation.status.name() == 'CANCELED'} ? 'is-canceled' : ''">
+            <strong th:text="${reservation.status.name() == 'CANCELED' ? '예약이 취소되었습니다.' : '다음 안내'}">다음 안내</strong>
+            <span th:text="${customerNextGuide}">진행 안내</span>
+        </div>
     </section>
 
     <div class="actions customer-actions">

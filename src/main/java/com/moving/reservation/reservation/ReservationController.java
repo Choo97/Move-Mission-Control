@@ -4,6 +4,7 @@ import com.moving.reservation.admin.EstimateDocumentPdfService;
 import com.moving.reservation.review.ReviewService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -136,6 +137,8 @@ public class ReservationController {
         model.addAttribute("estimateLines", reservationService.estimateLines(reservation));
         model.addAttribute("photos", reservationService.findPhotos(id));
         model.addAttribute("review", reviewService.findByReservationId(id).orElse(null));
+        model.addAttribute("customerSteps", customerSteps(reservation));
+        model.addAttribute("customerNextGuide", customerNextGuide(reservation));
         return "reservation/detail";
     }
 
@@ -275,5 +278,53 @@ public class ReservationController {
         return authentication != null
                 && authentication.isAuthenticated()
                 && !(authentication instanceof AnonymousAuthenticationToken);
+    }
+
+    private List<CustomerReservationStep> customerSteps(Reservation reservation) {
+        List<ReservationStatus> flow = List.of(
+                ReservationStatus.RECEIVED,
+                ReservationStatus.CONSULTING,
+                ReservationStatus.ESTIMATE_SENT,
+                ReservationStatus.CONFIRMED,
+                ReservationStatus.COMPLETED
+        );
+        int currentIndex = flow.indexOf(reservation.getStatus());
+
+        return flow.stream()
+                .map(status -> {
+                    int stepIndex = flow.indexOf(status);
+                    return new CustomerReservationStep(
+                            status,
+                            status.getLabel(),
+                            customerStepDescription(status),
+                            currentIndex >= 0 && stepIndex < currentIndex,
+                            status == reservation.getStatus()
+                    );
+                })
+                .toList();
+    }
+
+    private String customerStepDescription(ReservationStatus status) {
+        return switch (status) {
+            case RECEIVED -> "예약이 접수되었습니다.";
+            case CONSULTING -> "일정과 현장 조건을 확인합니다.";
+            case ESTIMATE_SENT -> "확정 전 견적을 안내합니다.";
+            case CONFIRMED -> "견적 동의 후 일정이 확정됩니다.";
+            case COMPLETED -> "이사가 완료되었습니다.";
+            case CANCELED -> "예약이 취소되었습니다.";
+        };
+    }
+
+    private String customerNextGuide(Reservation reservation) {
+        return switch (reservation.getStatus()) {
+            case RECEIVED -> "예약 내용을 확인한 뒤 상담을 시작합니다. 연락을 기다려 주세요.";
+            case CONSULTING -> "상담을 통해 주소, 짐 양, 현장 조건을 확인하고 견적을 안내합니다.";
+            case ESTIMATE_SENT -> reservation.hasEstimateAcceptance()
+                    ? "견적 동의가 완료되었습니다. 일정 확정을 기다려 주세요."
+                    : "견적을 확인한 뒤 동의하면 예약이 확정됩니다.";
+            case CONFIRMED -> "이사 일정이 확정되었습니다. 예약 내용을 다시 확인해 주세요.";
+            case COMPLETED -> "이사가 완료되었습니다. 이용 후 리뷰를 남길 수 있습니다.";
+            case CANCELED -> "예약이 취소되었습니다. 새 예약이 필요하면 예약 신청을 다시 진행해 주세요.";
+        };
     }
 }

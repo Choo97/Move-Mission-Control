@@ -691,6 +691,99 @@ small {
     margin-bottom: 18px;
 }
 
+.customer-progress-panel .section-title p:not(.eyebrow) {
+    margin: 8px 0 0;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.customer-progress-steps {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.customer-progress-steps li {
+    position: relative;
+    display: grid;
+    gap: 8px;
+    min-height: 142px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface-soft);
+    padding: 14px;
+}
+
+.customer-progress-steps li.is-done {
+    background: rgba(255, 255, 255, 0.86);
+}
+
+.customer-progress-steps li.is-current {
+    border-color: var(--blue);
+    background: var(--white);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 16%, transparent);
+}
+
+.customer-progress-steps.is-canceled li {
+    opacity: 0.58;
+}
+
+.customer-progress-steps span {
+    justify-self: start;
+    border-radius: 999px;
+    background: var(--white);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 900;
+    padding: 5px 8px;
+}
+
+.customer-progress-steps li.is-current span {
+    background: var(--blue);
+    color: var(--white);
+}
+
+.customer-progress-steps strong {
+    color: var(--navy);
+    font-size: 18px;
+}
+
+.customer-progress-steps small {
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+.customer-next-card {
+    display: grid;
+    gap: 8px;
+    margin-top: 14px;
+    border: 1px solid color-mix(in srgb, var(--blue) 28%, transparent);
+    border-radius: 8px;
+    background: linear-gradient(180deg, var(--white), var(--surface-soft));
+    padding: 16px;
+}
+
+.customer-next-card strong {
+    color: var(--blue-strong);
+}
+
+.customer-next-card span {
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.customer-next-card.is-canceled {
+    border-color: rgba(220, 38, 38, 0.28);
+    background: #fff1f2;
+}
+
+.customer-next-card.is-canceled strong {
+    color: var(--red);
+}
+
 .lookup-guide {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1931,6 +2024,7 @@ td button {
     .faq-list,
     .table-edit-form,
     .customer-summary,
+    .customer-progress-steps,
     .status-steps,
     .lookup-guide,
     .admin-layout-guide,
