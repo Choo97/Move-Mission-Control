@@ -1303,6 +1303,56 @@ small {
     font-size: 14px;
 }
 
+.today-schedule {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 18px;
+    border: 1px solid color-mix(in srgb, var(--blue) 36%, transparent);
+    border-radius: 8px;
+    background: linear-gradient(180deg, var(--white), var(--surface-soft));
+    box-shadow: var(--shadow);
+    padding: 22px;
+}
+
+.today-schedule .section-title {
+    margin-bottom: 0;
+}
+
+.today-schedule .section-title p:not(.eyebrow) {
+    margin: 8px 0 0;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.today-schedule-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 10px;
+}
+
+.today-schedule-list a {
+    display: grid;
+    gap: 6px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--white);
+    padding: 14px;
+}
+
+.today-schedule-list a:hover {
+    border-color: var(--blue);
+}
+
+.today-schedule-list span {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.today-schedule-list strong {
+    color: var(--navy);
+}
+
 .calendar-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 360px;
@@ -1398,6 +1448,7 @@ small {
 
 .calendar-day--today {
     border-color: var(--blue);
+    background: linear-gradient(180deg, var(--white), var(--surface-soft));
 }
 
 .calendar-day--selected {

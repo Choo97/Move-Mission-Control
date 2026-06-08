@@ -30,6 +30,31 @@
            th:href="@{/admin/calendar(month=${nextMonth})}">다음 달</a>
     </section>
 
+    <section class="today-schedule">
+        <div class="section-title">
+            <p class="eyebrow">Today</p>
+            <h2 th:text="${today + ' 오늘 일정'}">오늘 일정</h2>
+            <p th:text="${todayReservations.size() + '건의 이사 일정이 있습니다.'}">0건의 이사 일정이 있습니다.</p>
+        </div>
+
+        <p class="empty" th:if="${todayReservations.isEmpty()}">오늘 예정된 이사 일정이 없습니다.</p>
+
+        <div class="today-schedule-list" th:unless="${todayReservations.isEmpty()}">
+            <a th:each="reservation : ${todayReservations}"
+               th:href="@{/admin/reservations/{id}(id=${reservation.id})}">
+                <span th:text="${reservation.moveTime + ' / ' + reservation.status.label}">09:00 / 접수</span>
+                <strong th:text="${reservation.customerName + ' / ' + reservation.moveType.label}">홍길동 / 원룸</strong>
+            </a>
+        </div>
+
+        <div class="actions">
+            <a class="button button--primary"
+               th:href="@{/admin/calendar(month=${#temporals.format(today, 'yyyy-MM')}, date=${today})}">오늘 달력 보기</a>
+            <a class="button button--ghost"
+               th:href="@{/admin/reservations(startDate=${today}, endDate=${today}, sort='MOVE_DATE')}">오늘 목록 보기</a>
+        </div>
+    </section>
+
     <section class="calendar-layout">
         <article class="calendar-panel">
             <div class="calendar-legend" aria-label="예약 상태 색상">

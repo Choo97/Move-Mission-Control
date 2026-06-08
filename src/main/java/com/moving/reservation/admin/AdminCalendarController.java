@@ -51,6 +51,14 @@ public class AdminCalendarController {
                 .collect(Collectors.groupingBy(Reservation::getMoveDate));
         List<List<AdminCalendarDay>> weeks = calendarWeeks(selectedMonth, selectedDate, today, reservationsByDate);
         List<Reservation> selectedReservations = reservationsByDate.getOrDefault(selectedDate, List.of());
+        List<Reservation> todayReservations = reservationService.search(
+                null,
+                null,
+                today,
+                today,
+                false,
+                ReservationSort.MOVE_DATE
+        );
 
         model.addAttribute("selectedMonth", selectedMonth);
         model.addAttribute("previousMonth", previousMonth);
@@ -59,6 +67,7 @@ public class AdminCalendarController {
         model.addAttribute("today", today);
         model.addAttribute("weeks", weeks);
         model.addAttribute("selectedReservations", selectedReservations);
+        model.addAttribute("todayReservations", todayReservations);
         model.addAttribute("monthReservationCount", monthReservations.size());
 
         return "admin/calendar";
