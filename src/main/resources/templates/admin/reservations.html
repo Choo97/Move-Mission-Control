@@ -185,6 +185,8 @@
         </label>
         <div class="filter-actions">
             <button type="submit">검색</button>
+            <a class="button button--ghost"
+               th:href="@{/admin/reservations/export.csv(status=${selectedStatus}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, needsDistance=${needsDistance}, sort=${selectedSort})}">CSV 다운로드</a>
             <a class="button button--ghost" th:href="@{/admin/reservations}">초기화</a>
         </div>
         <div class="quick-filters">

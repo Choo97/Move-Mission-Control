@@ -46,6 +46,7 @@ public class AdminReservationController {
     private final EstimateDocumentPdfService estimateDocumentPdfService;
     private final AdminAccountService adminAccountService;
     private final AdminAuditLogService adminAuditLogService;
+    private final AdminReservationCsvExporter adminReservationCsvExporter;
     private static final int DEFAULT_RESERVATION_PAGE_SIZE = 10;
     private static final List<Integer> RESERVATION_PAGE_SIZES = List.of(10, 20, 50);
 
@@ -54,13 +55,15 @@ public class AdminReservationController {
                                       ReviewService reviewService,
                                       EstimateDocumentPdfService estimateDocumentPdfService,
                                       AdminAccountService adminAccountService,
-                                      AdminAuditLogService adminAuditLogService) {
+                                      AdminAuditLogService adminAuditLogService,
+                                      AdminReservationCsvExporter adminReservationCsvExporter) {
         this.reservationService = reservationService;
         this.customerNotificationService = customerNotificationService;
         this.reviewService = reviewService;
         this.estimateDocumentPdfService = estimateDocumentPdfService;
         this.adminAccountService = adminAccountService;
         this.adminAuditLogService = adminAuditLogService;
+        this.adminReservationCsvExporter = adminReservationCsvExporter;
     }
 
     @GetMapping
@@ -144,6 +147,27 @@ public class AdminReservationController {
 
     private int selectedPageSize(int size) {
         return RESERVATION_PAGE_SIZES.contains(size) ? size : DEFAULT_RESERVATION_PAGE_SIZE;
+    }
+
+    @GetMapping("/export.csv")
+    public ResponseEntity<byte[]> exportCsv(@RequestParam(required = false) ReservationStatus status,
+                                            @RequestParam(required = false) String keyword,
+                                            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                                            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+                                            @RequestParam(required = false) Boolean needsDistance,
+                                            @RequestParam(required = false) ReservationSort sort) {
+        ReservationSort selectedSort = sort == null ? ReservationSort.PRIORITY : sort;
+        byte[] csv = adminReservationCsvExporter.export(
+                reservationService.search(status, keyword, startDate, endDate, needsDistance, selectedSort)
+        );
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                        .filename("admin-reservations.csv", StandardCharsets.UTF_8)
+                        .build()
+                        .toString())
+                .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
+                .body(csv);
     }
 
     @GetMapping("/{id}")
