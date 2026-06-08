@@ -63,6 +63,21 @@
         </div>
     </section>
 
+    <section class="guide-panel customer-guide-panel">
+        <div class="section-title">
+            <p class="eyebrow">Customer Guide</p>
+            <h2>고객 안내</h2>
+            <p>현재 예약 단계에서 확인하거나 준비하면 좋은 내용을 정리했습니다.</p>
+        </div>
+
+        <div class="customer-guide-grid">
+            <article th:each="guide : ${customerGuideItems}">
+                <strong th:text="${guide.title()}">연락 받을 준비</strong>
+                <span th:text="${guide.description()}">상담 안내를 받을 수 있도록 연락처를 확인해 주세요.</span>
+            </article>
+        </div>
+    </section>
+
     <div class="actions customer-actions">
         <a class="button button--primary" th:if="${reservation.editable}" th:href="@{/reservations/{id}/edit(id=${reservation.id})}">예약 수정</a>
         <a class="button button--ghost" th:href="@{/reservations/{id}/estimate-document(id=${reservation.id})}">견적 확정서</a>

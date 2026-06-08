@@ -784,6 +784,38 @@ small {
     color: var(--red);
 }
 
+.customer-guide-panel .section-title p:not(.eyebrow) {
+    margin: 8px 0 0;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.customer-guide-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.customer-guide-grid article {
+    display: grid;
+    gap: 8px;
+    min-height: 150px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: linear-gradient(180deg, var(--white), var(--surface-soft));
+    padding: 16px;
+}
+
+.customer-guide-grid strong {
+    color: var(--navy);
+    font-size: 18px;
+}
+
+.customer-guide-grid span {
+    color: var(--muted);
+    line-height: 1.55;
+}
+
 .lookup-guide {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2025,6 +2057,7 @@ td button {
     .table-edit-form,
     .customer-summary,
     .customer-progress-steps,
+    .customer-guide-grid,
     .status-steps,
     .lookup-guide,
     .admin-layout-guide,
