@@ -155,10 +155,17 @@ public class AdminReservationController {
                                             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                                             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
                                             @RequestParam(required = false) Boolean needsDistance,
-                                            @RequestParam(required = false) ReservationSort sort) {
+                                            @RequestParam(required = false) ReservationSort sort,
+                                            Principal principal) {
         ReservationSort selectedSort = sort == null ? ReservationSort.PRIORITY : sort;
-        byte[] csv = adminReservationCsvExporter.export(
-                reservationService.search(status, keyword, startDate, endDate, needsDistance, selectedSort)
+        List<Reservation> reservations = reservationService.search(status, keyword, startDate, endDate, needsDistance, selectedSort);
+        byte[] csv = adminReservationCsvExporter.export(reservations);
+
+        adminAuditLogService.record(
+                null,
+                "예약 목록 CSV 다운로드",
+                csvExportAuditDetail(status, keyword, startDate, endDate, needsDistance, selectedSort, reservations.size()),
+                principal == null ? null : principal.getName()
         );
 
         return ResponseEntity.ok()
@@ -168,6 +175,22 @@ public class AdminReservationController {
                         .toString())
                 .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
                 .body(csv);
+    }
+
+    private String csvExportAuditDetail(ReservationStatus status,
+                                        String keyword,
+                                        LocalDate startDate,
+                                        LocalDate endDate,
+                                        Boolean needsDistance,
+                                        ReservationSort sort,
+                                        int exportedCount) {
+        return "다운로드 건수 " + exportedCount + "건"
+                + " / 상태 " + (status == null ? "전체" : status.getLabel())
+                + " / 검색어 " + (keyword == null || keyword.isBlank() ? "없음" : keyword.trim())
+                + " / 시작일 " + (startDate == null ? "전체" : startDate)
+                + " / 종료일 " + (endDate == null ? "전체" : endDate)
+                + " / 거리 확인 필요 " + (Boolean.TRUE.equals(needsDistance) ? "예" : "아니오")
+                + " / 정렬 " + sort.getLabel();
     }
 
     @GetMapping("/{id}")
