@@ -69,8 +69,13 @@ public class AdminCalendarController {
         model.addAttribute("selectedReservations", selectedReservations);
         model.addAttribute("todayReservations", todayReservations);
         model.addAttribute("monthReservationCount", monthReservations.size());
+        model.addAttribute("calendarReturnUrl", calendarReturnUrl(selectedMonth, selectedDate));
 
         return "admin/calendar";
+    }
+
+    private String calendarReturnUrl(YearMonth selectedMonth, LocalDate selectedDate) {
+        return "/admin/calendar?month=" + selectedMonth + "&date=" + selectedDate;
     }
 
     private YearMonth parseMonth(String month, LocalDate today) {

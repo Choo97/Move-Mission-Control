@@ -1621,6 +1621,23 @@ small {
     background: var(--white);
 }
 
+.agenda-status-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.agenda-status-form select,
+.agenda-status-form button {
+    min-height: 36px;
+    padding: 8px 10px;
+}
+
+.agenda-status-form button {
+    white-space: nowrap;
+}
+
 .audit-list div {
     display: grid;
     justify-content: stretch;

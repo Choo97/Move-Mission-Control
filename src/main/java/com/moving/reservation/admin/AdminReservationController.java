@@ -262,6 +262,10 @@ public class AdminReservationController {
             return "redirect:" + listRedirectUrl(returnQuery);
         }
 
+        if ("calendar".equals(returnTo)) {
+            return "redirect:" + calendarRedirectUrl(returnQuery);
+        }
+
         return "redirect:" + detailRedirectUrl(id, returnQuery);
     }
 
@@ -282,6 +286,26 @@ public class AdminReservationController {
             return query == null || query.isBlank() ? path : path + "?" + query;
         } catch (URISyntaxException exception) {
             return "/admin/reservations";
+        }
+    }
+
+    private String calendarRedirectUrl(String returnQuery) {
+        if (returnQuery == null || returnQuery.isBlank()) {
+            return "/admin/calendar";
+        }
+
+        try {
+            URI uri = new URI(returnQuery);
+            String path = uri.getPath();
+
+            if (!"/admin/calendar".equals(path)) {
+                return "/admin/calendar";
+            }
+
+            String query = uri.getRawQuery();
+            return query == null || query.isBlank() ? path : path + "?" + query;
+        } catch (URISyntaxException exception) {
+            return "/admin/calendar";
         }
     }
 
