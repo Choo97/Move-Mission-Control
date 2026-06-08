@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>고객 안내 관리 | Move Mission Control</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" th:href="@{/}">Move Mission Control</a>
+    <nav th:replace="~{fragments/admin-nav :: adminNav}"></nav>
+</header>
+
+<main class="page">
+    <section class="page-heading">
+        <p class="eyebrow">Customer Guide Manager</p>
+        <h1>고객 안내 관리</h1>
+        <p>예약 상세 화면에 표시되는 상태별 고객 안내 문구를 관리합니다.</p>
+    </section>
+
+    <p class="notice" th:if="${customerGuideMessage}" th:text="${customerGuideMessage}">고객 안내가 저장되었습니다.</p>
+    <p class="alert" th:if="${customerGuideError}" th:text="${customerGuideError}">고객 안내를 저장할 수 없습니다.</p>
+
+    <form class="form-shell" th:action="@{/admin/customer-guides}" th:object="${customerGuideSaveRequest}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+        <div class="field-grid">
+            <label>
+                예약 상태
+                <select th:field="*{status}">
+                    <option value="">상태 선택</option>
+                    <option th:each="status : ${statuses}" th:value="${status}" th:text="${status.label}">접수</option>
+                </select>
+                <small th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></small>
+            </label>
+            <label>
+                정렬 순서
+                <input type="number" th:field="*{displayOrder}" min="1" step="1" placeholder="예: 1">
+                <small th:if="${#fields.hasErrors('displayOrder')}" th:errors="*{displayOrder}"></small>
+            </label>
+        </div>
+
+        <label>
+            제목
+            <input type="text" th:field="*{title}" placeholder="예: 연락 받을 준비">
+            <small th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></small>
+        </label>
+
+        <label>
+            설명
+            <textarea th:field="*{description}" rows="4" placeholder="고객에게 보여줄 안내 문구를 입력하세요."></textarea>
+            <small th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></small>
+        </label>
+
+        <div class="form-actions">
+            <a class="button button--ghost" th:href="@{/reservations/search}">고객 예약조회</a>
+            <button class="button button--primary" type="submit">안내 추가</button>
+        </div>
+    </form>
+
+    <section class="section-title">
+        <p class="eyebrow">Guide List</p>
+        <h2>등록된 고객 안내</h2>
+    </section>
+
+    <section class="table-shell">
+        <table>
+            <thead>
+            <tr>
+                <th>상태</th>
+                <th>순서</th>
+                <th>제목 / 설명</th>
+                <th>공개</th>
+                <th>수정</th>
+                <th>상태 변경</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${customerGuides.isEmpty()}">
+                <td colspan="6" class="empty">등록된 고객 안내가 없습니다.</td>
+            </tr>
+            <tr th:each="guide : ${customerGuides}">
+                <td th:text="${guide.status.label}">접수</td>
+                <td th:text="${guide.displayOrder}">1</td>
+                <td>
+                    <strong th:text="${guide.title}">연락 받을 준비</strong>
+                    <span th:text="${guide.description}">상담 안내를 받을 수 있도록 연락처를 확인해 주세요.</span>
+                </td>
+                <td th:text="${guide.active ? '공개' : '숨김'}">공개</td>
+                <td>
+                    <form class="table-edit-form table-edit-form--guide" th:action="@{/admin/customer-guides/{id}(id=${guide.id})}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <select name="status" aria-label="예약 상태">
+                            <option th:each="status : ${statuses}"
+                                    th:value="${status}"
+                                    th:text="${status.label}"
+                                    th:selected="${status == guide.status}">접수</option>
+                        </select>
+                        <input type="number" name="displayOrder" min="1" step="1" th:value="${guide.displayOrder}" aria-label="정렬 순서">
+                        <input type="text" name="title" th:value="${guide.title}" aria-label="제목">
+                        <textarea name="description" rows="3" aria-label="설명" th:text="${guide.description}"></textarea>
+                        <button type="submit">수정</button>
+                    </form>
+                </td>
+                <td>
+                    <form th:if="${guide.active}" th:action="@{/admin/customer-guides/{id}/deactivate(id=${guide.id})}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <button type="submit">숨김</button>
+                    </form>
+                    <form th:unless="${guide.active}" th:action="@{/admin/customer-guides/{id}/activate(id=${guide.id})}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <button type="submit">공개</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+<script th:src="@{/js/theme.js}"></script>
+</body>
+</html>

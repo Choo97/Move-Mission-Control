@@ -1986,6 +1986,11 @@ td button {
     min-width: 420px;
 }
 
+.table-edit-form--guide {
+    grid-template-columns: 120px 84px minmax(180px, 1fr);
+    min-width: 620px;
+}
+
 .table-edit-form textarea,
 .table-edit-form button {
     grid-column: 1 / -1;
