@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>관리자 일정 달력 | Move Mission Control</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" th:href="@{/}">Move Mission Control</a>
+    <nav th:replace="~{fragments/admin-nav :: adminNav}"></nav>
+</header>
+
+<main class="page">
+    <section class="page-heading">
+        <p class="eyebrow">Move Calendar</p>
+        <h1>이사 일정 달력</h1>
+        <p>월간 예약 흐름과 선택한 날짜의 상세 일정을 함께 확인합니다.</p>
+    </section>
+
+    <section class="calendar-toolbar">
+        <a class="button button--ghost"
+           th:href="@{/admin/calendar(month=${previousMonth})}">이전 달</a>
+        <div>
+            <span th:text="${selectedMonth}">2026-06</span>
+            <strong th:text="${monthReservationCount + '건 예약'}">0건 예약</strong>
+        </div>
+        <a class="button button--ghost"
+           th:href="@{/admin/calendar(month=${nextMonth})}">다음 달</a>
+    </section>
+
+    <section class="calendar-layout">
+        <article class="calendar-panel">
+            <div class="calendar-weekdays">
+                <span>일</span>
+                <span>월</span>
+                <span>화</span>
+                <span>수</span>
+                <span>목</span>
+                <span>금</span>
+                <span>토</span>
+            </div>
+
+            <div class="calendar-grid">
+                <th:block th:each="week : ${weeks}">
+                    <div class="calendar-day"
+                         th:each="day : ${week}"
+                         th:classappend="${!day.currentMonth() ? ' calendar-day--muted' : ''}
+                                + ${day.today() ? ' calendar-day--today' : ''}
+                                + ${day.selected() ? ' calendar-day--selected' : ''}">
+                        <a th:href="@{/admin/calendar(month=${selectedMonth}, date=${day.date()})}">
+                            <span th:text="${day.date().getDayOfMonth()}">1</span>
+                            <strong th:if="${day.reservations().size() > 0}"
+                                    th:text="${day.reservations().size() + '건'}">1건</strong>
+                        </a>
+                        <div class="calendar-day-items" th:if="${day.reservations().size() > 0}">
+                            <a th:each="reservation, iterStat : ${day.reservations()}"
+                               th:if="${iterStat.index < 2}"
+                               th:href="@{/admin/reservations/{id}(id=${reservation.id})}"
+                               th:text="${reservation.moveTime + ' ' + reservation.customerName}">
+                                09:00 홍길동
+                            </a>
+                            <span th:if="${day.reservations().size() > 2}"
+                                  th:text="${'외 ' + (day.reservations().size() - 2) + '건'}">외 1건</span>
+                        </div>
+                    </div>
+                </th:block>
+            </div>
+        </article>
+
+        <aside class="calendar-agenda">
+            <div class="section-title">
+                <p class="eyebrow">Selected Day</p>
+                <h2 th:text="${selectedDate + ' 일정'}">2026-06-08 일정</h2>
+                <p th:text="${selectedReservations.size() + '건의 예약이 있습니다.'}">0건의 예약이 있습니다.</p>
+            </div>
+
+            <p class="empty" th:if="${selectedReservations.isEmpty()}">선택한 날짜에 예약이 없습니다.</p>
+
+            <div class="agenda-list" th:unless="${selectedReservations.isEmpty()}">
+                <a class="agenda-item"
+                   th:each="reservation : ${selectedReservations}"
+                   th:href="@{/admin/reservations/{id}(id=${reservation.id})}">
+                    <span th:text="${reservation.moveTime + ' / ' + reservation.status.label}">09:00 / 접수</span>
+                    <strong th:text="${reservation.customerName + ' / ' + reservation.moveType.label}">홍길동 / 원룸</strong>
+                    <small th:text="${reservation.fromAddress + ' -> ' + reservation.toAddress}">출발 -> 도착</small>
+                </a>
+            </div>
+
+            <div class="actions">
+                <a class="button button--primary"
+                   th:href="@{/admin/reservations(startDate=${selectedDate}, endDate=${selectedDate}, sort='MOVE_DATE')}">선택 날짜 목록 보기</a>
+                <a class="button button--ghost" th:href="@{/admin/calendar}">오늘로 이동</a>
+            </div>
+        </aside>
+    </section>
+</main>
+<script th:src="@{/js/theme.js}"></script>
+</body>
+</html>
