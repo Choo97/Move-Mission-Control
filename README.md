@@ -155,47 +155,11 @@ CREATE DATABASE movemission CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 애플리케이션은 `spring.jpa.hibernate.ddl-auto=update` 설정을 사용하므로, 서버가 처음 실행될 때 필요한 테이블을 자동으로 생성합니다.
 
-### 2. Windows CMD
-
-```bat
-cd "C:\Users\Chanho\Documents\이사 예약 웹 서비스"
-set JAVA_HOME=C:\Dev\java\jdk-17.0.7
-set PATH=%JAVA_HOME%\bin;%PATH%
-mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
-```
-
-Java 17만 설치되어 있고 `java -version`이 17로 나오면 `JAVA_HOME`과 `PATH` 설정 줄은 생략해도 됩니다.
-
-### 3. Windows PowerShell
-
-```powershell
-cd "C:\Users\Chanho\Documents\이사 예약 웹 서비스"
-$env:JAVA_HOME="C:\Dev\java\jdk-17.0.7"
-$env:PATH="$env:JAVA_HOME\bin;$env:PATH"
-mvn spring-boot:run "-Dspring-boot.run.arguments=--server.port=8081"
-```
-
-PowerShell에서는 `-D...` 옵션이 해석되는 방식이 CMD와 다를 수 있으므로 따옴표로 감싸는 편이 안전합니다.
-
-### 4. Git Bash, macOS, Linux
+### Git Bash, macOS, Linux
 
 ```bash
-cd "/path/to/이사 예약 웹 서비스"
-export JAVA_HOME=/path/to/jdk-17
-export PATH="$JAVA_HOME/bin:$PATH"
 mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
 ```
-
-macOS에서 Homebrew로 Java 17을 설치했다면 보통 아래처럼 잡을 수 있습니다.
-
-```bash
-export JAVA_HOME=$(/usr/libexec/java_home -v 17)
-export PATH="$JAVA_HOME/bin:$PATH"
-```
-
-Linux에서는 배포판에 따라 Java 경로가 다를 수 있습니다. `java -version`으로 17이 확인되면 `JAVA_HOME` 설정 없이 바로 실행해도 됩니다.
-
-### 5. 접속 주소
 
 서버가 실행되면 브라우저에서 아래 주소로 접속합니다.
 
