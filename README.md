@@ -138,7 +138,24 @@ Spring Boot 기반 이사 예약 웹 서비스입니다. 고객은 이사 예약
 
 ## 실행 방법
 
-현재 PC에는 Java 11과 Java 17이 함께 있으므로, CMD에서 Java 17을 먼저 잡고 실행합니다.
+이 프로젝트는 Java 17, Maven, MySQL이 설치되어 있으면 Windows, macOS, Linux에서 실행할 수 있습니다.
+
+### 1. 공통 준비 사항
+
+- Java 17 설치
+- Maven 설치
+- MySQL 실행
+- MySQL에 `movemission` 데이터베이스 생성
+
+MySQL 접속 정보는 아래 `MySQL Database 접속 정보` 섹션과 맞춰 둡니다.
+
+```sql
+CREATE DATABASE movemission CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+애플리케이션은 `spring.jpa.hibernate.ddl-auto=update` 설정을 사용하므로, 서버가 처음 실행될 때 필요한 테이블을 자동으로 생성합니다.
+
+### 2. Windows CMD
 
 ```bat
 cd "C:\Users\Chanho\Documents\이사 예약 웹 서비스"
@@ -147,10 +164,50 @@ set PATH=%JAVA_HOME%\bin;%PATH%
 mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
 ```
 
+Java 17만 설치되어 있고 `java -version`이 17로 나오면 `JAVA_HOME`과 `PATH` 설정 줄은 생략해도 됩니다.
+
+### 3. Windows PowerShell
+
+```powershell
+cd "C:\Users\Chanho\Documents\이사 예약 웹 서비스"
+$env:JAVA_HOME="C:\Dev\java\jdk-17.0.7"
+$env:PATH="$env:JAVA_HOME\bin;$env:PATH"
+mvn spring-boot:run "-Dspring-boot.run.arguments=--server.port=8081"
+```
+
+PowerShell에서는 `-D...` 옵션이 해석되는 방식이 CMD와 다를 수 있으므로 따옴표로 감싸는 편이 안전합니다.
+
+### 4. Git Bash, macOS, Linux
+
+```bash
+cd "/path/to/이사 예약 웹 서비스"
+export JAVA_HOME=/path/to/jdk-17
+export PATH="$JAVA_HOME/bin:$PATH"
+mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
+```
+
+macOS에서 Homebrew로 Java 17을 설치했다면 보통 아래처럼 잡을 수 있습니다.
+
+```bash
+export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+export PATH="$JAVA_HOME/bin:$PATH"
+```
+
+Linux에서는 배포판에 따라 Java 경로가 다를 수 있습니다. `java -version`으로 17이 확인되면 `JAVA_HOME` 설정 없이 바로 실행해도 됩니다.
+
+### 5. 접속 주소
+
 서버가 실행되면 브라우저에서 아래 주소로 접속합니다.
 
 ```text
 http://localhost:8081/
+```
+
+관리자 화면은 아래 기본 계정으로 로그인할 수 있습니다.
+
+```text
+ID       admin
+Password admin1234
 ```
 
 ## Kakao 지도 API 설정
