@@ -438,6 +438,29 @@
 
     <section class="history-panel">
         <div class="section-title">
+            <p class="eyebrow">Customer Request History</p>
+            <h2>고객 요청 이력</h2>
+            <p>고객이 예약 수정 또는 취소를 요청한 시점과 변경 내용을 확인합니다.</p>
+        </div>
+
+        <p class="empty" th:if="${customerActionHistories.isEmpty()}">아직 고객 요청 이력이 없습니다.</p>
+
+        <ol class="history-list audit-list customer-action-history-list" th:unless="${customerActionHistories.isEmpty()}">
+            <li th:each="history : ${customerActionHistories}">
+                <div>
+                    <strong th:text="${history.actionType.label}">예약 수정</strong>
+                    <span th:text="${history.summary}">고객이 예약 정보를 수정했습니다.</span>
+                    <span class="history-detail" th:text="${history.detail}">변경 내용</span>
+                    <span th:text="${history.requestedBy + ' / ' + #temporals.format(history.createdAt, 'yyyy-MM-dd HH:mm')}">
+                        customer / 2026-06-09 10:00
+                    </span>
+                </div>
+            </li>
+        </ol>
+    </section>
+
+    <section class="history-panel">
+        <div class="section-title">
             <p class="eyebrow">Admin Audit</p>
             <h2>관리자 작업 감사 로그</h2>
             <p>견적, 거리, 메모, 이메일 발송처럼 관리자가 처리한 주요 작업을 기록합니다.</p>

@@ -8,6 +8,7 @@ import com.moving.reservation.review.ReviewService;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +23,7 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final ReservationStatusHistoryRepository statusHistoryRepository;
     private final ReservationPhotoRepository reservationPhotoRepository;
+    private final ReservationCustomerActionHistoryRepository customerActionHistoryRepository;
     private final ReservationPhotoStorage reservationPhotoStorage;
     private final CouponService couponService;
     private final ReviewService reviewService;
@@ -32,6 +34,7 @@ public class ReservationService {
     public ReservationService(ReservationRepository reservationRepository,
                               ReservationStatusHistoryRepository statusHistoryRepository,
                               ReservationPhotoRepository reservationPhotoRepository,
+                              ReservationCustomerActionHistoryRepository customerActionHistoryRepository,
                               ReservationPhotoStorage reservationPhotoStorage,
                               CouponService couponService,
                               ReviewService reviewService,
@@ -41,6 +44,7 @@ public class ReservationService {
         this.reservationRepository = reservationRepository;
         this.statusHistoryRepository = statusHistoryRepository;
         this.reservationPhotoRepository = reservationPhotoRepository;
+        this.customerActionHistoryRepository = customerActionHistoryRepository;
         this.reservationPhotoStorage = reservationPhotoStorage;
         this.couponService = couponService;
         this.reviewService = reviewService;
@@ -155,6 +159,10 @@ public class ReservationService {
         return reservationPhotoRepository.findByReservationIdOrderByUploadedAtAsc(reservationId);
     }
 
+    public List<ReservationCustomerActionHistory> findCustomerActionHistories(Long reservationId) {
+        return customerActionHistoryRepository.findByReservationIdOrderByCreatedAtDesc(reservationId);
+    }
+
     public List<ReservationEstimateLine> estimateLines(Reservation reservation) {
         return estimateCalculator.calculateLines(
                 reservation.getMoveType(),
@@ -223,6 +231,13 @@ public class ReservationService {
             throw new IllegalArgumentException("현재 상태에서는 예약을 취소할 수 없습니다.");
         }
 
+        customerActionHistoryRepository.save(new ReservationCustomerActionHistory(
+                reservation,
+                CustomerActionType.CANCEL,
+                "고객이 예약 취소를 요청했습니다.",
+                "취소 요청 당시 상태: " + reservation.getStatus().getLabel(),
+                "customer"
+        ));
         changeStatus(reservation, ReservationStatus.CANCELED, "customer");
     }
 
@@ -252,6 +267,7 @@ public class ReservationService {
             throw new IllegalArgumentException("현재 상태에서는 예약을 수정할 수 없습니다.");
         }
 
+        String changeDetail = customerUpdateChangeDetail(reservation, request);
         reservation.updateDetails(
                 request.getMoveDate(),
                 request.getMoveTime(),
@@ -273,6 +289,13 @@ public class ReservationService {
                 reservation.isFromLadderTruck(),
                 reservation.isToLadderTruck(),
                 reservation.getDistanceKm()
+        ));
+        customerActionHistoryRepository.save(new ReservationCustomerActionHistory(
+                reservation,
+                CustomerActionType.UPDATE,
+                "고객이 예약 정보를 수정했습니다.",
+                changeDetail,
+                "customer"
         ));
     }
 
@@ -322,6 +345,36 @@ public class ReservationService {
                 reservation.isToLadderTruck(),
                 reservation.getDistanceKm()
         ));
+    }
+
+    private String customerUpdateChangeDetail(Reservation reservation, ReservationUpdateRequest request) {
+        List<String> changes = new java.util.ArrayList<>();
+        addChange(changes, "이사일", reservation.getMoveDate(), request.getMoveDate());
+        addChange(changes, "희망 시간", reservation.getMoveTime(), request.getMoveTime());
+        addChange(changes, "출발 주소", reservation.getFromAddress(), request.getFromAddress());
+        addChange(changes, "도착 주소", reservation.getToAddress(), request.getToAddress());
+        addChange(changes, "출발지 층수", reservation.getFromFloor(), request.getFromFloor());
+        addChange(changes, "도착지 층수", reservation.getToFloor(), request.getToFloor());
+        addChange(changes, "출발지 사다리차", reservation.isFromLadderTruck() ? "필요" : "없음", request.isFromLadderTruck() ? "필요" : "없음");
+        addChange(changes, "도착지 사다리차", reservation.isToLadderTruck() ? "필요" : "없음", request.isToLadderTruck() ? "필요" : "없음");
+        addChange(changes, "이메일", emptyLabel(reservation.getEmail()), emptyLabel(request.getEmail()));
+        addChange(changes, "요청사항", emptyLabel(reservation.getMemo()), emptyLabel(request.getMemo()));
+
+        if (changes.isEmpty()) {
+            return "변경된 항목은 없지만 고객이 예약 수정 저장을 요청했습니다.";
+        }
+
+        return String.join("\n", changes);
+    }
+
+    private void addChange(List<String> changes, String label, Object before, Object after) {
+        if (!Objects.equals(before, after)) {
+            changes.add(label + ": " + before + " -> " + after);
+        }
+    }
+
+    private String emptyLabel(String value) {
+        return value == null || value.isBlank() ? "미입력" : value.trim();
     }
 
     @Transactional

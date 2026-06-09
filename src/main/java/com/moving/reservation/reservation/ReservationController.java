@@ -139,6 +139,7 @@ public class ReservationController {
         model.addAttribute("reservation", reservation);
         model.addAttribute("estimateLines", reservationService.estimateLines(reservation));
         model.addAttribute("photos", reservationService.findPhotos(id));
+        model.addAttribute("customerActionHistories", reservationService.findCustomerActionHistories(id));
         model.addAttribute("review", reviewService.findByReservationId(id).orElse(null));
         model.addAttribute("customerSteps", customerSteps(reservation));
         model.addAttribute("customerNextGuide", customerNextGuide(reservation));

@@ -207,6 +207,7 @@ public class AdminReservationController {
         model.addAttribute("estimateLines", reservationService.estimateLines(reservation));
         model.addAttribute("photos", reservationService.findPhotos(id));
         model.addAttribute("statusHistories", reservationService.findStatusHistories(id));
+        model.addAttribute("customerActionHistories", reservationService.findCustomerActionHistories(id));
         model.addAttribute("notifications", customerNotificationService.findByReservationId(id));
         model.addAttribute("auditLogs", adminAuditLogService.findByReservationId(id));
         model.addAttribute("statuses", ReservationStatus.values());

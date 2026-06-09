@@ -1774,6 +1774,15 @@ small {
     line-height: 1.5;
 }
 
+.customer-action-history-list span {
+    white-space: normal;
+    line-height: 1.5;
+}
+
+.customer-action-history-list .history-detail {
+    white-space: pre-line;
+}
+
 .stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
