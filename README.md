@@ -157,6 +157,19 @@ CREATE DATABASE movemission CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 ### Git Bash, macOS, Linux
 
+먼저 Bash에서 Java 17이 잡히는지 확인합니다.
+
+```bash
+java -version
+```
+
+Windows Git Bash에서 Java 11로 표시된다면 현재 터미널에서만 Java 17을 우선 사용하도록 설정합니다.
+
+```bash
+export JAVA_HOME="/c/Dev/java/jdk-17.0.7"
+export PATH="$JAVA_HOME/bin:$PATH"
+```
+
 ```bash
 mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
 ```
