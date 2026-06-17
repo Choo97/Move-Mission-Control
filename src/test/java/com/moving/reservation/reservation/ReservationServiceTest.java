@@ -3,6 +3,9 @@ package com.moving.reservation.reservation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.moving.reservation.coupon.Coupon;
+import com.moving.reservation.coupon.CouponRepository;
+import com.moving.reservation.coupon.DiscountType;
 import com.moving.reservation.notification.CustomerNotification;
 import com.moving.reservation.notification.CustomerNotificationRepository;
 import com.moving.reservation.notification.NotificationChannel;
@@ -33,6 +36,9 @@ class ReservationServiceTest {
 
     @Autowired
     private ReservationStatusHistoryRepository statusHistoryRepository;
+
+    @Autowired
+    private CouponRepository couponRepository;
 
     @Test
     void 예약을_신청하면_예약번호와_연락처로_조회할_수_있다() {
@@ -134,6 +140,47 @@ class ReservationServiceTest {
         assertThat(customerNotificationRepository.findByReservationIdOrderByCreatedAtDesc(createdReservation.getId()))
                 .filteredOn(notification -> notification.getChannel() == NotificationChannel.EMAIL)
                 .isEmpty();
+    }
+
+    @Test
+    void 정액쿠폰을_사용하면_최종견적에서_정해진_금액을_할인한다() {
+        couponRepository.save(new Coupon("FIXED10000", "테스트 정액 쿠폰", DiscountType.FIXED, 10000));
+        ReservationCreateRequest request = reservationCreateRequest();
+        request.setCouponCode("fixed10000");
+
+        Reservation createdReservation = reservationService.create(request);
+
+        assertThat(createdReservation.getEstimatedPrice()).isEqualTo(180000);
+        assertThat(createdReservation.getCouponCode()).isEqualTo("FIXED10000");
+        assertThat(createdReservation.getCouponName()).isEqualTo("테스트 정액 쿠폰");
+        assertThat(createdReservation.getDiscountAmount()).isEqualTo(10000);
+        assertThat(createdReservation.getFinalEstimatedPrice()).isEqualTo(170000);
+    }
+
+    @Test
+    void 정률쿠폰을_사용하면_최종견적에서_비율만큼_할인한다() {
+        couponRepository.save(new Coupon("PERCENT10", "테스트 정률 쿠폰", DiscountType.PERCENT, 10));
+        ReservationCreateRequest request = reservationCreateRequest();
+        request.setCouponCode("PERCENT10");
+
+        Reservation createdReservation = reservationService.create(request);
+
+        assertThat(createdReservation.getEstimatedPrice()).isEqualTo(180000);
+        assertThat(createdReservation.getDiscountAmount()).isEqualTo(18000);
+        assertThat(createdReservation.getFinalEstimatedPrice()).isEqualTo(162000);
+    }
+
+    @Test
+    void 비활성쿠폰은_예약에_사용할_수_없다() {
+        Coupon coupon = new Coupon("DISABLED", "비활성 쿠폰", DiscountType.FIXED, 10000);
+        coupon.deactivate();
+        couponRepository.save(coupon);
+        ReservationCreateRequest request = reservationCreateRequest();
+        request.setCouponCode("DISABLED");
+
+        assertThatThrownBy(() -> reservationService.create(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("사용 가능한 쿠폰을 찾을 수 없습니다.");
     }
 
     private ReservationCreateRequest reservationCreateRequest() {
