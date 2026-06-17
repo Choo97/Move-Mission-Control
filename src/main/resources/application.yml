@@ -49,6 +49,10 @@ notification:
     from: ${NOTIFICATION_EMAIL_FROM:}
     subject-prefix: ${NOTIFICATION_EMAIL_SUBJECT_PREFIX:[Move Mission Control]}
 
+upload:
+  reservation-photo:
+    directory: ${RESERVATION_PHOTO_UPLOAD_DIR:uploads/reservation-photos}
+
 admin:
   initial:
     username: ${ADMIN_INITIAL_USERNAME:admin}

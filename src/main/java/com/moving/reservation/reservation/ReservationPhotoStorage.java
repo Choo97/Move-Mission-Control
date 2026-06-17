@@ -6,14 +6,20 @@ import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 @Component
 public class ReservationPhotoStorage {
 
-    private static final Path STORAGE_DIRECTORY = Path.of("uploads", "reservation-photos");
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(".jpg", ".jpeg", ".png", ".webp");
+
+    private final Path storageDirectory;
+
+    public ReservationPhotoStorage(@Value("${upload.reservation-photo.directory:uploads/reservation-photos}") String storageDirectory) {
+        this.storageDirectory = Path.of(storageDirectory);
+    }
 
     public StoredPhoto store(MultipartFile multipartFile) {
         String submittedFilename = multipartFile.getOriginalFilename() == null ? "photo" : multipartFile.getOriginalFilename();
@@ -27,8 +33,8 @@ public class ReservationPhotoStorage {
         String storedFilename = UUID.randomUUID() + extension;
 
         try {
-            Files.createDirectories(STORAGE_DIRECTORY);
-            multipartFile.transferTo(STORAGE_DIRECTORY.resolve(storedFilename).toAbsolutePath());
+            Files.createDirectories(storageDirectory);
+            multipartFile.transferTo(storageDirectory.resolve(storedFilename).toAbsolutePath());
         } catch (IOException exception) {
             throw new IllegalStateException("짐 사진을 저장하는 중 문제가 발생했습니다.", exception);
         }

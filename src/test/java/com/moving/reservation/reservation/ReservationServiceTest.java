@@ -17,6 +17,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -73,6 +74,27 @@ class ReservationServiceTest {
         assertThatThrownBy(() -> reservationService.search(searchRequest))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("예약 번호와 연락처가 일치하는 예약을 찾을 수 없습니다.");
+    }
+
+    @Test
+    void 예약신청_중_짐사진을_업로드하면_사진정보가_저장된다() {
+        ReservationCreateRequest request = reservationCreateRequest();
+        request.setItemPhotos(List.of(new MockMultipartFile(
+                "itemPhotos",
+                "boxes.png",
+                "image/png",
+                "photo".getBytes()
+        )));
+
+        Reservation createdReservation = reservationService.create(request);
+
+        assertThat(reservationService.findPhotos(createdReservation.getId()))
+                .singleElement()
+                .satisfies(photo -> {
+                    assertThat(photo.getOriginalFilename()).isEqualTo("boxes.png");
+                    assertThat(photo.getStoredFilename()).endsWith(".png");
+                    assertThat(photo.getFileUrl()).startsWith("/uploads/reservation-photos/");
+                });
     }
 
     @Test
