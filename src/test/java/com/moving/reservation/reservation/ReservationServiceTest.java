@@ -26,6 +26,9 @@ class ReservationServiceTest {
     @Autowired
     private CustomerNotificationRepository customerNotificationRepository;
 
+    @Autowired
+    private ReservationStatusHistoryRepository statusHistoryRepository;
+
     @Test
     void 예약을_신청하면_예약번호와_연락처로_조회할_수_있다() {
         Reservation createdReservation = reservationService.create(reservationCreateRequest());
@@ -56,6 +59,44 @@ class ReservationServiceTest {
         assertThatThrownBy(() -> reservationService.search(searchRequest))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("예약 번호와 연락처가 일치하는 예약을 찾을 수 없습니다.");
+    }
+
+    @Test
+    void 관리자가_예약상태를_변경하면_상태와_이력이_저장된다() {
+        Reservation createdReservation = reservationService.create(reservationCreateRequest());
+
+        reservationService.updateStatus(createdReservation.getId(), ReservationStatus.CONSULTING, "admin");
+
+        Reservation updatedReservation = reservationService.get(createdReservation.getId());
+        assertThat(updatedReservation.getStatus()).isEqualTo(ReservationStatus.CONSULTING);
+        assertThat(statusHistoryRepository.findByReservationIdOrderByChangedAtDesc(createdReservation.getId()))
+                .singleElement()
+                .satisfies(history -> {
+                    assertThat(history.getPreviousStatus()).isEqualTo(ReservationStatus.RECEIVED);
+                    assertThat(history.getChangedStatus()).isEqualTo(ReservationStatus.CONSULTING);
+                    assertThat(history.getChangedBy()).isEqualTo("admin");
+                });
+    }
+
+    @Test
+    void 완료된_예약은_상담중으로_되돌릴_수_없다() {
+        Reservation createdReservation = reservationService.create(reservationCreateRequest());
+        reservationService.updateStatus(createdReservation.getId(), ReservationStatus.CONSULTING, "admin");
+        reservationService.updateStatus(createdReservation.getId(), ReservationStatus.ESTIMATE_SENT, "admin");
+        reservationService.updateStatus(createdReservation.getId(), ReservationStatus.CONFIRMED, "admin");
+        reservationService.updateStatus(createdReservation.getId(), ReservationStatus.COMPLETED, "admin");
+
+        assertThatThrownBy(() -> reservationService.updateStatus(
+                createdReservation.getId(),
+                ReservationStatus.CONSULTING,
+                "admin"
+        ))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("현재 상태에서는 '상담중'(으)로 변경할 수 없습니다.");
+
+        assertThat(reservationService.get(createdReservation.getId()).getStatus()).isEqualTo(ReservationStatus.COMPLETED);
+        assertThat(statusHistoryRepository.findByReservationIdOrderByChangedAtDesc(createdReservation.getId()))
+                .hasSize(4);
     }
 
     private ReservationCreateRequest reservationCreateRequest() {
