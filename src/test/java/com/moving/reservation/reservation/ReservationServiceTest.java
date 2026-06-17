@@ -40,6 +40,9 @@ class ReservationServiceTest {
     @Autowired
     private CouponRepository couponRepository;
 
+    @Autowired
+    private ReservationCustomerActionHistoryRepository customerActionHistoryRepository;
+
     @Test
     void 예약을_신청하면_예약번호와_연락처로_조회할_수_있다() {
         Reservation createdReservation = reservationService.create(reservationCreateRequest());
@@ -183,6 +186,73 @@ class ReservationServiceTest {
                 .hasMessage("사용 가능한 쿠폰을 찾을 수 없습니다.");
     }
 
+    @Test
+    void 고객이_예약을_수정하면_예약정보와_수정이력이_저장된다() {
+        Reservation createdReservation = reservationService.create(reservationCreateRequest());
+        ReservationUpdateRequest updateRequest = reservationUpdateRequest();
+
+        reservationService.updateDetails(createdReservation.getId(), updateRequest);
+
+        Reservation updatedReservation = reservationService.get(createdReservation.getId());
+        assertThat(updatedReservation.getMoveDate()).isEqualTo(updateRequest.getMoveDate());
+        assertThat(updatedReservation.getMoveTime()).isEqualTo(updateRequest.getMoveTime());
+        assertThat(updatedReservation.getFromAddress()).isEqualTo("서울시 마포구 월드컵북로 1");
+        assertThat(updatedReservation.getDistanceKm()).isNull();
+        assertThat(customerActionHistoryRepository.findByReservationIdOrderByCreatedAtDesc(createdReservation.getId()))
+                .singleElement()
+                .satisfies(history -> {
+                    assertThat(history.getActionType()).isEqualTo(CustomerActionType.UPDATE);
+                    assertThat(history.getSummary()).isEqualTo("고객이 예약 정보를 수정했습니다.");
+                    assertThat(history.getDetail()).contains("이사일");
+                    assertThat(history.getDetail()).contains("출발 주소");
+                    assertThat(history.getRequestedBy()).isEqualTo("customer");
+                });
+    }
+
+    @Test
+    void 연락처가_다르면_예약을_수정할_수_없다() {
+        Reservation createdReservation = reservationService.create(reservationCreateRequest());
+        ReservationUpdateRequest updateRequest = reservationUpdateRequest();
+        updateRequest.setPhone("010-0000-0000");
+
+        assertThatThrownBy(() -> reservationService.updateDetails(createdReservation.getId(), updateRequest))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("예약 번호와 연락처가 일치하지 않습니다.");
+    }
+
+    @Test
+    void 고객이_예약을_취소하면_상태와_취소이력이_저장된다() {
+        Reservation createdReservation = reservationService.create(reservationCreateRequest());
+
+        reservationService.cancel(createdReservation.getId(), "010-1234-5678");
+
+        assertThat(reservationService.get(createdReservation.getId()).getStatus()).isEqualTo(ReservationStatus.CANCELED);
+        assertThat(customerActionHistoryRepository.findByReservationIdOrderByCreatedAtDesc(createdReservation.getId()))
+                .singleElement()
+                .satisfies(history -> {
+                    assertThat(history.getActionType()).isEqualTo(CustomerActionType.CANCEL);
+                    assertThat(history.getSummary()).isEqualTo("고객이 예약 취소를 요청했습니다.");
+                    assertThat(history.getDetail()).isEqualTo("취소 요청 당시 상태: 접수");
+                    assertThat(history.getRequestedBy()).isEqualTo("customer");
+                });
+        assertThat(statusHistoryRepository.findByReservationIdOrderByChangedAtDesc(createdReservation.getId()))
+                .singleElement()
+                .satisfies(history -> {
+                    assertThat(history.getPreviousStatus()).isEqualTo(ReservationStatus.RECEIVED);
+                    assertThat(history.getChangedStatus()).isEqualTo(ReservationStatus.CANCELED);
+                    assertThat(history.getChangedBy()).isEqualTo("customer");
+                });
+    }
+
+    @Test
+    void 연락처가_다르면_예약을_취소할_수_없다() {
+        Reservation createdReservation = reservationService.create(reservationCreateRequest());
+
+        assertThatThrownBy(() -> reservationService.cancel(createdReservation.getId(), "010-0000-0000"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("예약 번호와 연락처가 일치하지 않습니다.");
+    }
+
     private ReservationCreateRequest reservationCreateRequest() {
         ReservationCreateRequest request = new ReservationCreateRequest();
         request.setCustomerName("홍길동");
@@ -198,6 +268,22 @@ class ReservationServiceTest {
         request.setFromFloor(3);
         request.setToFloor(5);
         request.setMemo("테스트 예약입니다.");
+        return request;
+    }
+
+    private ReservationUpdateRequest reservationUpdateRequest() {
+        ReservationUpdateRequest request = new ReservationUpdateRequest();
+        request.setPhone("010-1234-5678");
+        request.setEmail("updated@example.com");
+        request.setMoveDate(LocalDate.now().plusDays(14));
+        request.setMoveTime(LocalTime.of(14, 0));
+        request.setFromAddress("서울시 마포구 월드컵북로 1");
+        request.setToAddress("서울시 용산구 한강대로 1");
+        request.setFromFloor(2);
+        request.setToFloor(4);
+        request.setFromLadderTruck(false);
+        request.setToLadderTruck(true);
+        request.setMemo("수정된 테스트 예약입니다.");
         return request;
     }
 }
