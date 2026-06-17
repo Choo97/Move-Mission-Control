@@ -174,6 +174,15 @@ export PATH="$JAVA_HOME/bin:$PATH"
 mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
 ```
 
+로컬 SMTP 설정까지 함께 적용해서 실행하려면 `.env.example`을 복사해 `.env.local`을 만들고 실제 값을 입력한 뒤 실행합니다.
+
+```bash
+cp .env.example .env.local
+bash run-local.sh
+```
+
+`.env.local`에는 실제 이메일 계정과 앱 비밀번호가 들어가므로 Git에 올리지 않습니다.
+
 서버가 실행되면 브라우저에서 아래 주소로 접속합니다.
 
 ```text
