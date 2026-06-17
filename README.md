@@ -204,6 +204,8 @@ Password admin1234
 mvn clean test
 ```
 
+GitHub Actions도 같은 테스트 명령어를 실행합니다. GitHub 저장소에 코드를 push하거나 pull request를 만들면 GitHub 서버에서 Java 17 환경을 준비한 뒤 `mvn clean test`를 자동으로 실행합니다.
+
 현재 자동 테스트는 아래 흐름을 검증합니다.
 
 | 테스트 파일 | 검증 범위 |
