@@ -204,7 +204,18 @@ Password admin1234
 mvn clean test
 ```
 
-현재 테스트는 고객 예약 신청, 예약 번호와 연락처 기반 조회, 고객 화면 접근 흐름, 잘못된 연락처 조회 실패, 짐 사진 업로드 저장, 예약 수정 및 취소 이력, 관리자 예약 상태 변경, 상태 변경 이력 저장, 잘못된 상태 변경 실패, 견적 계산 규칙, 이메일 알림 이력 생성, 쿠폰 할인 적용, 관리자 로그인 및 권한 접근, 관리자 화면 연결, 관리자 감사 로그, 리뷰 작성 규칙을 검증합니다.
+현재 자동 테스트는 아래 흐름을 검증합니다.
+
+| 테스트 파일 | 검증 범위 |
+| --- | --- |
+| `ReservationServiceTest` | 예약 신청/조회, 사진 정보 저장, 수정/취소 이력, 상태 변경 이력, 이메일 알림 이력, 쿠폰 할인 |
+| `ReservationControllerTest` | 예약 신청 화면, 예약 조회 화면, 예약 상세 접근 인증, 예약 신청 완료 이동 |
+| `ReservationEstimateCalculatorTest` | 기본가, 거리 추가요금, 엘리베이터 없음, 고층 작업, 사다리차 견적 규칙 |
+| `ReservationPhotoStorageTest` | 허용 이미지 확장자 저장, 잘못된 확장자 거부 |
+| `SecurityConfigTest` | 관리자 로그인 성공/실패, 관리자 권한 접근, 고객 화면 공개 접근 |
+| `AdminReservationControllerTest` | 관리자 예약 목록, 예약 상세, 달력 화면, 상태 변경 요청 |
+| `AdminAuditLogServiceTest` | 관리자 감사 로그 저장, 예약별 조회, 검색, 작업명 목록 |
+| `ReviewServiceTest` | 완료 예약 리뷰 작성, 미완료 예약 차단, 중복 리뷰 차단, 평균 평점 |
 
 ## Kakao 지도 API 설정
 
