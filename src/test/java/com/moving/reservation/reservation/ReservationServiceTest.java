@@ -3,9 +3,14 @@ package com.moving.reservation.reservation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.moving.reservation.notification.CustomerNotification;
 import com.moving.reservation.notification.CustomerNotificationRepository;
+import com.moving.reservation.notification.NotificationChannel;
+import com.moving.reservation.notification.NotificationStatus;
+import com.moving.reservation.notification.NotificationType;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -97,6 +102,38 @@ class ReservationServiceTest {
         assertThat(reservationService.get(createdReservation.getId()).getStatus()).isEqualTo(ReservationStatus.COMPLETED);
         assertThat(statusHistoryRepository.findByReservationIdOrderByChangedAtDesc(createdReservation.getId()))
                 .hasSize(4);
+    }
+
+    @Test
+    void 이메일이_있는_예약을_신청하면_이메일_발송준비_이력이_생성된다() {
+        Reservation createdReservation = reservationService.create(reservationCreateRequest());
+
+        List<CustomerNotification> notifications = customerNotificationRepository
+                .findByReservationIdOrderByCreatedAtDesc(createdReservation.getId());
+
+        assertThat(notifications)
+                .filteredOn(notification -> notification.getChannel() == NotificationChannel.EMAIL)
+                .singleElement()
+                .satisfies(notification -> {
+                    assertThat(notification.getType()).isEqualTo(NotificationType.RESERVATION_CREATED);
+                    assertThat(notification.getStatus()).isEqualTo(NotificationStatus.READY);
+                    assertThat(notification.getRecipientContact()).isEqualTo("customer@example.com");
+                    assertThat(notification.getMessage()).contains("예약 번호 " + createdReservation.getId() + "번");
+                    assertThat(notification.getSentAt()).isNull();
+                    assertThat(notification.getFailureReason()).isNull();
+                });
+    }
+
+    @Test
+    void 이메일이_없는_예약을_신청하면_이메일_이력은_생성하지_않는다() {
+        ReservationCreateRequest request = reservationCreateRequest();
+        request.setEmail(null);
+
+        Reservation createdReservation = reservationService.create(request);
+
+        assertThat(customerNotificationRepository.findByReservationIdOrderByCreatedAtDesc(createdReservation.getId()))
+                .filteredOn(notification -> notification.getChannel() == NotificationChannel.EMAIL)
+                .isEmpty();
     }
 
     private ReservationCreateRequest reservationCreateRequest() {
