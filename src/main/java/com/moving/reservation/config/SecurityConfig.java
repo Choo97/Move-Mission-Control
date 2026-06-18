@@ -25,10 +25,14 @@ public class SecurityConfig {
                                                    AdminAuthenticationSuccessHandler adminAuthenticationSuccessHandler) throws Exception {
         http
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers(new AntPathRequestMatcher("/reservations", "POST"))
+                        .ignoringRequestMatchers(
+                                new AntPathRequestMatcher("/reservations", "POST"),
+                                new AntPathRequestMatcher("/api/reservations/search", "POST")
+                        )
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/reservations").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/reservations/search").permitAll()
                         .requestMatchers("/", "/login", "/faq", "/css/**", "/js/**", "/reservations", "/reservations/**",
                                 "/reviews", "/reviews/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
