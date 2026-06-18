@@ -212,7 +212,7 @@ GitHub Actions도 같은 테스트 명령어를 실행합니다. GitHub 저장�
 | --- | --- |
 | `ReservationServiceTest` | 예약 신청/조회, 사진 정보 저장, 수정/취소 이력, 상태 변경 이력, 이메일 알림 이력, 쿠폰 할인 |
 | `ReservationControllerTest` | 예약 신청 화면, 예약 조회 화면, 예약 상세 접근 인증, 예약 신청 완료 이동 |
-| `ReservationApiControllerTest` | 고객 예약 신청/조회/수정 REST API 성공 응답, 입력 오류, 연락처 불일치 오류, CSRF 없이 JSON 호출 |
+| `ReservationApiControllerTest` | 고객 예약 신청/조회/수정/취소 REST API 성공 응답, 입력 오류, 연락처 불일치 오류, CSRF 없이 JSON 호출 |
 | `ReservationEstimateCalculatorTest` | 기본가, 거리 추가요금, 엘리베이터 없음, 고층 작업, 사다리차 견적 규칙 |
 | `ReservationPhotoStorageTest` | 허용 이미지 확장자 저장, 잘못된 확장자 거부 |
 | `SecurityConfigTest` | 관리자 로그인 성공/실패, 관리자 권한 접근, 고객 화면 공개 접근 |
@@ -331,6 +331,21 @@ Content-Type: application/json
 ```
 
 예약 당시 연락처가 일치하고 현재 상태가 `접수` 또는 `상담중`이면 예약 정보를 수정합니다. 수정이 완료되면 변경된 예약 정보를 JSON으로 응답합니다.
+
+### 예약 취소
+
+```http
+POST /api/reservations/{reservationId}/cancel
+Content-Type: application/json
+```
+
+```json
+{
+  "phone": "010-1234-5678"
+}
+```
+
+예약 당시 연락처가 일치하고 현재 상태가 `접수` 또는 `상담중`이면 예약 상태를 `취소`로 변경합니다. 취소가 완료되면 변경된 예약 정보를 JSON으로 응답합니다.
 
 ## MySQL Database 접속 정보
 

@@ -81,6 +81,26 @@ public class ReservationApiController {
         }
     }
 
+    @PostMapping(value = "/{id}/cancel", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> cancel(@PathVariable Long id,
+                                    @Valid @RequestBody ReservationApiCancelRequest request,
+                                    BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(new ReservationApiErrorResponse(firstErrorMessage(bindingResult)));
+        }
+
+        try {
+            reservationService.cancel(id, request.getPhone());
+            Reservation reservation = reservationService.get(id);
+            return ResponseEntity.ok(ReservationApiResponse.from(
+                    reservation,
+                    reservationService.estimateLines(reservation)
+            ));
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.badRequest().body(new ReservationApiErrorResponse(exception.getMessage()));
+        }
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ReservationApiErrorResponse> handleIllegalArgument(IllegalArgumentException exception) {
         return ResponseEntity.badRequest().body(new ReservationApiErrorResponse(exception.getMessage()));

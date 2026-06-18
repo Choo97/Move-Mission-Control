@@ -229,6 +229,53 @@ class ReservationApiControllerTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void 예약취소_API로_예약을_취소한다() throws Exception {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+
+        mockMvc.perform(post("/api/reservations/{id}/cancel", reservation.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "phone": "010-1234-5678"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(reservation.getId()))
+                .andExpect(jsonPath("$.status").value("CANCELED"))
+                .andExpect(jsonPath("$.statusLabel").value("취소"))
+                .andExpect(jsonPath("$.cancelable").value(false));
+    }
+
+    @Test
+    void 예약취소_API는_연락처가_다르면_400을_응답한다() throws Exception {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+
+        mockMvc.perform(post("/api/reservations/{id}/cancel", reservation.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "phone": "010-0000-0000"
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("예약 번호와 연락처가 일치하지 않습니다."));
+    }
+
+    @Test
+    void 예약취소_API는_CSRF_토큰없이_호출할_수_있다() throws Exception {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+
+        mockMvc.perform(post("/api/reservations/{id}/cancel", reservation.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "phone": "010-1234-5678"
+                                }
+                                """))
+                .andExpect(status().isOk());
+    }
+
     private ReservationCreateRequest reservationCreateRequest(String phone) {
         ReservationCreateRequest request = new ReservationCreateRequest();
         request.setCustomerName("API조회고객");
