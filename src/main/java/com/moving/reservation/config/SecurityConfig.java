@@ -27,11 +27,13 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers(
                                 new AntPathRequestMatcher("/reservations", "POST"),
+                                new AntPathRequestMatcher("/api/reservations", "POST"),
                                 new AntPathRequestMatcher("/api/reservations/search", "POST")
                         )
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/reservations").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/reservations").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/reservations/search").permitAll()
                         .requestMatchers("/", "/login", "/faq", "/css/**", "/js/**", "/reservations", "/reservations/**",
                                 "/reviews", "/reviews/**").permitAll()

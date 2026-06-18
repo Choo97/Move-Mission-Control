@@ -28,6 +28,80 @@ class ReservationApiControllerTest {
     private ReservationService reservationService;
 
     @Test
+    void 예약신청_API로_예약을_JSON으로_생성한다() throws Exception {
+        mockMvc.perform(post("/api/reservations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "customerName": "API신청고객",
+                                  "phone": "010-2222-3333",
+                                  "email": "api-create@example.com",
+                                  "moveDate": "%s",
+                                  "moveTime": "10:30",
+                                  "fromAddress": "서울시 강남구 테헤란로 1",
+                                  "toAddress": "서울시 송파구 올림픽로 1",
+                                  "moveType": "STUDIO",
+                                  "fromElevator": true,
+                                  "toElevator": true,
+                                  "fromFloor": 3,
+                                  "toFloor": 5,
+                                  "fromLadderTruck": false,
+                                  "toLadderTruck": false,
+                                  "memo": "API 예약 신청 테스트입니다."
+                                }
+                                """.formatted(LocalDate.now().plusDays(7))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").isNumber())
+                .andExpect(jsonPath("$.customerName").value("API신청고객"))
+                .andExpect(jsonPath("$.status").value("RECEIVED"))
+                .andExpect(jsonPath("$.statusLabel").value("접수"))
+                .andExpect(jsonPath("$.moveType").value("STUDIO"))
+                .andExpect(jsonPath("$.finalEstimatedPrice").isNumber())
+                .andExpect(jsonPath("$.estimateLines").isArray());
+    }
+
+    @Test
+    void 예약신청_API는_필수값이_없으면_400을_응답한다() throws Exception {
+        mockMvc.perform(post("/api/reservations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "phone": "010-2222-3333",
+                                  "moveDate": "%s",
+                                  "moveTime": "10:30",
+                                  "fromAddress": "서울시 강남구 테헤란로 1",
+                                  "toAddress": "서울시 송파구 올림픽로 1",
+                                  "moveType": "STUDIO"
+                                }
+                                """.formatted(LocalDate.now().plusDays(7))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("이름을 입력해 주세요."));
+    }
+
+    @Test
+    void 예약신청_API는_CSRF_토큰없이_호출할_수_있다() throws Exception {
+        mockMvc.perform(post("/api/reservations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "customerName": "API신청고객",
+                                  "phone": "010-2222-3333",
+                                  "email": "api-create@example.com",
+                                  "moveDate": "%s",
+                                  "moveTime": "10:30",
+                                  "fromAddress": "서울시 강남구 테헤란로 1",
+                                  "toAddress": "서울시 송파구 올림픽로 1",
+                                  "moveType": "STUDIO",
+                                  "fromElevator": true,
+                                  "toElevator": true,
+                                  "fromFloor": 3,
+                                  "toFloor": 5
+                                }
+                                """.formatted(LocalDate.now().plusDays(7))))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
     void 예약번호와_연락처로_예약을_JSON으로_조회한다() throws Exception {
         Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
 

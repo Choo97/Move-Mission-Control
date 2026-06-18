@@ -212,7 +212,7 @@ GitHub Actions도 같은 테스트 명령어를 실행합니다. GitHub 저장�
 | --- | --- |
 | `ReservationServiceTest` | 예약 신청/조회, 사진 정보 저장, 수정/취소 이력, 상태 변경 이력, 이메일 알림 이력, 쿠폰 할인 |
 | `ReservationControllerTest` | 예약 신청 화면, 예약 조회 화면, 예약 상세 접근 인증, 예약 신청 완료 이동 |
-| `ReservationApiControllerTest` | 고객 예약 조회 REST API 성공 응답, 연락처 불일치 오류, CSRF 없이 JSON 조회 |
+| `ReservationApiControllerTest` | 고객 예약 신청/조회 REST API 성공 응답, 입력 오류, 연락처 불일치 오류, CSRF 없이 JSON 호출 |
 | `ReservationEstimateCalculatorTest` | 기본가, 거리 추가요금, 엘리베이터 없음, 고층 작업, 사다리차 견적 규칙 |
 | `ReservationPhotoStorageTest` | 허용 이미지 확장자 저장, 잘못된 확장자 거부 |
 | `SecurityConfigTest` | 관리자 로그인 성공/실패, 관리자 권한 접근, 고객 화면 공개 접근 |
@@ -260,7 +260,38 @@ SMTP 설정이 꺼져 있으면 애플리케이션은 정상 실행되지만, �
 
 ## REST API
 
-React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 예약 조회 API를 제공합니다. HTML 화면과 같은 예약 조회 규칙을 사용하며, 예약 번호와 예약 당시 연락처가 일치해야 예약 정보를 JSON으로 받을 수 있습니다.
+React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 예약 신청과 조회 API를 제공합니다. HTML 화면과 같은 예약 규칙을 사용하며, API는 JSON 요청과 JSON 응답을 기준으로 동작합니다.
+
+### 예약 신청
+
+```http
+POST /api/reservations
+Content-Type: application/json
+```
+
+```json
+{
+  "customerName": "홍길동",
+  "phone": "010-1234-5678",
+  "email": "customer@example.com",
+  "moveDate": "2026-07-01",
+  "moveTime": "10:30",
+  "fromAddress": "서울시 강남구 테헤란로 1",
+  "toAddress": "서울시 송파구 올림픽로 1",
+  "moveType": "STUDIO",
+  "fromElevator": true,
+  "toElevator": true,
+  "fromFloor": 3,
+  "toFloor": 5,
+  "fromLadderTruck": false,
+  "toLadderTruck": false,
+  "memo": "파손 주의 물품이 있습니다."
+}
+```
+
+성공하면 `201 Created`와 함께 생성된 예약 정보를 JSON으로 응답합니다. 짐 사진 업로드는 파일 전송 방식이 다르므로 별도 API로 분리할 예정입니다.
+
+### 예약 조회
 
 ```http
 POST /api/reservations/search
@@ -274,7 +305,7 @@ Content-Type: application/json
 }
 ```
 
-성공하면 예약 상태, 이사 일정, 주소, 견적 금액, 견적 산정 내역을 JSON으로 응답합니다. 예약 번호와 연락처가 일치하지 않으면 `404 Not Found`와 오류 메시지를 응답합니다.
+예약 번호와 예약 당시 연락처가 일치하면 예약 상태, 이사 일정, 주소, 견적 금액, 견적 산정 내역을 JSON으로 응답합니다. 일치하지 않으면 `404 Not Found`와 오류 메시지를 응답합니다.
 
 ## MySQL Database 접속 정보
 
