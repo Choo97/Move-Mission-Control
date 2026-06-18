@@ -1,12 +1,12 @@
 package com.moving.reservation.reservation;
 
+import com.moving.reservation.api.ApiErrorResponse;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,7 +30,7 @@ public class ReservationApiController {
     public ResponseEntity<?> create(@Valid @RequestBody ReservationApiCreateRequest request,
                                     BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body(new ReservationApiErrorResponse(firstErrorMessage(bindingResult)));
+            return ResponseEntity.badRequest().body(ApiErrorResponse.badRequest(firstErrorMessage(bindingResult)));
         }
 
         try {
@@ -41,7 +41,7 @@ public class ReservationApiController {
                             reservationService.estimateLines(reservation)
                     ));
         } catch (IllegalArgumentException | IllegalStateException exception) {
-            return ResponseEntity.badRequest().body(new ReservationApiErrorResponse(exception.getMessage()));
+            return ResponseEntity.badRequest().body(ApiErrorResponse.badRequest(exception.getMessage()));
         }
     }
 
@@ -49,7 +49,7 @@ public class ReservationApiController {
     public ResponseEntity<?> search(@Valid @RequestBody ReservationSearchRequest request,
                                     BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body(new ReservationApiErrorResponse(firstErrorMessage(bindingResult)));
+            return ResponseEntity.badRequest().body(ApiErrorResponse.badRequest(firstErrorMessage(bindingResult)));
         }
 
         try {
@@ -60,7 +60,7 @@ public class ReservationApiController {
             ));
         } catch (IllegalArgumentException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ReservationApiErrorResponse(exception.getMessage()));
+                    .body(ApiErrorResponse.notFound(exception.getMessage()));
         }
     }
 
@@ -69,7 +69,7 @@ public class ReservationApiController {
                                     @Valid @RequestBody ReservationUpdateRequest request,
                                     BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body(new ReservationApiErrorResponse(firstErrorMessage(bindingResult)));
+            return ResponseEntity.badRequest().body(ApiErrorResponse.badRequest(firstErrorMessage(bindingResult)));
         }
 
         try {
@@ -80,7 +80,7 @@ public class ReservationApiController {
                     reservationService.estimateLines(reservation)
             ));
         } catch (IllegalArgumentException exception) {
-            return ResponseEntity.badRequest().body(new ReservationApiErrorResponse(exception.getMessage()));
+            return ResponseEntity.badRequest().body(ApiErrorResponse.badRequest(exception.getMessage()));
         }
     }
 
@@ -89,7 +89,7 @@ public class ReservationApiController {
                                     @Valid @RequestBody ReservationApiCancelRequest request,
                                     BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body(new ReservationApiErrorResponse(firstErrorMessage(bindingResult)));
+            return ResponseEntity.badRequest().body(ApiErrorResponse.badRequest(firstErrorMessage(bindingResult)));
         }
 
         try {
@@ -100,7 +100,7 @@ public class ReservationApiController {
                     reservationService.estimateLines(reservation)
             ));
         } catch (IllegalArgumentException exception) {
-            return ResponseEntity.badRequest().body(new ReservationApiErrorResponse(exception.getMessage()));
+            return ResponseEntity.badRequest().body(ApiErrorResponse.badRequest(exception.getMessage()));
         }
     }
 
@@ -109,7 +109,7 @@ public class ReservationApiController {
                                             @Valid @RequestBody ReservationApiEstimateAcceptRequest request,
                                             BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body(new ReservationApiErrorResponse(firstErrorMessage(bindingResult)));
+            return ResponseEntity.badRequest().body(ApiErrorResponse.badRequest(firstErrorMessage(bindingResult)));
         }
 
         try {
@@ -120,7 +120,7 @@ public class ReservationApiController {
                     reservationService.estimateLines(reservation)
             ));
         } catch (IllegalArgumentException exception) {
-            return ResponseEntity.badRequest().body(new ReservationApiErrorResponse(exception.getMessage()));
+            return ResponseEntity.badRequest().body(ApiErrorResponse.badRequest(exception.getMessage()));
         }
     }
 
@@ -134,13 +134,8 @@ public class ReservationApiController {
                     .toList();
             return ResponseEntity.status(HttpStatus.CREATED).body(responses);
         } catch (IllegalArgumentException | IllegalStateException exception) {
-            return ResponseEntity.badRequest().body(new ReservationApiErrorResponse(exception.getMessage()));
+            return ResponseEntity.badRequest().body(ApiErrorResponse.badRequest(exception.getMessage()));
         }
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ReservationApiErrorResponse> handleIllegalArgument(IllegalArgumentException exception) {
-        return ResponseEntity.badRequest().body(new ReservationApiErrorResponse(exception.getMessage()));
     }
 
     private String firstErrorMessage(BindingResult bindingResult) {

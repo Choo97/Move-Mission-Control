@@ -78,6 +78,7 @@ class ReservationApiControllerTest {
                                 }
                                 """.formatted(LocalDate.now().plusDays(7))))
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
                 .andExpect(jsonPath("$.message").value("이름을 입력해 주세요."));
     }
 
@@ -140,6 +141,7 @@ class ReservationApiControllerTest {
                                 }
                                 """.formatted(reservation.getId())))
                 .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("NOT_FOUND"))
                 .andExpect(jsonPath("$.message").value("예약 번호와 연락처가 일치하는 예약을 찾을 수 없습니다."));
     }
 
@@ -207,6 +209,7 @@ class ReservationApiControllerTest {
                                 }
                                 """.formatted(LocalDate.now().plusDays(10))))
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
                 .andExpect(jsonPath("$.message").value("예약 번호와 연락처가 일치하지 않습니다."));
     }
 
@@ -261,6 +264,7 @@ class ReservationApiControllerTest {
                                 }
                                 """))
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
                 .andExpect(jsonPath("$.message").value("예약 번호와 연락처가 일치하지 않습니다."));
     }
 
@@ -311,6 +315,7 @@ class ReservationApiControllerTest {
                                 }
                                 """))
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
                 .andExpect(jsonPath("$.message").value("현재 상태에서는 견적을 동의할 수 없습니다."));
     }
 
@@ -327,6 +332,7 @@ class ReservationApiControllerTest {
                                 }
                                 """))
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
                 .andExpect(jsonPath("$.message").value("예약 번호와 연락처가 일치하지 않습니다."));
     }
 
@@ -378,6 +384,7 @@ class ReservationApiControllerTest {
                         .file(photo)
                         .param("phone", "010-0000-0000"))
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
                 .andExpect(jsonPath("$.message").value("예약 번호와 연락처가 일치하지 않습니다."));
     }
 
@@ -395,6 +402,7 @@ class ReservationApiControllerTest {
                         .file(photo)
                         .param("phone", "010-1234-5678"))
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
                 .andExpect(jsonPath("$.message").value("짐 사진은 jpg, jpeg, png, webp 파일만 업로드할 수 있습니다."));
     }
 

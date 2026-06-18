@@ -68,6 +68,7 @@ class ReviewApiControllerTest {
                                 }
                                 """.formatted(reservation.getId())))
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
                 .andExpect(jsonPath("$.message").value("완료된 예약만 리뷰를 작성할 수 있습니다."));
     }
 
@@ -86,6 +87,7 @@ class ReviewApiControllerTest {
                                 }
                                 """.formatted(reservation.getId())))
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
                 .andExpect(jsonPath("$.message").value("예약 번호와 연락처가 일치하지 않습니다."));
     }
 
