@@ -9,51 +9,73 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "고객 예약 신청 요청")
 public class ReservationApiCreateRequest {
 
+    @Schema(description = "예약자 이름", example = "홍길동")
     @NotBlank(message = "이름을 입력해 주세요.")
     private String customerName;
 
+    @Schema(description = "예약자 연락처. 예약 조회, 수정, 취소 시 본인 확인에 사용합니다.", example = "010-1234-5678")
     @NotBlank(message = "연락처를 입력해 주세요.")
     @Pattern(regexp = "^[0-9\\-\\s]+$", message = "연락처는 숫자와 하이픈만 입력해 주세요.")
     private String phone;
 
+    @Schema(description = "예약 확인 안내를 받을 이메일", example = "customer@example.com")
     @Email(message = "이메일 형식이 올바르지 않습니다.")
     private String email;
 
+    @Schema(description = "희망 이사 날짜", example = "2026-07-01")
     @NotNull(message = "이사 날짜를 선택해 주세요.")
     @FutureOrPresent(message = "오늘 이후 날짜를 선택해 주세요.")
     private LocalDate moveDate;
 
+    @Schema(description = "희망 이사 시간", example = "10:30")
     @NotNull(message = "희망 시간을 선택해 주세요.")
     private LocalTime moveTime;
 
+    @Schema(description = "출발지 주소", example = "서울시 강남구 테헤란로 1")
     @NotBlank(message = "출발 주소를 입력해 주세요.")
     private String fromAddress;
 
+    @Schema(description = "도착지 주소", example = "서울시 송파구 올림픽로 1")
     @NotBlank(message = "도착 주소를 입력해 주세요.")
     private String toAddress;
 
+    @Schema(description = "이사 유형", example = "STUDIO")
     @NotNull(message = "이사 유형을 선택해 주세요.")
     private MoveType moveType;
 
+    @Schema(description = "출발지 엘리베이터 사용 가능 여부", example = "true")
     private boolean fromElevator;
+
+    @Schema(description = "도착지 엘리베이터 사용 가능 여부", example = "true")
     private boolean toElevator;
 
+    @Schema(description = "출발지 층수", example = "3")
     @NotNull(message = "출발지 층수를 입력해 주세요.")
     @Min(value = 1, message = "층수는 1층 이상이어야 합니다.")
     @Max(value = 50, message = "층수는 50층 이하로 입력해 주세요.")
     private Integer fromFloor = 1;
 
+    @Schema(description = "도착지 층수", example = "5")
     @NotNull(message = "도착지 층수를 입력해 주세요.")
     @Min(value = 1, message = "층수는 1층 이상이어야 합니다.")
     @Max(value = 50, message = "층수는 50층 이하로 입력해 주세요.")
     private Integer toFloor = 1;
 
+    @Schema(description = "출발지 사다리차 필요 여부", example = "false")
     private boolean fromLadderTruck;
+
+    @Schema(description = "도착지 사다리차 필요 여부", example = "false")
     private boolean toLadderTruck;
+
+    @Schema(description = "고객 요청사항", example = "깨지기 쉬운 짐이 있습니다.")
     private String memo;
+
+    @Schema(description = "사용할 쿠폰 코드", example = "WELCOME10")
     private String couponCode;
 
     public ReservationCreateRequest toServiceRequest() {

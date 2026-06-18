@@ -4,20 +4,26 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "고객 리뷰 작성 요청")
 public class ReviewCreateRequest {
 
+    @Schema(description = "리뷰를 작성할 예약 번호", example = "1")
     @NotNull(message = "예약 번호가 필요합니다.")
     private Long reservationId;
 
+    @Schema(description = "예약 당시 입력한 연락처. 리뷰 작성 권한 확인에 사용합니다.", example = "010-1234-5678")
     @NotBlank(message = "예약 당시 연락처를 입력해 주세요.")
     private String phone;
 
+    @Schema(description = "평점. 1점부터 5점까지 입력합니다.", example = "5")
     @NotNull(message = "평점을 선택해 주세요.")
     @Min(value = 1, message = "평점은 1점 이상이어야 합니다.")
     @Max(value = 5, message = "평점은 5점 이하이어야 합니다.")
     private Integer rating;
 
+    @Schema(description = "리뷰 내용", example = "친절하고 정확했습니다.")
     @NotBlank(message = "리뷰 내용을 입력해 주세요.")
     private String content;
 

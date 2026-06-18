@@ -266,6 +266,7 @@ OpenAPI JSON   http://localhost:8081/v3/api-docs
 React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 기능 API를 제공합니다. HTML 화면과 같은 예약 규칙을 사용하며, 예약 번호와 예약 당시 연락처로 고객 요청을 확인합니다.
 
 브라우저에서 `http://localhost:8081/swagger-ui/index.html`에 접속하면 API 목록을 확인하고 직접 요청을 테스트할 수 있습니다.
+요청/응답 DTO에는 Swagger 설명과 예시 값을 추가해 각 필드의 의미를 문서 화면에서 바로 확인할 수 있습니다.
 
 ### 공통 규칙
 
