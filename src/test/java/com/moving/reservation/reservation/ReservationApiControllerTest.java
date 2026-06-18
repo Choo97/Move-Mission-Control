@@ -276,6 +276,78 @@ class ReservationApiControllerTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void 견적동의_API로_예약을_확정한다() throws Exception {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+        readyEstimateForAcceptance(reservation);
+
+        mockMvc.perform(post("/api/reservations/{id}/estimate/accept", reservation.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "phone": "010-1234-5678"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(reservation.getId()))
+                .andExpect(jsonPath("$.status").value("CONFIRMED"))
+                .andExpect(jsonPath("$.statusLabel").value("확정"))
+                .andExpect(jsonPath("$.estimateAccepted").value(true))
+                .andExpect(jsonPath("$.acceptedEstimatePrice").isNumber());
+    }
+
+    @Test
+    void 견적동의_API는_취소된_예약이면_400을_응답한다() throws Exception {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+        reservationService.cancel(reservation.getId(), "010-1234-5678");
+
+        mockMvc.perform(post("/api/reservations/{id}/estimate/accept", reservation.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "phone": "010-1234-5678"
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("현재 상태에서는 견적을 동의할 수 없습니다."));
+    }
+
+    @Test
+    void 견적동의_API는_연락처가_다르면_400을_응답한다() throws Exception {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+        readyEstimateForAcceptance(reservation);
+
+        mockMvc.perform(post("/api/reservations/{id}/estimate/accept", reservation.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "phone": "010-0000-0000"
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("예약 번호와 연락처가 일치하지 않습니다."));
+    }
+
+    @Test
+    void 견적동의_API는_CSRF_토큰없이_호출할_수_있다() throws Exception {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+        readyEstimateForAcceptance(reservation);
+
+        mockMvc.perform(post("/api/reservations/{id}/estimate/accept", reservation.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "phone": "010-1234-5678"
+                                }
+                                """))
+                .andExpect(status().isOk());
+    }
+
+    private void readyEstimateForAcceptance(Reservation reservation) {
+        reservationService.updateStatus(reservation.getId(), ReservationStatus.CONSULTING, "test-admin");
+        reservationService.updateEstimate(reservation.getId(), 250000);
+    }
+
     private ReservationCreateRequest reservationCreateRequest(String phone) {
         ReservationCreateRequest request = new ReservationCreateRequest();
         request.setCustomerName("API조회고객");

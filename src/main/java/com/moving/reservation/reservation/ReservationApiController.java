@@ -101,6 +101,26 @@ public class ReservationApiController {
         }
     }
 
+    @PostMapping(value = "/{id}/estimate/accept", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> acceptEstimate(@PathVariable Long id,
+                                            @Valid @RequestBody ReservationApiEstimateAcceptRequest request,
+                                            BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(new ReservationApiErrorResponse(firstErrorMessage(bindingResult)));
+        }
+
+        try {
+            reservationService.acceptEstimate(id, request.getPhone());
+            Reservation reservation = reservationService.get(id);
+            return ResponseEntity.ok(ReservationApiResponse.from(
+                    reservation,
+                    reservationService.estimateLines(reservation)
+            ));
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.badRequest().body(new ReservationApiErrorResponse(exception.getMessage()));
+        }
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ReservationApiErrorResponse> handleIllegalArgument(IllegalArgumentException exception) {
         return ResponseEntity.badRequest().body(new ReservationApiErrorResponse(exception.getMessage()));

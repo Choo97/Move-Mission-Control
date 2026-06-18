@@ -244,7 +244,17 @@ public class ReservationService {
     @Transactional
     public void acceptEstimate(Long id) {
         Reservation reservation = get(id);
+        acceptEstimate(reservation);
+    }
 
+    @Transactional
+    public void acceptEstimate(Long id, String phone) {
+        Reservation reservation = reservationRepository.findByIdAndPhone(id, phone)
+                .orElseThrow(() -> new IllegalArgumentException("예약 번호와 연락처가 일치하지 않습니다."));
+        acceptEstimate(reservation);
+    }
+
+    private void acceptEstimate(Reservation reservation) {
         if (!reservation.isEstimateAcceptable()) {
             throw new IllegalArgumentException("현재 상태에서는 견적을 동의할 수 없습니다.");
         }
