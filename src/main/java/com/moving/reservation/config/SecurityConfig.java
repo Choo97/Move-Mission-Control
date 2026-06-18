@@ -32,7 +32,8 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/api/reservations/*/cancel", "POST"),
                                 new AntPathRequestMatcher("/api/reservations/*/estimate/accept", "POST"),
                                 new AntPathRequestMatcher("/api/reservations/*/photos", "POST"),
-                                new AntPathRequestMatcher("/api/reservations/search", "POST")
+                                new AntPathRequestMatcher("/api/reservations/search", "POST"),
+                                new AntPathRequestMatcher("/api/reviews", "POST")
                         )
                 )
                 .authorizeHttpRequests(auth -> auth
@@ -42,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/reservations/*/cancel").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/reservations/*/estimate/accept").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/reservations/*/photos").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/reviews").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/api/reservations/*").permitAll()
                         .requestMatchers("/", "/login", "/faq", "/css/**", "/js/**", "/reservations", "/reservations/**",
                                 "/reviews", "/reviews/**").permitAll()

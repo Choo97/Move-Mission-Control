@@ -219,6 +219,7 @@ GitHub Actions도 같은 테스트 명령어를 실행합니다. GitHub 저장�
 | `AdminReservationControllerTest` | 관리자 예약 목록, 예약 상세, 달력 화면, 상태 변경 요청 |
 | `AdminAuditLogServiceTest` | 관리자 감사 로그 저장, 예약별 조회, 검색, 작업명 목록 |
 | `ReviewServiceTest` | 완료 예약 리뷰 작성, 미완료 예약 차단, 중복 리뷰 차단, 평균 평점 |
+| `ReviewApiControllerTest` | 고객 리뷰 작성 REST API 성공 응답, 미완료 예약 차단, 연락처 불일치 오류, CSRF 없이 JSON 호출 |
 
 ## Kakao 지도 API 설정
 
@@ -375,6 +376,24 @@ photos=boxes.jpg
 ```
 
 예약 당시 연락처가 일치하고 현재 상태가 `접수` 또는 `상담중`이면 짐 사진을 업로드할 수 있습니다. 허용 확장자는 `jpg`, `jpeg`, `png`, `webp`입니다. 업로드가 완료되면 저장된 사진의 원본 파일명과 접근 URL을 JSON 배열로 응답합니다.
+
+### 리뷰 작성
+
+```http
+POST /api/reviews
+Content-Type: application/json
+```
+
+```json
+{
+  "reservationId": 1,
+  "phone": "010-1234-5678",
+  "rating": 5,
+  "content": "친절하고 정확했습니다."
+}
+```
+
+예약 당시 연락처가 일치하고 예약 상태가 `완료`이면 리뷰를 작성할 수 있습니다. 같은 예약에는 리뷰를 한 번만 작성할 수 있습니다.
 
 ## MySQL Database 접속 정보
 
