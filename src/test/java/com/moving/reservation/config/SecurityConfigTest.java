@@ -61,4 +61,10 @@ class SecurityConfigTest {
                         .with(csrf()))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void OpenAPI_문서는_로그인없이_접근할_수_있다() throws Exception {
+        mockMvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk());
+    }
 }

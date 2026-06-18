@@ -215,7 +215,7 @@ GitHub Actions도 같은 테스트 명령어를 실행합니다. GitHub 저장�
 | `ReservationApiControllerTest` | 고객 예약 신청/조회/수정/취소/견적동의/사진 업로드 REST API 성공 응답, 입력 오류, 연락처 불일치 오류, CSRF 없이 호출 |
 | `ReservationEstimateCalculatorTest` | 기본가, 거리 추가요금, 엘리베이터 없음, 고층 작업, 사다리차 견적 규칙 |
 | `ReservationPhotoStorageTest` | 허용 이미지 확장자 저장, 잘못된 확장자 거부 |
-| `SecurityConfigTest` | 관리자 로그인 성공/실패, 관리자 권한 접근, 고객 화면 공개 접근 |
+| `SecurityConfigTest` | 관리자 로그인 성공/실패, 관리자 권한 접근, 고객 화면 공개 접근, OpenAPI 문서 공개 접근 |
 | `AdminReservationControllerTest` | 관리자 예약 목록, 예약 상세, 달력 화면, 상태 변경 요청 |
 | `AdminAuditLogServiceTest` | 관리자 감사 로그 저장, 예약별 조회, 검색, 작업명 목록 |
 | `ReviewServiceTest` | 완료 예약 리뷰 작성, 미완료 예약 차단, 중복 리뷰 차단, 평균 평점 |
@@ -257,11 +257,15 @@ SMTP 설정이 꺼져 있으면 애플리케이션은 정상 실행되지만, �
 자주 묻는 질문  http://localhost:8081/faq
 관리자 화면     http://localhost:8081/admin/reservations
 관리자 달력     http://localhost:8081/admin/calendar
+Swagger UI     http://localhost:8081/swagger-ui/index.html
+OpenAPI JSON   http://localhost:8081/v3/api-docs
 ```
 
 ## REST API
 
 React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 기능 API를 제공합니다. HTML 화면과 같은 예약 규칙을 사용하며, 예약 번호와 예약 당시 연락처로 고객 요청을 확인합니다.
+
+브라우저에서 `http://localhost:8081/swagger-ui/index.html`에 접속하면 API 목록을 확인하고 직접 요청을 테스트할 수 있습니다.
 
 ### 공통 규칙
 
