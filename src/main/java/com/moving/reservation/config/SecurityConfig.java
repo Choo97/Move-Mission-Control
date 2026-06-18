@@ -3,6 +3,7 @@ package com.moving.reservation.config;
 import com.moving.reservation.auth.AdminAuthenticationFailureHandler;
 import com.moving.reservation.auth.AdminAuthenticationSuccessHandler;
 import com.moving.reservation.auth.AdminUserRepository;
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,6 +16,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 public class SecurityConfig {
@@ -24,6 +28,8 @@ public class SecurityConfig {
                                                    AdminAuthenticationFailureHandler adminAuthenticationFailureHandler,
                                                    AdminAuthenticationSuccessHandler adminAuthenticationSuccessHandler) throws Exception {
         http
+                .cors(cors -> {
+                })
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers(
                                 new AntPathRequestMatcher("/reservations", "POST"),
@@ -71,6 +77,21 @@ public class SecurityConfig {
                 );
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(CorsProperties corsProperties) {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(corsProperties.getAllowedOrigins());
+        configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/**", configuration);
+        source.registerCorsConfiguration("/uploads/**", configuration);
+        return source;
     }
 
     @Bean

@@ -26,3 +26,9 @@ map:
 upload:
   reservation-photo:
     directory: target/test-uploads/reservation-photos
+
+app:
+  cors:
+    allowed-origins:
+      - http://localhost:5173
+      - http://localhost:3000

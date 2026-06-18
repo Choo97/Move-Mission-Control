@@ -4,10 +4,13 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.springframework.http.HttpHeaders;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -72,5 +75,23 @@ class SecurityConfigTest {
     void 업로드파일은_로그인없이_요청할_수_있다() throws Exception {
         mockMvc.perform(get("/uploads/reservation-photos/not-found.jpg"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void React_개발서버는_API_CORS_사전요청을_보낼_수_있다() throws Exception {
+        mockMvc.perform(options("/api/reservations")
+                        .header(HttpHeaders.ORIGIN, "http://localhost:5173")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost:5173"))
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true"));
+    }
+
+    @Test
+    void React_개발서버는_업로드파일_CORS_응답을_받을_수_있다() throws Exception {
+        mockMvc.perform(get("/uploads/reservation-photos/not-found.jpg")
+                        .header(HttpHeaders.ORIGIN, "http://localhost:3000"))
+                .andExpect(status().isNotFound())
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost:3000"));
     }
 }

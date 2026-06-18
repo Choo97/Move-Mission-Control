@@ -53,6 +53,12 @@ upload:
   reservation-photo:
     directory: ${RESERVATION_PHOTO_UPLOAD_DIR:uploads/reservation-photos}
 
+app:
+  cors:
+    allowed-origins:
+      - ${APP_CORS_ALLOWED_ORIGIN_VITE:http://localhost:5173}
+      - ${APP_CORS_ALLOWED_ORIGIN_CRA:http://localhost:3000}
+
 admin:
   initial:
     username: ${ADMIN_INITIAL_USERNAME:admin}

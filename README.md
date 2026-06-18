@@ -318,7 +318,14 @@ React 전환 전에 우선 확인할 부분은 아래와 같습니다.
 1. 고객 화면만 React로 바꿀지, 관리자 화면까지 React로 바꿀지 결정합니다.
 2. 관리자 화면까지 React로 바꾼다면 관리자 예약 목록, 예약 상세, 상태 변경, 견적 관리 API를 별도로 분리해야 합니다.
 3. 사진 응답의 `fileUrl`은 `/uploads/reservation-photos/...` 형식이며, 로그인 없이 조회할 수 있도록 테스트로 검증합니다.
-4. React 개발 서버를 따로 띄우는 시점에 CORS 설정을 추가합니다.
+4. React 개발 서버는 기본적으로 `http://localhost:5173`, `http://localhost:3000`에서 Spring API와 업로드 파일에 접근할 수 있도록 CORS를 허용합니다.
+
+React 개발 서버 주소를 바꿔야 한다면 `.env.local`에서 아래 값을 수정합니다.
+
+```bash
+APP_CORS_ALLOWED_ORIGIN_VITE=http://localhost:5173
+APP_CORS_ALLOWED_ORIGIN_CRA=http://localhost:3000
+```
 
 현재 혼자 개발하는 MVP 단계에서는 고객 REST API를 먼저 안정화하고, 관리자 기능은 기존 Thymeleaf 화면을 유지하는 방식이 현실적입니다. 관리자 API까지 한 번에 분리하면 작업 범위가 커지므로, React 전환 범위를 정한 뒤 단계적으로 진행하는 편이 좋습니다.
 
