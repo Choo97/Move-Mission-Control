@@ -3,9 +3,12 @@ package com.moving.reservation.reservation;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import org.junit.jupiter.api.Test;
@@ -16,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -361,13 +365,20 @@ class ReservationApiControllerTest {
                 "photo".getBytes()
         );
 
-        mockMvc.perform(multipart("/api/reservations/{id}/photos", reservation.getId())
+        MvcResult result = mockMvc.perform(multipart("/api/reservations/{id}/photos", reservation.getId())
                         .file(photo)
                         .param("phone", "010-1234-5678"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$[0].id").isNumber())
                 .andExpect(jsonPath("$[0].originalFilename").value("boxes.jpg"))
-                .andExpect(jsonPath("$[0].fileUrl").isString());
+                .andExpect(jsonPath("$[0].fileUrl").isString())
+                .andReturn();
+
+        String fileUrl = JsonPath.read(result.getResponse().getContentAsString(), "$[0].fileUrl");
+
+        mockMvc.perform(get(fileUrl))
+                .andExpect(status().isOk())
+                .andExpect(content().bytes("photo".getBytes()));
     }
 
     @Test

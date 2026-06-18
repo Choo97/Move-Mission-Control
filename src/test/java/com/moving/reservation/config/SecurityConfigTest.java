@@ -67,4 +67,10 @@ class SecurityConfigTest {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void 업로드파일은_로그인없이_요청할_수_있다() throws Exception {
+        mockMvc.perform(get("/uploads/reservation-photos/not-found.jpg"))
+                .andExpect(status().isNotFound());
+    }
 }
