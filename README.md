@@ -261,9 +261,37 @@ SMTP 설정이 꺼져 있으면 애플리케이션은 정상 실행되지만, �
 
 ## REST API
 
-React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 예약 신청과 조회 API를 제공합니다. HTML 화면과 같은 예약 규칙을 사용하며, API는 JSON 요청과 JSON 응답을 기준으로 동작합니다.
+React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 기능 API를 제공합니다. HTML 화면과 같은 예약 규칙을 사용하며, 예약 번호와 예약 당시 연락처로 고객 요청을 확인합니다.
 
-### 예약 신청
+### 공통 규칙
+
+- JSON API는 `Content-Type: application/json`을 사용합니다.
+- 파일 업로드 API는 `Content-Type: multipart/form-data`를 사용합니다.
+- 고객 예약 변경 API는 예약 당시 연락처가 일치해야 처리됩니다.
+- 성공 응답은 생성 작업이면 `201 Created`, 조회/수정/상태 변경 작업이면 `200 OK`를 사용합니다.
+- 실패 응답은 아래 형식의 JSON을 반환합니다.
+
+```json
+{
+  "message": "오류 메시지"
+}
+```
+
+### API 요약
+
+| 구분 | Method | URL | 용도 |
+| --- | --- | --- | --- |
+| 고객 예약 | `POST` | `/api/reservations` | 예약 신청 |
+| 고객 예약 | `POST` | `/api/reservations/search` | 예약 번호와 연락처로 예약 조회 |
+| 고객 예약 | `PATCH` | `/api/reservations/{reservationId}` | 예약 정보 수정 |
+| 고객 예약 | `POST` | `/api/reservations/{reservationId}/cancel` | 예약 취소 |
+| 고객 예약 | `POST` | `/api/reservations/{reservationId}/estimate/accept` | 최종 견적 동의 및 예약 확정 |
+| 파일 업로드 | `POST` | `/api/reservations/{reservationId}/photos` | 짐 사진 업로드 |
+| 고객 리뷰 | `POST` | `/api/reviews` | 완료 예약 리뷰 작성 |
+
+### 고객 예약 API
+
+#### 예약 신청
 
 ```http
 POST /api/reservations
@@ -290,9 +318,9 @@ Content-Type: application/json
 }
 ```
 
-성공하면 `201 Created`와 함께 생성된 예약 정보를 JSON으로 응답합니다. 짐 사진 업로드는 파일 전송 방식이 다르므로 별도 API로 분리할 예정입니다.
+성공하면 `201 Created`와 함께 생성된 예약 정보를 JSON으로 응답합니다. 짐 사진 업로드는 파일 전송 방식이 다르므로 별도 API로 분리했습니다.
 
-### 예약 조회
+#### 예약 조회
 
 ```http
 POST /api/reservations/search
@@ -308,7 +336,7 @@ Content-Type: application/json
 
 예약 번호와 예약 당시 연락처가 일치하면 예약 상태, 이사 일정, 주소, 견적 금액, 견적 산정 내역을 JSON으로 응답합니다. 일치하지 않으면 `404 Not Found`와 오류 메시지를 응답합니다.
 
-### 예약 수정
+#### 예약 수정
 
 ```http
 PATCH /api/reservations/{reservationId}
@@ -333,7 +361,7 @@ Content-Type: application/json
 
 예약 당시 연락처가 일치하고 현재 상태가 `접수` 또는 `상담중`이면 예약 정보를 수정합니다. 수정이 완료되면 변경된 예약 정보를 JSON으로 응답합니다.
 
-### 예약 취소
+#### 예약 취소
 
 ```http
 POST /api/reservations/{reservationId}/cancel
@@ -348,7 +376,7 @@ Content-Type: application/json
 
 예약 당시 연락처가 일치하고 현재 상태가 `접수` 또는 `상담중`이면 예약 상태를 `취소`로 변경합니다. 취소가 완료되면 변경된 예약 정보를 JSON으로 응답합니다.
 
-### 견적 동의
+#### 견적 동의
 
 ```http
 POST /api/reservations/{reservationId}/estimate/accept
@@ -363,7 +391,9 @@ Content-Type: application/json
 
 예약 당시 연락처가 일치하고 최종 견적이 있는 예약이면 견적 동의 처리 후 예약 상태를 `확정`으로 변경합니다. 동의가 완료되면 확정된 예약 정보와 동의 금액을 JSON으로 응답합니다.
 
-### 짐 사진 업로드
+### 파일 업로드 API
+
+#### 짐 사진 업로드
 
 ```http
 POST /api/reservations/{reservationId}/photos
@@ -377,7 +407,9 @@ photos=boxes.jpg
 
 예약 당시 연락처가 일치하고 현재 상태가 `접수` 또는 `상담중`이면 짐 사진을 업로드할 수 있습니다. 허용 확장자는 `jpg`, `jpeg`, `png`, `webp`입니다. 업로드가 완료되면 저장된 사진의 원본 파일명과 접근 URL을 JSON 배열로 응답합니다.
 
-### 리뷰 작성
+### 고객 리뷰 API
+
+#### 리뷰 작성
 
 ```http
 POST /api/reviews
