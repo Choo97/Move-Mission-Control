@@ -83,10 +83,13 @@ class ReservationControllerTest {
                         "estimateLines",
                         "photos",
                         "customerActionHistories",
+                        "customerDetailTitle",
+                        "customerDetailDescription",
                         "customerSteps",
                         "customerNextGuide",
                         "customerGuideItems"
-                ));
+                ))
+                .andExpect(model().attribute("customerDetailTitle", "예약이 접수되었습니다"));
     }
 
     @Test

@@ -141,6 +141,8 @@ public class ReservationController {
         model.addAttribute("photos", reservationService.findPhotos(id));
         model.addAttribute("customerActionHistories", reservationService.findCustomerActionHistories(id));
         model.addAttribute("review", reviewService.findByReservationId(id).orElse(null));
+        model.addAttribute("customerDetailTitle", customerDetailTitle(reservation));
+        model.addAttribute("customerDetailDescription", customerDetailDescription(reservation));
         model.addAttribute("customerSteps", customerSteps(reservation));
         model.addAttribute("customerNextGuide", customerNextGuide(reservation));
         model.addAttribute("customerGuideItems", customerGuideService.findActiveItems(reservation.getStatus()));
@@ -330,6 +332,34 @@ public class ReservationController {
             case CONFIRMED -> "이사 일정이 확정되었습니다. 예약 내용을 다시 확인해 주세요.";
             case COMPLETED -> "이사가 완료되었습니다. 이용 후 리뷰를 남길 수 있습니다.";
             case CANCELED -> "예약이 취소되었습니다. 새 예약이 필요하면 예약 신청을 다시 진행해 주세요.";
+        };
+    }
+
+    private String customerDetailTitle(Reservation reservation) {
+        return switch (reservation.getStatus()) {
+            case RECEIVED -> "예약이 접수되었습니다";
+            case CONSULTING -> "상담이 진행 중입니다";
+            case ESTIMATE_SENT -> "견적 안내를 확인해 주세요";
+            case CONFIRMED -> "예약이 확정되었습니다";
+            case COMPLETED -> "이사가 완료되었습니다";
+            case CANCELED -> "예약이 취소되었습니다";
+        };
+    }
+
+    private String customerDetailDescription(Reservation reservation) {
+        String lookupNotice = " 예약 번호 "
+                + reservation.getId()
+                + "번은 나중에 예약 번호와 예약 당시 연락처로 다시 조회할 수 있습니다.";
+
+        return switch (reservation.getStatus()) {
+            case RECEIVED -> "예약 내용을 확인한 뒤 상담을 시작합니다." + lookupNotice;
+            case CONSULTING -> "상담원이 주소, 짐 양, 현장 조건을 확인하고 있습니다." + lookupNotice;
+            case ESTIMATE_SENT -> reservation.hasEstimateAcceptance()
+                    ? "견적 동의가 완료되었습니다. 일정 확정을 기다려 주세요." + lookupNotice
+                    : "최종 견적 금액과 산정 내역을 확인한 뒤 동의하면 예약이 확정됩니다." + lookupNotice;
+            case CONFIRMED -> "이사 일정이 확정되었습니다. 이사 전 준비 사항을 확인해 주세요." + lookupNotice;
+            case COMPLETED -> "이사가 완료되었습니다. 이용 후 리뷰를 남길 수 있습니다." + lookupNotice;
+            case CANCELED -> "취소된 예약은 조회용으로만 확인할 수 있습니다. 새 이사가 필요하면 다시 예약을 신청해 주세요.";
         };
     }
 
