@@ -1,6 +1,7 @@
 package com.moving.reservation.reservation;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -152,6 +153,79 @@ class ReservationApiControllerTest {
                                   "phone": "010-1234-5678"
                                 }
                                 """.formatted(reservation.getId())))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void 예약수정_API로_예약정보를_JSON으로_수정한다() throws Exception {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+
+        mockMvc.perform(patch("/api/reservations/{id}", reservation.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "phone": "010-1234-5678",
+                                  "email": "updated-api@example.com",
+                                  "moveDate": "%s",
+                                  "moveTime": "14:00",
+                                  "fromAddress": "서울시 마포구 월드컵북로 1",
+                                  "toAddress": "서울시 용산구 한강대로 1",
+                                  "fromFloor": 7,
+                                  "toFloor": 9,
+                                  "fromLadderTruck": true,
+                                  "toLadderTruck": false,
+                                  "memo": "API로 수정한 예약입니다."
+                                }
+                                """.formatted(LocalDate.now().plusDays(10))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(reservation.getId()))
+                .andExpect(jsonPath("$.email").value("updated-api@example.com"))
+                .andExpect(jsonPath("$.moveTime").value("14:00:00"))
+                .andExpect(jsonPath("$.fromAddress").value("서울시 마포구 월드컵북로 1"))
+                .andExpect(jsonPath("$.fromLadderTruck").value(true));
+    }
+
+    @Test
+    void 예약수정_API는_연락처가_다르면_400을_응답한다() throws Exception {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+
+        mockMvc.perform(patch("/api/reservations/{id}", reservation.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "phone": "010-0000-0000",
+                                  "email": "updated-api@example.com",
+                                  "moveDate": "%s",
+                                  "moveTime": "14:00",
+                                  "fromAddress": "서울시 마포구 월드컵북로 1",
+                                  "toAddress": "서울시 용산구 한강대로 1",
+                                  "fromFloor": 7,
+                                  "toFloor": 9,
+                                  "memo": "API로 수정한 예약입니다."
+                                }
+                                """.formatted(LocalDate.now().plusDays(10))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("예약 번호와 연락처가 일치하지 않습니다."));
+    }
+
+    @Test
+    void 예약수정_API는_CSRF_토큰없이_호출할_수_있다() throws Exception {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+
+        mockMvc.perform(patch("/api/reservations/{id}", reservation.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "phone": "010-1234-5678",
+                                  "email": "updated-api@example.com",
+                                  "moveDate": "%s",
+                                  "moveTime": "14:00",
+                                  "fromAddress": "서울시 마포구 월드컵북로 1",
+                                  "toAddress": "서울시 용산구 한강대로 1",
+                                  "fromFloor": 7,
+                                  "toFloor": 9
+                                }
+                                """.formatted(LocalDate.now().plusDays(10))))
                 .andExpect(status().isOk());
     }
 

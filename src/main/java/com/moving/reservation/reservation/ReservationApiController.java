@@ -6,6 +6,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -56,6 +58,26 @@ public class ReservationApiController {
         } catch (IllegalArgumentException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ReservationApiErrorResponse(exception.getMessage()));
+        }
+    }
+
+    @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> update(@PathVariable Long id,
+                                    @Valid @RequestBody ReservationUpdateRequest request,
+                                    BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(new ReservationApiErrorResponse(firstErrorMessage(bindingResult)));
+        }
+
+        try {
+            reservationService.updateDetails(id, request);
+            Reservation reservation = reservationService.get(id);
+            return ResponseEntity.ok(ReservationApiResponse.from(
+                    reservation,
+                    reservationService.estimateLines(reservation)
+            ));
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.badRequest().body(new ReservationApiErrorResponse(exception.getMessage()));
         }
     }
 

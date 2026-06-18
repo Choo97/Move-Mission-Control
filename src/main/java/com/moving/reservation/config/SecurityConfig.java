@@ -28,6 +28,7 @@ public class SecurityConfig {
                         .ignoringRequestMatchers(
                                 new AntPathRequestMatcher("/reservations", "POST"),
                                 new AntPathRequestMatcher("/api/reservations", "POST"),
+                                new AntPathRequestMatcher("/api/reservations/*", "PATCH"),
                                 new AntPathRequestMatcher("/api/reservations/search", "POST")
                         )
                 )
@@ -35,6 +36,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/reservations").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/reservations").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/reservations/search").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/api/reservations/*").permitAll()
                         .requestMatchers("/", "/login", "/faq", "/css/**", "/js/**", "/reservations", "/reservations/**",
                                 "/reviews", "/reviews/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
