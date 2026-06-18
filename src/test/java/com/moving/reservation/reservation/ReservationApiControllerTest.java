@@ -2,6 +2,7 @@ package com.moving.reservation.reservation;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -341,6 +343,75 @@ class ReservationApiControllerTest {
                                 }
                                 """))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void 짐사진업로드_API로_사진을_업로드한다() throws Exception {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+        MockMultipartFile photo = new MockMultipartFile(
+                "photos",
+                "boxes.jpg",
+                "image/jpeg",
+                "photo".getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/reservations/{id}/photos", reservation.getId())
+                        .file(photo)
+                        .param("phone", "010-1234-5678"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$[0].id").isNumber())
+                .andExpect(jsonPath("$[0].originalFilename").value("boxes.jpg"))
+                .andExpect(jsonPath("$[0].fileUrl").isString());
+    }
+
+    @Test
+    void 짐사진업로드_API는_연락처가_다르면_400을_응답한다() throws Exception {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+        MockMultipartFile photo = new MockMultipartFile(
+                "photos",
+                "boxes.jpg",
+                "image/jpeg",
+                "photo".getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/reservations/{id}/photos", reservation.getId())
+                        .file(photo)
+                        .param("phone", "010-0000-0000"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("예약 번호와 연락처가 일치하지 않습니다."));
+    }
+
+    @Test
+    void 짐사진업로드_API는_허용되지_않은_확장자면_400을_응답한다() throws Exception {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+        MockMultipartFile photo = new MockMultipartFile(
+                "photos",
+                "memo.txt",
+                "text/plain",
+                "not-image".getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/reservations/{id}/photos", reservation.getId())
+                        .file(photo)
+                        .param("phone", "010-1234-5678"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("짐 사진은 jpg, jpeg, png, webp 파일만 업로드할 수 있습니다."));
+    }
+
+    @Test
+    void 짐사진업로드_API는_CSRF_토큰없이_호출할_수_있다() throws Exception {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+        MockMultipartFile photo = new MockMultipartFile(
+                "photos",
+                "boxes.jpg",
+                "image/jpeg",
+                "photo".getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/reservations/{id}/photos", reservation.getId())
+                        .file(photo)
+                        .param("phone", "010-1234-5678"))
+                .andExpect(status().isCreated());
     }
 
     private void readyEstimateForAcceptance(Reservation reservation) {

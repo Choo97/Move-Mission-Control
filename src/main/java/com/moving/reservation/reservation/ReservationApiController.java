@@ -1,6 +1,7 @@
 package com.moving.reservation.reservation;
 
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +12,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/reservations")
@@ -117,6 +120,20 @@ public class ReservationApiController {
                     reservationService.estimateLines(reservation)
             ));
         } catch (IllegalArgumentException exception) {
+            return ResponseEntity.badRequest().body(new ReservationApiErrorResponse(exception.getMessage()));
+        }
+    }
+
+    @PostMapping(value = "/{id}/photos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadPhotos(@PathVariable Long id,
+                                          @RequestParam String phone,
+                                          @RequestParam("photos") List<MultipartFile> photos) {
+        try {
+            List<ReservationApiPhotoResponse> responses = reservationService.addPhotos(id, phone, photos).stream()
+                    .map(ReservationApiPhotoResponse::from)
+                    .toList();
+            return ResponseEntity.status(HttpStatus.CREATED).body(responses);
+        } catch (IllegalArgumentException | IllegalStateException exception) {
             return ResponseEntity.badRequest().body(new ReservationApiErrorResponse(exception.getMessage()));
         }
     }

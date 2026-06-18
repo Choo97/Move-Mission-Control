@@ -15,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @Transactional(readOnly = true)
@@ -157,6 +158,35 @@ public class ReservationService {
 
     public List<ReservationPhoto> findPhotos(Long reservationId) {
         return reservationPhotoRepository.findByReservationIdOrderByUploadedAtAsc(reservationId);
+    }
+
+    @Transactional
+    public List<ReservationPhoto> addPhotos(Long id, String phone, List<MultipartFile> itemPhotos) {
+        Reservation reservation = reservationRepository.findByIdAndPhone(id, phone)
+                .orElseThrow(() -> new IllegalArgumentException("예약 번호와 연락처가 일치하지 않습니다."));
+
+        if (!reservation.isEditable()) {
+            throw new IllegalArgumentException("현재 상태에서는 짐 사진을 업로드할 수 없습니다.");
+        }
+
+        List<MultipartFile> uploadFiles = itemPhotos == null ? List.of() : itemPhotos.stream()
+                .filter(itemPhoto -> itemPhoto != null && !itemPhoto.isEmpty())
+                .toList();
+
+        if (uploadFiles.isEmpty()) {
+            throw new IllegalArgumentException("업로드할 짐 사진을 선택해 주세요.");
+        }
+
+        return uploadFiles.stream()
+                .map(reservationPhotoStorage::store)
+                .map(storedPhoto -> new ReservationPhoto(
+                        reservation,
+                        storedPhoto.originalFilename(),
+                        storedPhoto.storedFilename(),
+                        storedPhoto.fileUrl()
+                ))
+                .map(reservationPhotoRepository::save)
+                .toList();
     }
 
     public List<ReservationCustomerActionHistory> findCustomerActionHistories(Long reservationId) {
