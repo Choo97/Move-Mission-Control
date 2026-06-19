@@ -43,6 +43,7 @@ type ReservationResponse = {
   fromLadderTruck: boolean
   toLadderTruck: boolean
   moveTypeLabel: string
+  status: string
   statusLabel: string
   distanceKm: number | null
   baseEstimatedPrice: number
@@ -70,9 +71,22 @@ type ReservationPhotoResponse = {
   uploadedAt: string
 }
 
+type ReviewResponse = {
+  id: number
+  reservationId: number
+  rating: number
+  content: string
+  createdAt: string
+}
+
 type ReservationSearchForm = {
   reservationId: string
   phone: string
+}
+
+type ReviewForm = {
+  rating: number
+  content: string
 }
 
 type ReservationEditForm = {
@@ -121,6 +135,11 @@ const initialSearchForm: ReservationSearchForm = {
   phone: '',
 }
 
+const initialReviewForm: ReviewForm = {
+  rating: 5,
+  content: '',
+}
+
 const toEditForm = (reservation: ReservationResponse, phone: string): ReservationEditForm => ({
   phone,
   email: reservation.email ?? '',
@@ -146,7 +165,10 @@ function App() {
   const [isCanceling, setIsCanceling] = useState(false)
   const [isAcceptingEstimate, setIsAcceptingEstimate] = useState(false)
   const [isUploadingPhotos, setIsUploadingPhotos] = useState(false)
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false)
   const [photoFiles, setPhotoFiles] = useState<File[]>([])
+  const [reviewForm, setReviewForm] = useState<ReviewForm>(initialReviewForm)
+  const [submittedReview, setSubmittedReview] = useState<ReviewResponse | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
   const [searchErrorMessage, setSearchErrorMessage] = useState('')
   const [actionMessage, setActionMessage] = useState('')
@@ -179,6 +201,8 @@ function App() {
     setReservation(null)
     setEditForm(null)
     setPhotoFiles([])
+    setSubmittedReview(null)
+    setReviewForm(initialReviewForm)
     const submittedPhone = form.phone
 
     try {
@@ -220,6 +244,8 @@ function App() {
     setReservation(null)
     setEditForm(null)
     setPhotoFiles([])
+    setSubmittedReview(null)
+    setReviewForm(initialReviewForm)
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/reservations/search`, {
@@ -242,6 +268,8 @@ function App() {
 
       setReservation(data as ReservationResponse)
       setPhotoFiles([])
+      setSubmittedReview(null)
+      setReviewForm(initialReviewForm)
     } catch (error) {
       setSearchErrorMessage(error instanceof Error ? error.message : '예약 조회에 실패했습니다.')
     } finally {
@@ -438,6 +466,49 @@ function App() {
       setActionMessage(error instanceof Error ? error.message : '짐 사진 업로드에 실패했습니다.')
     } finally {
       setIsUploadingPhotos(false)
+    }
+  }
+
+  const submitReview = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    if (!reservation || !searchForm.phone) {
+      setActionMessage('예약 조회에 사용한 연락처가 필요합니다.')
+      return
+    }
+
+    setIsSubmittingReview(true)
+    setActionMessage('')
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reservationId: reservation.id,
+          phone: searchForm.phone,
+          rating: reviewForm.rating,
+          content: reviewForm.content,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        const error = data as ApiErrorResponse
+        throw new Error(error.message || '리뷰 작성에 실패했습니다.')
+      }
+
+      const createdReview = data as ReviewResponse
+      setSubmittedReview(createdReview)
+      setReviewForm(initialReviewForm)
+      setActionMessage('리뷰가 등록되었습니다.')
+    } catch (error) {
+      setActionMessage(error instanceof Error ? error.message : '리뷰 작성에 실패했습니다.')
+    } finally {
+      setIsSubmittingReview(false)
     }
   }
 
@@ -935,6 +1006,55 @@ function App() {
                   </form>
                 )}
               </div>
+              {reservation.status === 'COMPLETED' && (
+                <div className="review-section">
+                  <h3>고객 리뷰</h3>
+                  {submittedReview ? (
+                    <div className="review-complete">
+                      <strong>{'★'.repeat(submittedReview.rating)}</strong>
+                      <p>{submittedReview.content}</p>
+                    </div>
+                  ) : (
+                    <form className="review-form" onSubmit={submitReview}>
+                      <label>
+                        평점
+                        <select
+                          value={reviewForm.rating}
+                          onChange={(event) =>
+                            setReviewForm((current) => ({
+                              ...current,
+                              rating: Number(event.target.value),
+                            }))
+                          }
+                        >
+                          <option value={5}>5점</option>
+                          <option value={4}>4점</option>
+                          <option value={3}>3점</option>
+                          <option value={2}>2점</option>
+                          <option value={1}>1점</option>
+                        </select>
+                      </label>
+                      <label>
+                        리뷰 내용
+                        <textarea
+                          value={reviewForm.content}
+                          onChange={(event) =>
+                            setReviewForm((current) => ({
+                              ...current,
+                              content: event.target.value,
+                            }))
+                          }
+                          placeholder="서비스 이용 후 느낀 점을 남겨주세요."
+                          required
+                        />
+                      </label>
+                      <button className="submit-button secondary" type="submit" disabled={isSubmittingReview}>
+                        {isSubmittingReview ? '리뷰 등록 중' : '리뷰 등록'}
+                      </button>
+                    </form>
+                  )}
+                </div>
+              )}
               {(actionMessage ||
                 reservation.editable ||
                 reservation.cancelable ||
