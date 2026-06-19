@@ -74,6 +74,38 @@ class AdminReservationApiControllerTest {
                 .andExpect(jsonPath("$.totalElements").value(2));
     }
 
+    @Test
+    void 관리자_예약상세_API는_예약상세를_JSON으로_조회한다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("상세조회고객", "010-5555-6666"));
+        reservationService.updateStatus(reservation.getId(), ReservationStatus.CONSULTING, "admin");
+        reservationService.updateAdminMemo(reservation.getId(), "관리자 확인 메모", "admin");
+
+        mockMvc.perform(get("/api/admin/reservations/{id}", reservation.getId())
+                        .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(reservation.getId()))
+                .andExpect(jsonPath("$.customerName").value("상세조회고객"))
+                .andExpect(jsonPath("$.phone").value("010-5555-6666"))
+                .andExpect(jsonPath("$.email").value("admin-api@example.com"))
+                .andExpect(jsonPath("$.status").value(ReservationStatus.CONSULTING.name()))
+                .andExpect(jsonPath("$.statusLabel").value("상담중"))
+                .andExpect(jsonPath("$.memo").value("관리자 API 테스트 예약입니다."))
+                .andExpect(jsonPath("$.adminMemo").value("관리자 확인 메모"))
+                .andExpect(jsonPath("$.estimateLines").isArray())
+                .andExpect(jsonPath("$.photos").isArray())
+                .andExpect(jsonPath("$.statusHistories[0].changedStatus").value(ReservationStatus.CONSULTING.name()))
+                .andExpect(jsonPath("$.customerActionHistories").isArray());
+    }
+
+    @Test
+    void 관리자_예약상세_API도_로그인이_필요하다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("상세권한고객", "010-7777-8888"));
+
+        mockMvc.perform(get("/api/admin/reservations/{id}", reservation.getId()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"));
+    }
+
     private ReservationCreateRequest reservationCreateRequest(String customerName, String phone) {
         ReservationCreateRequest request = new ReservationCreateRequest();
         request.setCustomerName(customerName);

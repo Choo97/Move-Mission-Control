@@ -29,6 +29,76 @@ export type AdminReservationPageResponse = {
   last: boolean
 }
 
+export type AdminReservationStatusHistoryResponse = {
+  id: number
+  previousStatus: ReservationStatus
+  previousStatusLabel: string
+  changedStatus: ReservationStatus
+  changedStatusLabel: string
+  changedAt: string
+  changedBy: string | null
+}
+
+export type AdminReservationCustomerActionHistoryResponse = {
+  id: number
+  actionType: string
+  summary: string
+  detail: string
+  requestedBy: string
+  createdAt: string
+}
+
+export type AdminReservationDetailResponse = {
+  id: number
+  customerName: string
+  phone: string
+  email: string
+  moveDate: string
+  moveTime: string
+  fromAddress: string
+  toAddress: string
+  moveType: MoveType
+  moveTypeLabel: string
+  status: ReservationStatus
+  statusLabel: string
+  fromElevator: boolean
+  toElevator: boolean
+  fromFloor: number
+  toFloor: number
+  fromLadderTruck: boolean
+  toLadderTruck: boolean
+  distanceKm: number | null
+  estimatedPrice: number
+  baseEstimatedPrice: number
+  discountAmount: number
+  finalEstimatedPrice: number
+  couponCode: string | null
+  couponName: string | null
+  memo: string | null
+  adminMemo: string | null
+  adminMemoUpdatedBy: string | null
+  editable: boolean
+  cancelable: boolean
+  estimateAcceptable: boolean
+  estimateAccepted: boolean
+  acceptedEstimatePrice: number | null
+  estimateAcceptedAt: string | null
+  createdAt: string
+  updatedAt: string
+  photos: Array<{
+    id: number
+    originalFilename: string
+    fileUrl: string
+    uploadedAt: string
+  }>
+  estimateLines: Array<{
+    label: string
+    amount: number
+  }>
+  statusHistories: AdminReservationStatusHistoryResponse[]
+  customerActionHistories: AdminReservationCustomerActionHistoryResponse[]
+}
+
 export type AdminReservationListQuery = {
   status?: ReservationStatus
   keyword?: string

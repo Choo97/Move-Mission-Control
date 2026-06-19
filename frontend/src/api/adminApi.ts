@@ -1,5 +1,9 @@
 import { API_BASE_URL } from '../reservationData'
-import type { AdminReservationListQuery, AdminReservationPageResponse } from '../types'
+import type {
+  AdminReservationDetailResponse,
+  AdminReservationListQuery,
+  AdminReservationPageResponse,
+} from '../types'
 
 const appendQueryParam = (params: URLSearchParams, key: string, value: string | number | boolean | undefined) => {
   if (value !== undefined && value !== '') {
@@ -30,4 +34,16 @@ export async function getAdminReservations(query: AdminReservationListQuery = {}
   }
 
   return response.json() as Promise<AdminReservationPageResponse>
+}
+
+export async function getAdminReservation(reservationId: number) {
+  const response = await fetch(`${API_BASE_URL}/api/admin/reservations/${reservationId}`, {
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    throw new Error('관리자 예약 상세를 불러오지 못했습니다.')
+  }
+
+  return response.json() as Promise<AdminReservationDetailResponse>
 }
