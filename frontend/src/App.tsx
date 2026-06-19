@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import './App.css'
+import { AdminReservationListView } from './components/AdminReservationListView'
 import { ReservationCreateForm } from './components/ReservationCreateForm'
 import { ReservationDetailPanel } from './components/ReservationDetailPanel'
 import { ReservationEditFormView } from './components/ReservationEditFormView'
@@ -33,7 +34,7 @@ import type {
 } from './types'
 
 function App() {
-  const [activeView, setActiveView] = useState<'create' | 'search'>('create')
+  const [activeView, setActiveView] = useState<'create' | 'search' | 'admin'>('create')
   const [form, setForm] = useState<ReservationForm>(initialForm)
   const [searchForm, setSearchForm] = useState<ReservationSearchForm>(initialSearchForm)
   const [editForm, setEditForm] = useState<ReservationEditForm | null>(null)
@@ -321,10 +322,23 @@ function App() {
         >
           예약 조회
         </button>
+        <button
+          type="button"
+          className={activeView === 'admin' ? 'active' : ''}
+          onClick={() => {
+            setActiveView('admin')
+            setActionMessage('')
+          }}
+        >
+          관리자 목록
+        </button>
       </nav>
 
-      <section className="workspace">
-        {activeView === 'create' ? (
+      {activeView === 'admin' ? (
+        <AdminReservationListView />
+      ) : (
+        <section className="workspace">
+          {activeView === 'create' ? (
           <ReservationCreateForm
             form={form}
             today={today}
@@ -376,7 +390,8 @@ function App() {
           onReviewFormChange={setReviewForm}
           onSubmitReview={submitReview}
         />
-      </section>
+        </section>
+      )}
     </main>
   )
 }
