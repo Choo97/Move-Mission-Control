@@ -52,6 +52,7 @@ export function ReservationDetailPanel({
           <strong>예약 #{reservation.id}</strong>
           <ReservationSummary reservation={reservation} />
           <ReservationProgress reservation={reservation} />
+          <CustomerStatusGuide reservation={reservation} />
           <ReservationStateBadges reservation={reservation} />
           <EstimateLines reservation={reservation} />
           <PhotoSection
@@ -149,6 +150,33 @@ const progressSteps = [
   { status: 'COMPLETED', label: '완료' },
 ]
 
+const statusGuides: Record<string, { title: string; description: string }> = {
+  RECEIVED: {
+    title: '예약이 접수되었습니다.',
+    description: '담당자가 예약 내용을 확인한 뒤 상담을 진행합니다. 연락 가능한 상태로 기다려 주세요.',
+  },
+  CONSULTING: {
+    title: '상담이 진행 중입니다.',
+    description: '이사 조건, 짐 양, 현장 상황을 확인하는 단계입니다. 필요한 사진이나 요청사항을 추가해 주세요.',
+  },
+  ESTIMATE_SENT: {
+    title: '견적을 확인해 주세요.',
+    description: '안내된 견적 금액을 확인하고 동의하면 예약이 확정됩니다.',
+  },
+  CONFIRMED: {
+    title: '예약이 확정되었습니다.',
+    description: '이사 전 출발지와 도착지의 주차, 엘리베이터, 사다리차 필요 여부를 다시 확인해 주세요.',
+  },
+  COMPLETED: {
+    title: '이사가 완료되었습니다.',
+    description: '서비스 이용 후 느낀 점을 리뷰로 남길 수 있습니다.',
+  },
+  CANCELED: {
+    title: '예약이 취소되었습니다.',
+    description: '같은 일정으로 다시 이사가 필요하면 새 예약을 신청해 주세요.',
+  },
+}
+
 function ReservationProgress({ reservation }: { reservation: ReservationResponse }) {
   if (reservation.status === 'CANCELED') {
     return (
@@ -181,6 +209,21 @@ function ReservationProgress({ reservation }: { reservation: ReservationResponse
           )
         })}
       </ol>
+    </div>
+  )
+}
+
+function CustomerStatusGuide({ reservation }: { reservation: ReservationResponse }) {
+  const guide = statusGuides[reservation.status]
+
+  if (!guide) {
+    return null
+  }
+
+  return (
+    <div className="status-guide">
+      <h3>{guide.title}</h3>
+      <p>{guide.description}</p>
     </div>
   )
 }
