@@ -15,6 +15,7 @@ import {
   updateReservation,
   uploadReservationPhotos,
 } from './api/customerApi'
+import { getErrorMessage } from './api/apiError'
 import {
   API_BASE_URL,
   initialForm,
@@ -76,9 +77,7 @@ function App() {
     try {
       setCustomerGuides(await getCustomerGuides(nextReservation.status))
     } catch (error) {
-      setCustomerGuideErrorMessage(
-        error instanceof Error ? error.message : '고객 안내를 불러오지 못했습니다.',
-      )
+      setCustomerGuideErrorMessage(getErrorMessage(error, '고객 안내를 불러오지 못했습니다.'))
     } finally {
       setIsLoadingCustomerGuides(false)
     }
@@ -120,7 +119,7 @@ function App() {
       setForm(initialForm)
       setActiveView('search')
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : '예약 신청에 실패했습니다.')
+      setErrorMessage(getErrorMessage(error, '예약 신청에 실패했습니다.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -137,7 +136,7 @@ function App() {
       await showReservation(await searchReservationApi(searchForm))
       setPhotoFiles([])
     } catch (error) {
-      setSearchErrorMessage(error instanceof Error ? error.message : '예약 조회에 실패했습니다.')
+      setSearchErrorMessage(getErrorMessage(error, '예약 조회에 실패했습니다.'))
     } finally {
       setIsSearching(false)
     }
@@ -172,7 +171,7 @@ function App() {
       setEditForm(null)
       setActionMessage('예약 정보가 수정되었습니다.')
     } catch (error) {
-      setActionMessage(error instanceof Error ? error.message : '예약 수정에 실패했습니다.')
+      setActionMessage(getErrorMessage(error, '예약 수정에 실패했습니다.'))
     } finally {
       setIsUpdating(false)
     }
@@ -196,7 +195,7 @@ function App() {
       setEditForm(null)
       setActionMessage('예약이 취소되었습니다.')
     } catch (error) {
-      setActionMessage(error instanceof Error ? error.message : '예약 취소에 실패했습니다.')
+      setActionMessage(getErrorMessage(error, '예약 취소에 실패했습니다.'))
     } finally {
       setIsCanceling(false)
     }
@@ -224,7 +223,7 @@ function App() {
       setEditForm(null)
       setActionMessage('견적 동의가 완료되었습니다. 예약이 확정되었습니다.')
     } catch (error) {
-      setActionMessage(error instanceof Error ? error.message : '견적 동의에 실패했습니다.')
+      setActionMessage(getErrorMessage(error, '견적 동의에 실패했습니다.'))
     } finally {
       setIsAcceptingEstimate(false)
     }
@@ -258,7 +257,7 @@ function App() {
       setPhotoFiles([])
       setActionMessage(`${uploadedPhotos.length}장의 짐 사진이 업로드되었습니다.`)
     } catch (error) {
-      setActionMessage(error instanceof Error ? error.message : '짐 사진 업로드에 실패했습니다.')
+      setActionMessage(getErrorMessage(error, '짐 사진 업로드에 실패했습니다.'))
     } finally {
       setIsUploadingPhotos(false)
     }
@@ -281,7 +280,7 @@ function App() {
       setReviewForm(initialReviewForm)
       setActionMessage('리뷰가 등록되었습니다.')
     } catch (error) {
-      setActionMessage(error instanceof Error ? error.message : '리뷰 작성에 실패했습니다.')
+      setActionMessage(getErrorMessage(error, '리뷰 작성에 실패했습니다.'))
     } finally {
       setIsSubmittingReview(false)
     }
