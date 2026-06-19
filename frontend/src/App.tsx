@@ -38,6 +38,10 @@ type ReservationResponse = {
   moveTime: string
   fromAddress: string
   toAddress: string
+  fromFloor: number
+  toFloor: number
+  fromLadderTruck: boolean
+  toLadderTruck: boolean
   moveTypeLabel: string
   statusLabel: string
   distanceKm: number | null
@@ -60,6 +64,20 @@ type ReservationResponse = {
 type ReservationSearchForm = {
   reservationId: string
   phone: string
+}
+
+type ReservationEditForm = {
+  phone: string
+  email: string
+  moveDate: string
+  moveTime: string
+  fromAddress: string
+  toAddress: string
+  fromFloor: number
+  toFloor: number
+  fromLadderTruck: boolean
+  toLadderTruck: boolean
+  memo: string
 }
 
 const moveTypeOptions: Array<{ value: MoveType; label: string }> = [
@@ -94,14 +112,32 @@ const initialSearchForm: ReservationSearchForm = {
   phone: '',
 }
 
+const toEditForm = (reservation: ReservationResponse, phone: string): ReservationEditForm => ({
+  phone,
+  email: reservation.email ?? '',
+  moveDate: reservation.moveDate,
+  moveTime: reservation.moveTime.slice(0, 5),
+  fromAddress: reservation.fromAddress,
+  toAddress: reservation.toAddress,
+  fromFloor: reservation.fromFloor,
+  toFloor: reservation.toFloor,
+  fromLadderTruck: reservation.fromLadderTruck,
+  toLadderTruck: reservation.toLadderTruck,
+  memo: '',
+})
+
 function App() {
   const [activeView, setActiveView] = useState<'create' | 'search'>('create')
   const [form, setForm] = useState<ReservationForm>(initialForm)
   const [searchForm, setSearchForm] = useState<ReservationSearchForm>(initialSearchForm)
+  const [editForm, setEditForm] = useState<ReservationEditForm | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [isCanceling, setIsCanceling] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [searchErrorMessage, setSearchErrorMessage] = useState('')
+  const [actionMessage, setActionMessage] = useState('')
   const [reservation, setReservation] = useState<ReservationResponse | null>(null)
 
   const today = useMemo(() => new Date().toISOString().slice(0, 10), [])
@@ -113,11 +149,21 @@ function App() {
     setForm((current) => ({ ...current, [key]: value }))
   }
 
+  const updateEditField = <K extends keyof ReservationEditForm>(
+    key: K,
+    value: ReservationEditForm[K],
+  ) => {
+    setEditForm((current) => (current ? { ...current, [key]: value } : current))
+  }
+
   const submitReservation = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setIsSubmitting(true)
     setErrorMessage('')
+    setActionMessage('')
     setReservation(null)
+    setEditForm(null)
+    const submittedPhone = form.phone
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/reservations`, {
@@ -135,7 +181,12 @@ function App() {
         throw new Error(error.message || '예약 신청에 실패했습니다.')
       }
 
-      setReservation(data as ReservationResponse)
+      const createdReservation = data as ReservationResponse
+      setReservation(createdReservation)
+      setSearchForm({
+        reservationId: String(createdReservation.id),
+        phone: submittedPhone,
+      })
       setForm(initialForm)
       setActiveView('search')
     } catch (error) {
@@ -149,7 +200,9 @@ function App() {
     event.preventDefault()
     setIsSearching(true)
     setSearchErrorMessage('')
+    setActionMessage('')
     setReservation(null)
+    setEditForm(null)
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/reservations/search`, {
@@ -178,6 +231,97 @@ function App() {
     }
   }
 
+  const startEdit = () => {
+    if (!reservation) {
+      return
+    }
+
+    setActionMessage('')
+    setEditForm(toEditForm(reservation, searchForm.phone))
+  }
+
+  const submitReservationUpdate = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    if (!reservation || !editForm) {
+      return
+    }
+
+    setIsUpdating(true)
+    setActionMessage('')
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/reservations/${reservation.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editForm),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        const error = data as ApiErrorResponse
+        throw new Error(error.message || '예약 수정에 실패했습니다.')
+      }
+
+      const updatedReservation = data as ReservationResponse
+      setReservation(updatedReservation)
+      setSearchForm({
+        reservationId: String(updatedReservation.id),
+        phone: editForm.phone,
+      })
+      setEditForm(null)
+      setActionMessage('예약 정보가 수정되었습니다.')
+    } catch (error) {
+      setActionMessage(error instanceof Error ? error.message : '예약 수정에 실패했습니다.')
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const cancelReservation = async () => {
+    if (!reservation || !searchForm.phone) {
+      setActionMessage('예약 조회에 사용한 연락처가 필요합니다.')
+      return
+    }
+
+    const confirmed = window.confirm('예약을 취소하시겠습니까?')
+
+    if (!confirmed) {
+      return
+    }
+
+    setIsCanceling(true)
+    setActionMessage('')
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/reservations/${reservation.id}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phone: searchForm.phone }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        const error = data as ApiErrorResponse
+        throw new Error(error.message || '예약 취소에 실패했습니다.')
+      }
+
+      setReservation(data as ReservationResponse)
+      setEditForm(null)
+      setActionMessage('예약이 취소되었습니다.')
+    } catch (error) {
+      setActionMessage(error instanceof Error ? error.message : '예약 취소에 실패했습니다.')
+    } finally {
+      setIsCanceling(false)
+    }
+  }
+
   return (
     <main className="app-shell">
       <header className="top-bar">
@@ -197,6 +341,7 @@ function App() {
           onClick={() => {
             setActiveView('create')
             setErrorMessage('')
+            setActionMessage('')
           }}
         >
           예약 신청
@@ -207,6 +352,7 @@ function App() {
           onClick={() => {
             setActiveView('search')
             setSearchErrorMessage('')
+            setActionMessage('')
           }}
         >
           예약 조회
@@ -439,6 +585,127 @@ function App() {
           </form>
         )}
 
+        {editForm && reservation && (
+          <form className="reservation-form edit-form" onSubmit={submitReservationUpdate}>
+            <div className="section-heading">
+              <h2>예약 수정</h2>
+              <p>조회에 사용한 연락처로 본인 확인 후 예약 정보를 수정합니다.</p>
+            </div>
+
+            <div className="field-grid">
+              <label>
+                연락처
+                <input
+                  value={editForm.phone}
+                  onChange={(event) => updateEditField('phone', event.target.value)}
+                  required
+                />
+              </label>
+              <label>
+                이메일
+                <input
+                  type="email"
+                  value={editForm.email}
+                  onChange={(event) => updateEditField('email', event.target.value)}
+                />
+              </label>
+              <label>
+                이사 날짜
+                <input
+                  type="date"
+                  min={today}
+                  value={editForm.moveDate}
+                  onChange={(event) => updateEditField('moveDate', event.target.value)}
+                  required
+                />
+              </label>
+              <label>
+                희망 시간
+                <input
+                  type="time"
+                  value={editForm.moveTime}
+                  onChange={(event) => updateEditField('moveTime', event.target.value)}
+                  required
+                />
+              </label>
+              <label>
+                출발지 주소
+                <input
+                  value={editForm.fromAddress}
+                  onChange={(event) => updateEditField('fromAddress', event.target.value)}
+                  required
+                />
+              </label>
+              <label>
+                도착지 주소
+                <input
+                  value={editForm.toAddress}
+                  onChange={(event) => updateEditField('toAddress', event.target.value)}
+                  required
+                />
+              </label>
+              <label>
+                출발지 층수
+                <input
+                  type="number"
+                  min="1"
+                  max="50"
+                  value={editForm.fromFloor}
+                  onChange={(event) => updateEditField('fromFloor', Number(event.target.value))}
+                  required
+                />
+              </label>
+              <label>
+                도착지 층수
+                <input
+                  type="number"
+                  min="1"
+                  max="50"
+                  value={editForm.toFloor}
+                  onChange={(event) => updateEditField('toFloor', Number(event.target.value))}
+                  required
+                />
+              </label>
+            </div>
+
+            <div className="switch-row edit-switches">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={editForm.fromLadderTruck}
+                  onChange={(event) => updateEditField('fromLadderTruck', event.target.checked)}
+                />
+                출발지 사다리차
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={editForm.toLadderTruck}
+                  onChange={(event) => updateEditField('toLadderTruck', event.target.checked)}
+                />
+                도착지 사다리차
+              </label>
+            </div>
+
+            <label className="wide edit-memo">
+              요청사항
+              <textarea
+                value={editForm.memo}
+                onChange={(event) => updateEditField('memo', event.target.value)}
+              />
+            </label>
+
+            <div className="button-row">
+              <button className="submit-button secondary" type="button" onClick={() => setEditForm(null)}>
+                수정 취소
+              </button>
+              <button className="submit-button" type="submit" disabled={isUpdating}>
+                {isUpdating ? '수정 저장 중' : '수정 저장'}
+              </button>
+            </div>
+          </form>
+        )}
+
         <aside className="status-panel">
           <h2>{activeView === 'create' ? '접수 결과' : '예약 상세'}</h2>
           {reservation ? (
@@ -501,6 +768,28 @@ function App() {
                       </div>
                     ))}
                   </dl>
+                </div>
+              )}
+              {(actionMessage || reservation.editable || reservation.cancelable) && (
+                <div className="customer-actions">
+                  {actionMessage && <p className="message info">{actionMessage}</p>}
+                  <div className="button-row">
+                    {reservation.editable && (
+                      <button className="submit-button secondary" type="button" onClick={startEdit}>
+                        예약 수정
+                      </button>
+                    )}
+                    {reservation.cancelable && (
+                      <button
+                        className="submit-button danger"
+                        type="button"
+                        disabled={isCanceling}
+                        onClick={cancelReservation}
+                      >
+                        {isCanceling ? '취소 처리 중' : '예약 취소'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

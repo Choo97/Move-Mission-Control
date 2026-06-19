@@ -379,7 +379,7 @@ npm run dev
 6. 고객 React 화면이 안정화되면 기존 `/reservations/**` Thymeleaf 화면 제거 여부를 결정합니다.
 7. 관리자 화면 React 전환은 고객 화면 전환 이후 별도 작업으로 판단합니다.
 
-중요한 기준은 같은 고객 기능 안에서 Thymeleaf와 React URL을 섞지 않는 것입니다. 전환 중에는 기존 `/reservations/**`는 유지하고, React 고객 화면은 `frontend/` 개발 서버에서 먼저 검증한 뒤 배포 방식을 결정합니다. 현재 React 고객 화면은 예약 신청과 예약 번호/연락처 기반 예약 조회를 제공합니다.
+중요한 기준은 같은 고객 기능 안에서 Thymeleaf와 React URL을 섞지 않는 것입니다. 전환 중에는 기존 `/reservations/**`는 유지하고, React 고객 화면은 `frontend/` 개발 서버에서 먼저 검증한 뒤 배포 방식을 결정합니다. 현재 React 고객 화면은 예약 신청, 예약 번호/연락처 기반 예약 조회, 예약 수정, 예약 취소를 제공합니다.
 
 ### 고객 예약 API
 
