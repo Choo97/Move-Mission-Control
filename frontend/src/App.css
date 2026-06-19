@@ -287,6 +287,59 @@ legend {
   margin-top: 4px;
 }
 
+.photo-section {
+  margin-top: 22px;
+}
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.photo-card {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  color: #534941;
+  text-decoration: none;
+}
+
+.photo-card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 1px solid #eee5dc;
+  border-radius: 6px;
+  object-fit: cover;
+  background: #fffdfb;
+}
+
+.photo-card span,
+.selected-files {
+  overflow: hidden;
+  color: #71665e;
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.photo-upload-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  border-top: 1px solid #eee5dc;
+  padding-top: 14px;
+}
+
+.photo-upload-form .submit-button {
+  margin-top: 0;
+}
+
+.selected-files {
+  margin: 0;
+}
+
 .customer-actions {
   margin-top: 18px;
 }

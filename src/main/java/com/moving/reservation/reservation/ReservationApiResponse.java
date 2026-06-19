@@ -68,11 +68,19 @@ public record ReservationApiResponse(
         Integer acceptedEstimatePrice,
         @Schema(description = "견적 동의 시각", example = "2026-06-18T16:30:00")
         LocalDateTime estimateAcceptedAt,
+        @Schema(description = "고객이 업로드한 짐 사진 목록")
+        List<ReservationApiPhotoResponse> photos,
         @Schema(description = "견적 산정 내역")
         List<ReservationApiEstimateLineResponse> estimateLines
 ) {
 
     public static ReservationApiResponse from(Reservation reservation, List<ReservationEstimateLine> estimateLines) {
+        return from(reservation, estimateLines, List.of());
+    }
+
+    public static ReservationApiResponse from(Reservation reservation,
+                                              List<ReservationEstimateLine> estimateLines,
+                                              List<ReservationPhoto> photos) {
         return new ReservationApiResponse(
                 reservation.getId(),
                 reservation.getCustomerName(),
@@ -104,6 +112,9 @@ public record ReservationApiResponse(
                 reservation.hasEstimateAcceptance(),
                 reservation.getAcceptedEstimatePrice(),
                 reservation.getEstimateAcceptedAt(),
+                photos.stream()
+                        .map(ReservationApiPhotoResponse::from)
+                        .toList(),
                 estimateLines.stream()
                         .map(ReservationApiEstimateLineResponse::from)
                         .toList()

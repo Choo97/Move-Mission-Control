@@ -49,11 +49,7 @@ public class ReservationApiController {
 
         try {
             Reservation reservation = reservationService.create(request.toServiceRequest());
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ReservationApiResponse.from(
-                            reservation,
-                            reservationService.estimateLines(reservation)
-                    ));
+            return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(reservation));
         } catch (IllegalArgumentException | IllegalStateException exception) {
             return ResponseEntity.badRequest().body(ApiErrorResponse.badRequest(exception.getMessage()));
         }
@@ -77,10 +73,7 @@ public class ReservationApiController {
 
         try {
             Reservation reservation = reservationService.search(request);
-            return ResponseEntity.ok(ReservationApiResponse.from(
-                    reservation,
-                    reservationService.estimateLines(reservation)
-            ));
+            return ResponseEntity.ok(toResponse(reservation));
         } catch (IllegalArgumentException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiErrorResponse.notFound(exception.getMessage()));
@@ -106,10 +99,7 @@ public class ReservationApiController {
         try {
             reservationService.updateDetails(id, request);
             Reservation reservation = reservationService.get(id);
-            return ResponseEntity.ok(ReservationApiResponse.from(
-                    reservation,
-                    reservationService.estimateLines(reservation)
-            ));
+            return ResponseEntity.ok(toResponse(reservation));
         } catch (IllegalArgumentException exception) {
             return ResponseEntity.badRequest().body(ApiErrorResponse.badRequest(exception.getMessage()));
         }
@@ -134,10 +124,7 @@ public class ReservationApiController {
         try {
             reservationService.cancel(id, request.getPhone());
             Reservation reservation = reservationService.get(id);
-            return ResponseEntity.ok(ReservationApiResponse.from(
-                    reservation,
-                    reservationService.estimateLines(reservation)
-            ));
+            return ResponseEntity.ok(toResponse(reservation));
         } catch (IllegalArgumentException exception) {
             return ResponseEntity.badRequest().body(ApiErrorResponse.badRequest(exception.getMessage()));
         }
@@ -162,10 +149,7 @@ public class ReservationApiController {
         try {
             reservationService.acceptEstimate(id, request.getPhone());
             Reservation reservation = reservationService.get(id);
-            return ResponseEntity.ok(ReservationApiResponse.from(
-                    reservation,
-                    reservationService.estimateLines(reservation)
-            ));
+            return ResponseEntity.ok(toResponse(reservation));
         } catch (IllegalArgumentException exception) {
             return ResponseEntity.badRequest().body(ApiErrorResponse.badRequest(exception.getMessage()));
         }
@@ -198,5 +182,13 @@ public class ReservationApiController {
                 .findFirst()
                 .map(error -> error.getDefaultMessage())
                 .orElse("요청 정보를 확인해 주세요.");
+    }
+
+    private ReservationApiResponse toResponse(Reservation reservation) {
+        return ReservationApiResponse.from(
+                reservation,
+                reservationService.estimateLines(reservation),
+                reservationService.findPhotos(reservation.getId())
+        );
     }
 }

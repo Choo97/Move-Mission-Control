@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import type { FormEvent } from 'react'
+import type { ChangeEvent, FormEvent } from 'react'
 import './App.css'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8081'
@@ -56,10 +56,18 @@ type ReservationResponse = {
   estimateAccepted: boolean
   acceptedEstimatePrice: number | null
   estimateAcceptedAt: string | null
+  photos: ReservationPhotoResponse[]
   estimateLines: Array<{
     label: string
     amount: number
   }>
+}
+
+type ReservationPhotoResponse = {
+  id: number
+  originalFilename: string
+  fileUrl: string
+  uploadedAt: string
 }
 
 type ReservationSearchForm = {
@@ -137,12 +145,17 @@ function App() {
   const [isUpdating, setIsUpdating] = useState(false)
   const [isCanceling, setIsCanceling] = useState(false)
   const [isAcceptingEstimate, setIsAcceptingEstimate] = useState(false)
+  const [isUploadingPhotos, setIsUploadingPhotos] = useState(false)
+  const [photoFiles, setPhotoFiles] = useState<File[]>([])
   const [errorMessage, setErrorMessage] = useState('')
   const [searchErrorMessage, setSearchErrorMessage] = useState('')
   const [actionMessage, setActionMessage] = useState('')
   const [reservation, setReservation] = useState<ReservationResponse | null>(null)
 
   const today = useMemo(() => new Date().toISOString().slice(0, 10), [])
+
+  const photoUrl = (fileUrl: string) =>
+    fileUrl.startsWith('http') ? fileUrl : `${API_BASE_URL}${fileUrl}`
 
   const updateField = <K extends keyof ReservationForm>(
     key: K,
@@ -165,6 +178,7 @@ function App() {
     setActionMessage('')
     setReservation(null)
     setEditForm(null)
+    setPhotoFiles([])
     const submittedPhone = form.phone
 
     try {
@@ -205,6 +219,7 @@ function App() {
     setActionMessage('')
     setReservation(null)
     setEditForm(null)
+    setPhotoFiles([])
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/reservations/search`, {
@@ -226,6 +241,7 @@ function App() {
       }
 
       setReservation(data as ReservationResponse)
+      setPhotoFiles([])
     } catch (error) {
       setSearchErrorMessage(error instanceof Error ? error.message : '예약 조회에 실패했습니다.')
     } finally {
@@ -367,6 +383,61 @@ function App() {
       setActionMessage(error instanceof Error ? error.message : '견적 동의에 실패했습니다.')
     } finally {
       setIsAcceptingEstimate(false)
+    }
+  }
+
+  const selectPhotoFiles = (event: ChangeEvent<HTMLInputElement>) => {
+    setPhotoFiles(Array.from(event.target.files ?? []))
+  }
+
+  const uploadPhotos = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    if (!reservation || !searchForm.phone) {
+      setActionMessage('예약 조회에 사용한 연락처가 필요합니다.')
+      return
+    }
+
+    if (photoFiles.length === 0) {
+      setActionMessage('업로드할 짐 사진을 선택해 주세요.')
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('phone', searchForm.phone)
+    photoFiles.forEach((file) => formData.append('photos', file))
+
+    setIsUploadingPhotos(true)
+    setActionMessage('')
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/reservations/${reservation.id}/photos`, {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        const error = data as ApiErrorResponse
+        throw new Error(error.message || '짐 사진 업로드에 실패했습니다.')
+      }
+
+      const uploadedPhotos = data as ReservationPhotoResponse[]
+      setReservation((current) =>
+        current
+          ? {
+              ...current,
+              photos: [...current.photos, ...uploadedPhotos],
+            }
+          : current,
+      )
+      setPhotoFiles([])
+      setActionMessage(`${uploadedPhotos.length}장의 짐 사진이 업로드되었습니다.`)
+    } catch (error) {
+      setActionMessage(error instanceof Error ? error.message : '짐 사진 업로드에 실패했습니다.')
+    } finally {
+      setIsUploadingPhotos(false)
     }
   }
 
@@ -824,6 +895,46 @@ function App() {
                   </dl>
                 </div>
               )}
+              <div className="photo-section">
+                <h3>짐 사진</h3>
+                {reservation.photos.length > 0 ? (
+                  <div className="photo-grid">
+                    {reservation.photos.map((photo) => (
+                      <a
+                        key={photo.id}
+                        className="photo-card"
+                        href={photoUrl(photo.fileUrl)}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <img src={photoUrl(photo.fileUrl)} alt={photo.originalFilename} />
+                        <span>{photo.originalFilename}</span>
+                      </a>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="empty-state">업로드된 짐 사진이 없습니다.</p>
+                )}
+                {reservation.editable && (
+                  <form className="photo-upload-form" onSubmit={uploadPhotos}>
+                    <label>
+                      사진 선택
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        multiple
+                        onChange={selectPhotoFiles}
+                      />
+                    </label>
+                    {photoFiles.length > 0 && (
+                      <p className="selected-files">{photoFiles.length}장 선택됨</p>
+                    )}
+                    <button className="submit-button secondary" type="submit" disabled={isUploadingPhotos}>
+                      {isUploadingPhotos ? '사진 업로드 중' : '사진 업로드'}
+                    </button>
+                  </form>
+                )}
+              </div>
               {(actionMessage ||
                 reservation.editable ||
                 reservation.cancelable ||

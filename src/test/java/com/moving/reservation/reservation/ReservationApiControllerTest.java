@@ -64,6 +64,7 @@ class ReservationApiControllerTest {
                 .andExpect(jsonPath("$.statusLabel").value("접수"))
                 .andExpect(jsonPath("$.moveType").value("STUDIO"))
                 .andExpect(jsonPath("$.finalEstimatedPrice").isNumber())
+                .andExpect(jsonPath("$.photos").isArray())
                 .andExpect(jsonPath("$.estimateLines").isArray());
     }
 
@@ -129,6 +130,7 @@ class ReservationApiControllerTest {
                 .andExpect(jsonPath("$.moveType").value("STUDIO"))
                 .andExpect(jsonPath("$.moveTypeLabel").value("원룸"))
                 .andExpect(jsonPath("$.finalEstimatedPrice").isNumber())
+                .andExpect(jsonPath("$.photos").isArray())
                 .andExpect(jsonPath("$.estimateLines").isArray());
     }
 
@@ -431,6 +433,34 @@ class ReservationApiControllerTest {
                         .file(photo)
                         .param("phone", "010-1234-5678"))
                 .andExpect(status().isCreated());
+    }
+
+    @Test
+    void 예약조회_API는_업로드된_짐사진_목록을_함께_응답한다() throws Exception {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+        MockMultipartFile photo = new MockMultipartFile(
+                "photos",
+                "boxes.jpg",
+                "image/jpeg",
+                "photo".getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/reservations/{id}/photos", reservation.getId())
+                        .file(photo)
+                        .param("phone", "010-1234-5678"))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/reservations/search")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "reservationId": %d,
+                                  "phone": "010-1234-5678"
+                                }
+                                """.formatted(reservation.getId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.photos[0].originalFilename").value("boxes.jpg"))
+                .andExpect(jsonPath("$.photos[0].fileUrl").isString());
     }
 
     private void readyEstimateForAcceptance(Reservation reservation) {
