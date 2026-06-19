@@ -6,6 +6,15 @@ import { ReservationDetailPanel } from './components/ReservationDetailPanel'
 import { ReservationEditFormView } from './components/ReservationEditFormView'
 import { ReservationSearchFormView } from './components/ReservationSearchFormView'
 import {
+  acceptEstimate as acceptEstimateApi,
+  cancelReservation as cancelReservationApi,
+  createReservation,
+  createReview,
+  searchReservation as searchReservationApi,
+  updateReservation,
+  uploadReservationPhotos,
+} from './api/customerApi'
+import {
   API_BASE_URL,
   initialForm,
   initialReviewForm,
@@ -13,10 +22,8 @@ import {
   toEditForm,
 } from './reservationData'
 import type {
-  ApiErrorResponse,
   ReservationEditForm,
   ReservationForm,
-  ReservationPhotoResponse,
   ReservationResponse,
   ReservationSearchForm,
   ReviewResponse,
@@ -79,19 +86,7 @@ function App() {
     const submittedPhone = form.phone
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/reservations`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      })
-      const data = await response.json()
-
-      if (!response.ok) {
-        const error = data as ApiErrorResponse
-        throw new Error(error.message || '예약 신청에 실패했습니다.')
-      }
-
-      const createdReservation = data as ReservationResponse
+      const createdReservation = await createReservation(form)
       setReservation(createdReservation)
       setSearchForm({
         reservationId: String(createdReservation.id),
@@ -114,22 +109,7 @@ function App() {
     resetReservationContext()
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/reservations/search`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          reservationId: Number(searchForm.reservationId),
-          phone: searchForm.phone,
-        }),
-      })
-      const data = await response.json()
-
-      if (!response.ok) {
-        const error = data as ApiErrorResponse
-        throw new Error(error.message || '예약 조회에 실패했습니다.')
-      }
-
-      setReservation(data as ReservationResponse)
+      setReservation(await searchReservationApi(searchForm))
       setPhotoFiles([])
     } catch (error) {
       setSearchErrorMessage(error instanceof Error ? error.message : '예약 조회에 실패했습니다.')
@@ -158,19 +138,7 @@ function App() {
     setActionMessage('')
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/reservations/${reservation.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editForm),
-      })
-      const data = await response.json()
-
-      if (!response.ok) {
-        const error = data as ApiErrorResponse
-        throw new Error(error.message || '예약 수정에 실패했습니다.')
-      }
-
-      const updatedReservation = data as ReservationResponse
+      const updatedReservation = await updateReservation(reservation.id, editForm)
       setReservation(updatedReservation)
       setSearchForm({
         reservationId: String(updatedReservation.id),
@@ -199,19 +167,7 @@ function App() {
     setActionMessage('')
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/reservations/${reservation.id}/cancel`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: searchForm.phone }),
-      })
-      const data = await response.json()
-
-      if (!response.ok) {
-        const error = data as ApiErrorResponse
-        throw new Error(error.message || '예약 취소에 실패했습니다.')
-      }
-
-      setReservation(data as ReservationResponse)
+      setReservation(await cancelReservationApi(reservation.id, searchForm.phone))
       setEditForm(null)
       setActionMessage('예약이 취소되었습니다.')
     } catch (error) {
@@ -239,22 +195,7 @@ function App() {
     setActionMessage('')
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/reservations/${reservation.id}/estimate/accept`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone: searchForm.phone }),
-        },
-      )
-      const data = await response.json()
-
-      if (!response.ok) {
-        const error = data as ApiErrorResponse
-        throw new Error(error.message || '견적 동의에 실패했습니다.')
-      }
-
-      setReservation(data as ReservationResponse)
+      setReservation(await acceptEstimateApi(reservation.id, searchForm.phone))
       setEditForm(null)
       setActionMessage('견적 동의가 완료되었습니다. 예약이 확정되었습니다.')
     } catch (error) {
@@ -281,26 +222,11 @@ function App() {
       return
     }
 
-    const formData = new FormData()
-    formData.append('phone', searchForm.phone)
-    photoFiles.forEach((file) => formData.append('photos', file))
-
     setIsUploadingPhotos(true)
     setActionMessage('')
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/reservations/${reservation.id}/photos`, {
-        method: 'POST',
-        body: formData,
-      })
-      const data = await response.json()
-
-      if (!response.ok) {
-        const error = data as ApiErrorResponse
-        throw new Error(error.message || '짐 사진 업로드에 실패했습니다.')
-      }
-
-      const uploadedPhotos = data as ReservationPhotoResponse[]
+      const uploadedPhotos = await uploadReservationPhotos(reservation.id, searchForm.phone, photoFiles)
       setReservation((current) =>
         current ? { ...current, photos: [...current.photos, ...uploadedPhotos] } : current,
       )
@@ -325,24 +251,7 @@ function App() {
     setActionMessage('')
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/reviews`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          reservationId: reservation.id,
-          phone: searchForm.phone,
-          rating: reviewForm.rating,
-          content: reviewForm.content,
-        }),
-      })
-      const data = await response.json()
-
-      if (!response.ok) {
-        const error = data as ApiErrorResponse
-        throw new Error(error.message || '리뷰 작성에 실패했습니다.')
-      }
-
-      const createdReview = data as ReviewResponse
+      const createdReview = await createReview(reservation.id, searchForm.phone, reviewForm)
       setSubmittedReview(createdReview)
       setReviewForm(initialReviewForm)
       setActionMessage('리뷰가 등록되었습니다.')

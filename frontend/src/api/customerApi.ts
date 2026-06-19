@@ -1,0 +1,103 @@
+import { API_BASE_URL } from '../reservationData'
+import type {
+  ApiErrorResponse,
+  ReservationEditForm,
+  ReservationForm,
+  ReservationPhotoResponse,
+  ReservationResponse,
+  ReservationSearchForm,
+  ReviewForm,
+  ReviewResponse,
+} from '../types'
+
+async function readJson<T>(response: Response, fallbackMessage: string): Promise<T> {
+  const data = await response.json()
+
+  if (!response.ok) {
+    const error = data as ApiErrorResponse
+    throw new Error(error.message || fallbackMessage)
+  }
+
+  return data as T
+}
+
+export async function createReservation(form: ReservationForm) {
+  const response = await fetch(`${API_BASE_URL}/api/reservations`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(form),
+  })
+
+  return readJson<ReservationResponse>(response, '예약 신청에 실패했습니다.')
+}
+
+export async function searchReservation(form: ReservationSearchForm) {
+  const response = await fetch(`${API_BASE_URL}/api/reservations/search`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      reservationId: Number(form.reservationId),
+      phone: form.phone,
+    }),
+  })
+
+  return readJson<ReservationResponse>(response, '예약 조회에 실패했습니다.')
+}
+
+export async function updateReservation(reservationId: number, form: ReservationEditForm) {
+  const response = await fetch(`${API_BASE_URL}/api/reservations/${reservationId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(form),
+  })
+
+  return readJson<ReservationResponse>(response, '예약 수정에 실패했습니다.')
+}
+
+export async function cancelReservation(reservationId: number, phone: string) {
+  const response = await fetch(`${API_BASE_URL}/api/reservations/${reservationId}/cancel`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone }),
+  })
+
+  return readJson<ReservationResponse>(response, '예약 취소에 실패했습니다.')
+}
+
+export async function acceptEstimate(reservationId: number, phone: string) {
+  const response = await fetch(`${API_BASE_URL}/api/reservations/${reservationId}/estimate/accept`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone }),
+  })
+
+  return readJson<ReservationResponse>(response, '견적 동의에 실패했습니다.')
+}
+
+export async function uploadReservationPhotos(reservationId: number, phone: string, files: File[]) {
+  const formData = new FormData()
+  formData.append('phone', phone)
+  files.forEach((file) => formData.append('photos', file))
+
+  const response = await fetch(`${API_BASE_URL}/api/reservations/${reservationId}/photos`, {
+    method: 'POST',
+    body: formData,
+  })
+
+  return readJson<ReservationPhotoResponse[]>(response, '짐 사진 업로드에 실패했습니다.')
+}
+
+export async function createReview(reservationId: number, phone: string, form: ReviewForm) {
+  const response = await fetch(`${API_BASE_URL}/api/reviews`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      reservationId,
+      phone,
+      rating: form.rating,
+      content: form.content,
+    }),
+  })
+
+  return readJson<ReviewResponse>(response, '리뷰 작성에 실패했습니다.')
+}
