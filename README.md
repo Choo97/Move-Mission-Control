@@ -595,7 +595,15 @@ src/main/resources
 ├── application.yml
 ├── static/css/style.css
 └── templates
+
+frontend/src
+├── App.tsx
+├── components
+├── reservationData.ts
+└── types.ts
 ```
+
+React 고객 화면은 `App.tsx`가 상태와 API 호출 흐름을 담당하고, 실제 화면은 `components/` 아래 폼과 상세 패널로 분리했습니다. 초기값과 선택지는 `reservationData.ts`, 요청/응답 타입은 `types.ts`에 모아 두었습니다.
 
 ## Git
 
