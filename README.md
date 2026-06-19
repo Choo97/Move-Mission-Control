@@ -257,6 +257,7 @@ SMTP 설정이 꺼져 있으면 애플리케이션은 정상 실행되지만, �
 자주 묻는 질문  http://localhost:8081/faq
 관리자 화면     http://localhost:8081/admin/reservations
 관리자 달력     http://localhost:8081/admin/calendar
+React 고객 화면 http://localhost:5173/
 Swagger UI     http://localhost:8081/swagger-ui/index.html
 OpenAPI JSON   http://localhost:8081/v3/api-docs
 ```
@@ -354,6 +355,17 @@ React 고객 화면은 Spring Boot의 `/api/**`를 호출합니다.
 ```text
 React 고객 화면 -> http://localhost:8081/api/reservations
 ```
+
+React 개발 서버를 실행하려면 아래 명령을 사용합니다.
+
+```bash
+cd frontend
+cp .env.example .env.local
+npm install
+npm run dev
+```
+
+`frontend/.env.local`의 `VITE_API_BASE_URL`은 React가 호출할 Spring Boot 주소입니다.
 
 전환 순서는 아래 기준으로 진행합니다.
 
