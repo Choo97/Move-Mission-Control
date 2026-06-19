@@ -15,7 +15,23 @@ source .env.local
 set +a
 
 if [ -n "${JAVA_HOME:-}" ]; then
+  JAVA_HOME="${JAVA_HOME%$'\r'}"
   export PATH="$JAVA_HOME/bin:$PATH"
+elif [ -x "/c/Dev/java/jdk-17.0.7/bin/java" ]; then
+  export JAVA_HOME="/c/Dev/java/jdk-17.0.7"
+  export PATH="$JAVA_HOME/bin:$PATH"
+fi
+
+if ! command -v java >/dev/null 2>&1 && [ -x "/c/Dev/java/jdk-17.0.7/bin/java" ]; then
+  export JAVA_HOME="/c/Dev/java/jdk-17.0.7"
+  export PATH="$JAVA_HOME/bin:$PATH"
+fi
+
+if ! command -v java >/dev/null 2>&1; then
+  echo "Java를 찾을 수 없습니다."
+  echo "Git Bash에서는 JAVA_HOME을 Java 17 경로로 설정해 주세요."
+  echo "WSL에서는 Windows Java가 자동으로 연결되지 않으므로 WSL 안에 Java 17을 설치해야 합니다."
+  exit 1
 fi
 
 echo "사용 중인 Java 버전:"

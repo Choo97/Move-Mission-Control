@@ -170,6 +170,8 @@ export JAVA_HOME="/c/Dev/java/jdk-17.0.7"
 export PATH="$JAVA_HOME/bin:$PATH"
 ```
 
+WSL의 Bash는 Windows에 설치된 Java를 자동으로 사용하지 않습니다. WSL에서 실행하려면 WSL 안에 Java 17과 Maven을 설치해야 합니다. 지금처럼 Windows에 Java 17이 설치되어 있다면 Git Bash 또는 `cmd`에서 아래 명령으로 실행하는 편이 더 단순합니다.
+
 ```bash
 mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
 ```
