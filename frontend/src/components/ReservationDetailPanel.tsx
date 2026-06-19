@@ -6,6 +6,8 @@ type Props = {
   activeView: 'create' | 'search'
   reservation: ReservationResponse | null
   customerGuides: CustomerGuideItem[]
+  isLoadingCustomerGuides: boolean
+  customerGuideErrorMessage: string
   actionMessage: string
   photoFiles: File[]
   reviewForm: ReviewForm
@@ -30,6 +32,8 @@ export function ReservationDetailPanel({
   activeView,
   reservation,
   customerGuides,
+  isLoadingCustomerGuides,
+  customerGuideErrorMessage,
   actionMessage,
   photoFiles,
   reviewForm,
@@ -54,7 +58,11 @@ export function ReservationDetailPanel({
           <strong>예약 #{reservation.id}</strong>
           <ReservationSummary reservation={reservation} />
           <ReservationProgress reservation={reservation} />
-          <CustomerStatusGuide guides={customerGuides} />
+          <CustomerStatusGuide
+            guides={customerGuides}
+            isLoading={isLoadingCustomerGuides}
+            errorMessage={customerGuideErrorMessage}
+          />
           <ReservationStateBadges reservation={reservation} />
           <EstimateLines reservation={reservation} />
           <PhotoSection
@@ -188,7 +196,33 @@ function ReservationProgress({ reservation }: { reservation: ReservationResponse
   )
 }
 
-function CustomerStatusGuide({ guides }: { guides: CustomerGuideItem[] }) {
+function CustomerStatusGuide({
+  guides,
+  isLoading,
+  errorMessage,
+}: {
+  guides: CustomerGuideItem[]
+  isLoading: boolean
+  errorMessage: string
+}) {
+  if (isLoading) {
+    return (
+      <div className="status-guide muted">
+        <h3>고객 안내</h3>
+        <p>고객 안내를 불러오는 중입니다.</p>
+      </div>
+    )
+  }
+
+  if (errorMessage) {
+    return (
+      <div className="status-guide warning">
+        <h3>고객 안내</h3>
+        <p>{errorMessage}</p>
+      </div>
+    )
+  }
+
   if (guides.length === 0) {
     return null
   }

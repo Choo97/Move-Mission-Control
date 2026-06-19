@@ -373,6 +373,20 @@ legend {
   font-size: 15px;
 }
 
+.status-guide.muted {
+  border-color: #eee5dc;
+  background: #fffdfb;
+}
+
+.status-guide.warning {
+  border-color: #f0d5a4;
+  background: #fff5de;
+}
+
+.status-guide.warning h3 {
+  color: #5f4627;
+}
+
 .status-guide ul {
   display: grid;
   gap: 10px;
@@ -395,6 +409,14 @@ legend {
   margin: 0;
   color: #5f5149;
   font-size: 14px;
+  line-height: 1.5;
+}
+
+.status-guide p {
+  margin: 0;
+  color: #5f5149;
+  font-size: 14px;
+  font-weight: 700;
   line-height: 1.5;
 }
 

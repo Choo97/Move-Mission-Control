@@ -47,6 +47,8 @@ function App() {
   const [reviewForm, setReviewForm] = useState(initialReviewForm)
   const [submittedReview, setSubmittedReview] = useState<ReviewResponse | null>(null)
   const [customerGuides, setCustomerGuides] = useState<CustomerGuideItem[]>([])
+  const [isLoadingCustomerGuides, setIsLoadingCustomerGuides] = useState(false)
+  const [customerGuideErrorMessage, setCustomerGuideErrorMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [searchErrorMessage, setSearchErrorMessage] = useState('')
   const [actionMessage, setActionMessage] = useState('')
@@ -61,15 +63,24 @@ function App() {
     setSubmittedReview(null)
     setReviewForm(initialReviewForm)
     setCustomerGuides([])
+    setIsLoadingCustomerGuides(false)
+    setCustomerGuideErrorMessage('')
   }
 
   const showReservation = async (nextReservation: ReservationResponse) => {
     setReservation(nextReservation)
+    setCustomerGuides([])
+    setCustomerGuideErrorMessage('')
+    setIsLoadingCustomerGuides(true)
 
     try {
       setCustomerGuides(await getCustomerGuides(nextReservation.status))
-    } catch {
-      setCustomerGuides([])
+    } catch (error) {
+      setCustomerGuideErrorMessage(
+        error instanceof Error ? error.message : '고객 안내를 불러오지 못했습니다.',
+      )
+    } finally {
+      setIsLoadingCustomerGuides(false)
     }
   }
 
@@ -348,6 +359,8 @@ function App() {
           activeView={activeView}
           reservation={reservation}
           customerGuides={customerGuides}
+          isLoadingCustomerGuides={isLoadingCustomerGuides}
+          customerGuideErrorMessage={customerGuideErrorMessage}
           actionMessage={actionMessage}
           photoFiles={photoFiles}
           reviewForm={reviewForm}
