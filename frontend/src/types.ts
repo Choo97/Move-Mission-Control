@@ -73,6 +73,11 @@ export type ReviewResponse = {
   createdAt: string
 }
 
+export type CustomerGuideItem = {
+  title: string
+  description: string
+}
+
 export type ReservationSearchForm = {
   reservationId: string
   phone: string

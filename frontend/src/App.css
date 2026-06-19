@@ -373,11 +373,28 @@ legend {
   font-size: 15px;
 }
 
-.status-guide p {
+.status-guide ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.status-guide li {
+  display: grid;
+  gap: 4px;
+}
+
+.status-guide strong {
+  color: #534941;
+  font-size: 14px;
+}
+
+.status-guide span {
   margin: 0;
   color: #5f5149;
   font-size: 14px;
-  font-weight: 700;
   line-height: 1.5;
 }
 

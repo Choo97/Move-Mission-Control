@@ -10,6 +10,7 @@ import {
   cancelReservation as cancelReservationApi,
   createReservation,
   createReview,
+  getCustomerGuides,
   searchReservation as searchReservationApi,
   updateReservation,
   uploadReservationPhotos,
@@ -26,6 +27,7 @@ import type {
   ReservationForm,
   ReservationResponse,
   ReservationSearchForm,
+  CustomerGuideItem,
   ReviewResponse,
 } from './types'
 
@@ -44,6 +46,7 @@ function App() {
   const [photoFiles, setPhotoFiles] = useState<File[]>([])
   const [reviewForm, setReviewForm] = useState(initialReviewForm)
   const [submittedReview, setSubmittedReview] = useState<ReviewResponse | null>(null)
+  const [customerGuides, setCustomerGuides] = useState<CustomerGuideItem[]>([])
   const [errorMessage, setErrorMessage] = useState('')
   const [searchErrorMessage, setSearchErrorMessage] = useState('')
   const [actionMessage, setActionMessage] = useState('')
@@ -57,6 +60,17 @@ function App() {
     setPhotoFiles([])
     setSubmittedReview(null)
     setReviewForm(initialReviewForm)
+    setCustomerGuides([])
+  }
+
+  const showReservation = async (nextReservation: ReservationResponse) => {
+    setReservation(nextReservation)
+
+    try {
+      setCustomerGuides(await getCustomerGuides(nextReservation.status))
+    } catch {
+      setCustomerGuides([])
+    }
   }
 
   const updateField = <K extends keyof ReservationForm>(key: K, value: ReservationForm[K]) => {
@@ -87,7 +101,7 @@ function App() {
 
     try {
       const createdReservation = await createReservation(form)
-      setReservation(createdReservation)
+      await showReservation(createdReservation)
       setSearchForm({
         reservationId: String(createdReservation.id),
         phone: submittedPhone,
@@ -109,7 +123,7 @@ function App() {
     resetReservationContext()
 
     try {
-      setReservation(await searchReservationApi(searchForm))
+      await showReservation(await searchReservationApi(searchForm))
       setPhotoFiles([])
     } catch (error) {
       setSearchErrorMessage(error instanceof Error ? error.message : '예약 조회에 실패했습니다.')
@@ -139,7 +153,7 @@ function App() {
 
     try {
       const updatedReservation = await updateReservation(reservation.id, editForm)
-      setReservation(updatedReservation)
+      await showReservation(updatedReservation)
       setSearchForm({
         reservationId: String(updatedReservation.id),
         phone: editForm.phone,
@@ -167,7 +181,7 @@ function App() {
     setActionMessage('')
 
     try {
-      setReservation(await cancelReservationApi(reservation.id, searchForm.phone))
+      await showReservation(await cancelReservationApi(reservation.id, searchForm.phone))
       setEditForm(null)
       setActionMessage('예약이 취소되었습니다.')
     } catch (error) {
@@ -195,7 +209,7 @@ function App() {
     setActionMessage('')
 
     try {
-      setReservation(await acceptEstimateApi(reservation.id, searchForm.phone))
+      await showReservation(await acceptEstimateApi(reservation.id, searchForm.phone))
       setEditForm(null)
       setActionMessage('견적 동의가 완료되었습니다. 예약이 확정되었습니다.')
     } catch (error) {
@@ -333,6 +347,7 @@ function App() {
         <ReservationDetailPanel
           activeView={activeView}
           reservation={reservation}
+          customerGuides={customerGuides}
           actionMessage={actionMessage}
           photoFiles={photoFiles}
           reviewForm={reviewForm}

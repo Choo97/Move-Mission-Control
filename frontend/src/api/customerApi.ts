@@ -1,6 +1,7 @@
 import { API_BASE_URL } from '../reservationData'
 import type {
   ApiErrorResponse,
+  CustomerGuideItem,
   ReservationEditForm,
   ReservationForm,
   ReservationPhotoResponse,
@@ -100,4 +101,10 @@ export async function createReview(reservationId: number, phone: string, form: R
   })
 
   return readJson<ReviewResponse>(response, '리뷰 작성에 실패했습니다.')
+}
+
+export async function getCustomerGuides(status: string) {
+  const response = await fetch(`${API_BASE_URL}/api/customer-guides/${status}`)
+
+  return readJson<CustomerGuideItem[]>(response, '고객 안내를 불러오지 못했습니다.')
 }

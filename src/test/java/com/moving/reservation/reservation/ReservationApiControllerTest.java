@@ -463,6 +463,22 @@ class ReservationApiControllerTest {
                 .andExpect(jsonPath("$.photos[0].fileUrl").isString());
     }
 
+    @Test
+    void 고객안내_API는_예약상태별_공개_안내문구를_조회한다() throws Exception {
+        mockMvc.perform(get("/api/customer-guides/{status}", ReservationStatus.RECEIVED.name()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").isString())
+                .andExpect(jsonPath("$[0].description").isString());
+    }
+
+    @Test
+    void 고객안내_API는_존재하지_않는_상태면_400을_응답한다() throws Exception {
+        mockMvc.perform(get("/api/customer-guides/{status}", "UNKNOWN"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("존재하지 않는 예약 상태입니다."));
+    }
+
     private void readyEstimateForAcceptance(Reservation reservation) {
         reservationService.updateStatus(reservation.getId(), ReservationStatus.CONSULTING, "test-admin");
         reservationService.updateEstimate(reservation.getId(), 250000);

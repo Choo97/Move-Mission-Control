@@ -32,6 +32,7 @@ React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 기능 
 | 고객 예약 | `PATCH` | `/api/reservations/{reservationId}` | 예약 정보 수정 |
 | 고객 예약 | `POST` | `/api/reservations/{reservationId}/cancel` | 예약 취소 |
 | 고객 예약 | `POST` | `/api/reservations/{reservationId}/estimate/accept` | 최종 견적 동의 및 예약 확정 |
+| 고객 안내 | `GET` | `/api/customer-guides/{status}` | 예약 상태별 고객 안내 문구 조회 |
 | 파일 업로드 | `POST` | `/api/reservations/{reservationId}/photos` | 짐 사진 업로드 |
 | 고객 리뷰 | `POST` | `/api/reviews` | 완료 예약 리뷰 작성 |
 
@@ -47,6 +48,7 @@ React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 기능 
 | 견적 동의 | 견적 동의 API 제공 | 견적 안내 후 확정 흐름 구현 가능 |
 | 짐 사진 업로드 | multipart API 제공 | React에서 `FormData`로 업로드 가능 |
 | 고객 리뷰 | `/api/reviews` 제공 | 완료 예약 리뷰 작성 화면 구현 가능 |
+| 고객 안내 | `/api/customer-guides/{status}` 제공 | 관리자에서 관리한 상태별 안내 문구 표시 가능 |
 | 오류 처리 | `code`, `message` 공통 응답 제공 | React에서 오류 종류별 화면 처리 가능 |
 | API 문서 | Swagger UI 제공 | 프론트 개발자가 요청/응답 구조 확인 가능 |
 
@@ -216,6 +218,29 @@ Content-Type: application/json
 ```
 
 예약 당시 연락처가 일치하고 최종 견적이 있는 예약이면 견적 동의 처리 후 예약 상태를 `확정`으로 변경합니다. 동의가 완료되면 확정된 예약 정보와 동의 금액을 JSON으로 응답합니다.
+
+## 고객 안내 API
+
+### 상태별 고객 안내 조회
+
+```http
+GET /api/customer-guides/{status}
+```
+
+```text
+GET /api/customer-guides/RECEIVED
+```
+
+예약 상태에 맞는 공개 고객 안내 문구를 정렬 순서대로 JSON 배열로 응답합니다. 이 문구는 관리자 `운영 관리 > 고객 안내` 화면에서 관리합니다.
+
+```json
+[
+  {
+    "title": "연락 받을 준비",
+    "description": "상담 전화나 안내 메일을 확인할 수 있도록 연락처와 이메일을 확인해 주세요."
+  }
+]
+```
 
 ## 파일 업로드 API
 
