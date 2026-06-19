@@ -287,7 +287,17 @@ function ReviewSection({
   onSubmitReview: (event: FormEvent<HTMLFormElement>) => void
 }) {
   if (reservation.status !== 'COMPLETED') {
-    return null
+    const message =
+      reservation.status === 'CANCELED'
+        ? '취소된 예약은 리뷰를 작성할 수 없습니다.'
+        : '이사가 완료된 뒤 리뷰를 작성할 수 있습니다.'
+
+    return (
+      <div className="review-section">
+        <h3>고객 리뷰</h3>
+        <p className="review-notice">{message}</p>
+      </div>
+    )
   }
 
   return (
