@@ -51,6 +51,7 @@ export function ReservationDetailPanel({
         <div className="result">
           <strong>예약 #{reservation.id}</strong>
           <ReservationSummary reservation={reservation} />
+          <ReservationProgress reservation={reservation} />
           <ReservationStateBadges reservation={reservation} />
           <EstimateLines reservation={reservation} />
           <PhotoSection
@@ -137,6 +138,50 @@ function ReservationSummary({ reservation }: { reservation: ReservationResponse 
         </div>
       )}
     </dl>
+  )
+}
+
+const progressSteps = [
+  { status: 'RECEIVED', label: '접수' },
+  { status: 'CONSULTING', label: '상담중' },
+  { status: 'ESTIMATE_SENT', label: '견적안내' },
+  { status: 'CONFIRMED', label: '확정' },
+  { status: 'COMPLETED', label: '완료' },
+]
+
+function ReservationProgress({ reservation }: { reservation: ReservationResponse }) {
+  if (reservation.status === 'CANCELED') {
+    return (
+      <div className="progress-section canceled">
+        <h3>진행 단계</h3>
+        <p>예약이 취소되었습니다.</p>
+      </div>
+    )
+  }
+
+  const currentIndex = progressSteps.findIndex((step) => step.status === reservation.status)
+
+  return (
+    <div className="progress-section">
+      <h3>진행 단계</h3>
+      <ol className="progress-steps" aria-label="예약 진행 단계">
+        {progressSteps.map((step, index) => {
+          const isDone = currentIndex >= 0 && index < currentIndex
+          const isCurrent = currentIndex === index
+
+          return (
+            <li
+              key={step.status}
+              className={`${isDone ? 'done' : ''} ${isCurrent ? 'current' : ''}`.trim()}
+              aria-current={isCurrent ? 'step' : undefined}
+            >
+              <span>{index + 1}</span>
+              <strong>{step.label}</strong>
+            </li>
+          )
+        })}
+      </ol>
+    </div>
   )
 }
 

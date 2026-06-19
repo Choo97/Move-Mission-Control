@@ -274,6 +274,91 @@ legend {
   margin-top: 16px;
 }
 
+.progress-section {
+  margin-top: 22px;
+}
+
+.progress-section.canceled {
+  border: 1px solid #f1c5bb;
+  border-radius: 6px;
+  padding: 12px;
+  background: #fff7f4;
+}
+
+.progress-section.canceled p {
+  margin: 0;
+  color: #8b1e16;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.progress-steps {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.progress-steps li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 10px;
+  min-height: 42px;
+  color: #8a7d74;
+}
+
+.progress-steps li::after {
+  position: absolute;
+  top: 28px;
+  bottom: 0;
+  left: 13px;
+  width: 2px;
+  background: #eee5dc;
+  content: "";
+}
+
+.progress-steps li:last-child::after {
+  display: none;
+}
+
+.progress-steps span {
+  display: inline-flex;
+  z-index: 1;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #d8cec4;
+  border-radius: 999px;
+  background: #fffdfb;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.progress-steps strong {
+  margin-top: 4px;
+  color: inherit;
+  font-size: 14px;
+}
+
+.progress-steps li.done,
+.progress-steps li.current {
+  color: #b6523a;
+}
+
+.progress-steps li.done span,
+.progress-steps li.current span {
+  border-color: #b6523a;
+  color: #ffffff;
+  background: #b6523a;
+}
+
+.progress-steps li.done::after {
+  background: #b6523a;
+}
+
 .action-state span {
   border-radius: 999px;
   padding: 5px 9px;
