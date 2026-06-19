@@ -329,6 +329,44 @@ APP_CORS_ALLOWED_ORIGIN_CRA=http://localhost:3000
 
 현재 혼자 개발하는 MVP 단계에서는 고객 REST API를 먼저 안정화하고, 관리자 기능은 기존 Thymeleaf 화면을 유지하는 방식이 현실적입니다. 관리자 API까지 한 번에 분리하면 작업 범위가 커지므로, React 전환 범위를 정한 뒤 단계적으로 진행하는 편이 좋습니다.
 
+### React 전환 전략
+
+React 전환은 고객 화면부터 시작하고, 관리자 화면은 당분간 기존 Thymeleaf 화면을 유지합니다. 이렇게 나누면 사용자 화면 개선은 빠르게 진행하면서도 관리자 기능 전체를 한 번에 다시 만드는 부담을 줄일 수 있습니다.
+
+| 영역 | 전략 | 이유 |
+| --- | --- | --- |
+| Spring Boot | API 서버와 관리자 Thymeleaf 화면 유지 | 예약, 견적, 인증, DB 처리 로직을 그대로 사용하기 위함 |
+| React | 고객 화면 담당 | 고객이 직접 보는 예약 흐름의 UI 개선 효과가 가장 큼 |
+| `/api/**` | React가 호출하는 REST API | 화면과 데이터 처리를 분리하기 위함 |
+| `/admin/**` | Thymeleaf 유지 | 관리자 기능은 범위가 넓어 나중에 별도 전환 여부를 결정하는 편이 안전함 |
+| `/reservations/**` | 기존 고객 Thymeleaf 화면 유지 | React 전환 중에도 기존 화면으로 기능 확인이 가능해야 함 |
+| `frontend/` | React 프로젝트 위치 | 백엔드와 프론트 코드를 같은 저장소 안에서 명확히 분리하기 위함 |
+
+개발 중에는 아래처럼 두 서버를 함께 실행합니다.
+
+```text
+Spring Boot API   http://localhost:8081
+React dev server  http://localhost:5173
+```
+
+React 고객 화면은 Spring Boot의 `/api/**`를 호출합니다.
+
+```text
+React 고객 화면 -> http://localhost:8081/api/reservations
+```
+
+전환 순서는 아래 기준으로 진행합니다.
+
+1. `frontend/` 폴더에 Vite React 프로젝트를 생성합니다.
+2. 고객 예약 신청 화면을 React로 구현하고 `/api/reservations`와 연결합니다.
+3. 고객 예약 조회와 상세 화면을 React로 구현합니다.
+4. 예약 수정, 취소, 견적 동의 화면을 React로 구현합니다.
+5. 짐 사진 업로드와 리뷰 작성 화면을 React로 구현합니다.
+6. 고객 React 화면이 안정화되면 기존 `/reservations/**` Thymeleaf 화면 제거 여부를 결정합니다.
+7. 관리자 화면 React 전환은 고객 화면 전환 이후 별도 작업으로 판단합니다.
+
+중요한 기준은 같은 고객 기능 안에서 Thymeleaf와 React URL을 섞지 않는 것입니다. 전환 중에는 기존 `/reservations/**`는 유지하고, React 고객 화면은 `frontend/` 개발 서버에서 먼저 검증한 뒤 배포 방식을 결정합니다.
+
 ### 고객 예약 API
 
 #### 예약 신청
