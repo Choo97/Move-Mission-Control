@@ -14,6 +14,30 @@
   background: #fffaf6;
 }
 
+.view-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 18px clamp(20px, 5vw, 72px) 0;
+  background: #f7f4f0;
+}
+
+.view-tabs button {
+  min-width: 120px;
+  min-height: 40px;
+  border: 1px solid #d8cec4;
+  border-radius: 6px;
+  color: #534941;
+  background: #fffdfb;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.view-tabs button.active {
+  border-color: #b6523a;
+  color: #ffffff;
+  background: #b6523a;
+}
+
 .eyebrow {
   margin: 0 0 6px;
   color: #b6523a;
@@ -38,6 +62,13 @@ h1 {
 h2 {
   font-size: 20px;
   line-height: 1.2;
+}
+
+h3 {
+  margin: 22px 0 12px;
+  color: #1e1c1a;
+  font-size: 16px;
+  letter-spacing: 0;
 }
 
 .admin-link,
@@ -83,6 +114,10 @@ h2 {
 
 .reservation-form {
   padding: 24px;
+}
+
+.search-form {
+  align-self: start;
 }
 
 .status-panel {
@@ -216,6 +251,26 @@ legend {
   font-size: 22px;
 }
 
+.action-state {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.action-state span {
+  border-radius: 999px;
+  padding: 5px 9px;
+  color: #8b3d2d;
+  background: #fff0ec;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.estimate-lines {
+  margin-top: 4px;
+}
+
 dl {
   display: grid;
   gap: 12px;
@@ -246,6 +301,10 @@ dd {
 @media (max-width: 900px) {
   .top-bar,
   .workspace {
+    padding-inline: 18px;
+  }
+
+  .view-tabs {
     padding-inline: 18px;
   }
 

@@ -33,13 +33,33 @@ type ApiErrorResponse = {
 type ReservationResponse = {
   id: number
   customerName: string
+  email: string
   moveDate: string
   moveTime: string
   fromAddress: string
   toAddress: string
   moveTypeLabel: string
   statusLabel: string
+  distanceKm: number | null
+  baseEstimatedPrice: number
+  discountAmount: number
   finalEstimatedPrice: number
+  couponCode: string | null
+  couponName: string | null
+  editable: boolean
+  cancelable: boolean
+  estimateAcceptable: boolean
+  estimateAccepted: boolean
+  acceptedEstimatePrice: number | null
+  estimateLines: Array<{
+    label: string
+    amount: number
+  }>
+}
+
+type ReservationSearchForm = {
+  reservationId: string
+  phone: string
 }
 
 const moveTypeOptions: Array<{ value: MoveType; label: string }> = [
@@ -69,10 +89,19 @@ const initialForm: ReservationForm = {
   couponCode: '',
 }
 
+const initialSearchForm: ReservationSearchForm = {
+  reservationId: '',
+  phone: '',
+}
+
 function App() {
+  const [activeView, setActiveView] = useState<'create' | 'search'>('create')
   const [form, setForm] = useState<ReservationForm>(initialForm)
+  const [searchForm, setSearchForm] = useState<ReservationSearchForm>(initialSearchForm)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSearching, setIsSearching] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [searchErrorMessage, setSearchErrorMessage] = useState('')
   const [reservation, setReservation] = useState<ReservationResponse | null>(null)
 
   const today = useMemo(() => new Date().toISOString().slice(0, 10), [])
@@ -108,10 +137,44 @@ function App() {
 
       setReservation(data as ReservationResponse)
       setForm(initialForm)
+      setActiveView('search')
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : '예약 신청에 실패했습니다.')
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const searchReservation = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setIsSearching(true)
+    setSearchErrorMessage('')
+    setReservation(null)
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/reservations/search`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reservationId: Number(searchForm.reservationId),
+          phone: searchForm.phone,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        const error = data as ApiErrorResponse
+        throw new Error(error.message || '예약 조회에 실패했습니다.')
+      }
+
+      setReservation(data as ReservationResponse)
+    } catch (error) {
+      setSearchErrorMessage(error instanceof Error ? error.message : '예약 조회에 실패했습니다.')
+    } finally {
+      setIsSearching(false)
     }
   }
 
@@ -127,189 +190,257 @@ function App() {
         </a>
       </header>
 
+      <nav className="view-tabs" aria-label="고객 예약 메뉴">
+        <button
+          type="button"
+          className={activeView === 'create' ? 'active' : ''}
+          onClick={() => {
+            setActiveView('create')
+            setErrorMessage('')
+          }}
+        >
+          예약 신청
+        </button>
+        <button
+          type="button"
+          className={activeView === 'search' ? 'active' : ''}
+          onClick={() => {
+            setActiveView('search')
+            setSearchErrorMessage('')
+          }}
+        >
+          예약 조회
+        </button>
+      </nav>
+
       <section className="workspace">
-        <form className="reservation-form" onSubmit={submitReservation}>
-          <div className="section-heading">
-            <h2>예약 정보</h2>
-            <p>이사 일정과 주소를 입력하면 접수 상태로 예약됩니다.</p>
-          </div>
+        {activeView === 'create' ? (
+          <form className="reservation-form" onSubmit={submitReservation}>
+            <div className="section-heading">
+              <h2>예약 정보</h2>
+              <p>이사 일정과 주소를 입력하면 접수 상태로 예약됩니다.</p>
+            </div>
 
-          <div className="field-grid">
-            <label>
-              이름
-              <input
-                value={form.customerName}
-                onChange={(event) => updateField('customerName', event.target.value)}
-                placeholder="홍길동"
-                required
-              />
-            </label>
-            <label>
-              연락처
-              <input
-                value={form.phone}
-                onChange={(event) => updateField('phone', event.target.value)}
-                placeholder="010-1234-5678"
-                required
-              />
-            </label>
-            <label>
-              이메일
-              <input
-                type="email"
-                value={form.email}
-                onChange={(event) => updateField('email', event.target.value)}
-                placeholder="customer@example.com"
-              />
-            </label>
-            <label>
-              이사 유형
-              <select
-                value={form.moveType}
-                onChange={(event) => updateField('moveType', event.target.value as MoveType)}
-              >
-                {moveTypeOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              이사 날짜
-              <input
-                type="date"
-                min={today}
-                value={form.moveDate}
-                onChange={(event) => updateField('moveDate', event.target.value)}
-                required
-              />
-            </label>
-            <label>
-              희망 시간
-              <input
-                type="time"
-                value={form.moveTime}
-                onChange={(event) => updateField('moveTime', event.target.value)}
-                required
-              />
-            </label>
-          </div>
-
-          <div className="address-grid">
-            <fieldset>
-              <legend>출발지</legend>
+            <div className="field-grid">
               <label>
-                주소
+                이름
                 <input
-                  value={form.fromAddress}
-                  onChange={(event) => updateField('fromAddress', event.target.value)}
-                  placeholder="서울시 강남구 테헤란로 1"
+                  value={form.customerName}
+                  onChange={(event) => updateField('customerName', event.target.value)}
+                  placeholder="홍길동"
                   required
                 />
               </label>
               <label>
-                층수
+                연락처
+                <input
+                  value={form.phone}
+                  onChange={(event) => updateField('phone', event.target.value)}
+                  placeholder="010-1234-5678"
+                  required
+                />
+              </label>
+              <label>
+                이메일
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(event) => updateField('email', event.target.value)}
+                  placeholder="customer@example.com"
+                />
+              </label>
+              <label>
+                이사 유형
+                <select
+                  value={form.moveType}
+                  onChange={(event) => updateField('moveType', event.target.value as MoveType)}
+                >
+                  {moveTypeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                이사 날짜
+                <input
+                  type="date"
+                  min={today}
+                  value={form.moveDate}
+                  onChange={(event) => updateField('moveDate', event.target.value)}
+                  required
+                />
+              </label>
+              <label>
+                희망 시간
+                <input
+                  type="time"
+                  value={form.moveTime}
+                  onChange={(event) => updateField('moveTime', event.target.value)}
+                  required
+                />
+              </label>
+            </div>
+
+            <div className="address-grid">
+              <fieldset>
+                <legend>출발지</legend>
+                <label>
+                  주소
+                  <input
+                    value={form.fromAddress}
+                    onChange={(event) => updateField('fromAddress', event.target.value)}
+                    placeholder="서울시 강남구 테헤란로 1"
+                    required
+                  />
+                </label>
+                <label>
+                  층수
+                  <input
+                    type="number"
+                    min="1"
+                    max="50"
+                    value={form.fromFloor}
+                    onChange={(event) => updateField('fromFloor', Number(event.target.value))}
+                    required
+                  />
+                </label>
+                <div className="switch-row">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={form.fromElevator}
+                      onChange={(event) => updateField('fromElevator', event.target.checked)}
+                    />
+                    엘리베이터
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={form.fromLadderTruck}
+                      onChange={(event) => updateField('fromLadderTruck', event.target.checked)}
+                    />
+                    사다리차
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset>
+                <legend>도착지</legend>
+                <label>
+                  주소
+                  <input
+                    value={form.toAddress}
+                    onChange={(event) => updateField('toAddress', event.target.value)}
+                    placeholder="서울시 송파구 올림픽로 1"
+                    required
+                  />
+                </label>
+                <label>
+                  층수
+                  <input
+                    type="number"
+                    min="1"
+                    max="50"
+                    value={form.toFloor}
+                    onChange={(event) => updateField('toFloor', Number(event.target.value))}
+                    required
+                  />
+                </label>
+                <div className="switch-row">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={form.toElevator}
+                      onChange={(event) => updateField('toElevator', event.target.checked)}
+                    />
+                    엘리베이터
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={form.toLadderTruck}
+                      onChange={(event) => updateField('toLadderTruck', event.target.checked)}
+                    />
+                    사다리차
+                  </label>
+                </div>
+              </fieldset>
+            </div>
+
+            <div className="field-grid">
+              <label className="wide">
+                요청사항
+                <textarea
+                  value={form.memo}
+                  onChange={(event) => updateField('memo', event.target.value)}
+                  placeholder="깨지기 쉬운 짐, 주차 정보 등을 적어주세요."
+                />
+              </label>
+              <label>
+                쿠폰 코드
+                <input
+                  value={form.couponCode}
+                  onChange={(event) => updateField('couponCode', event.target.value)}
+                  placeholder="WELCOME10"
+                />
+              </label>
+            </div>
+
+            {errorMessage && <p className="message error">{errorMessage}</p>}
+
+            <button className="submit-button" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? '예약 접수 중' : '예약 신청'}
+            </button>
+          </form>
+        ) : (
+          <form className="reservation-form search-form" onSubmit={searchReservation}>
+            <div className="section-heading">
+              <h2>예약 조회</h2>
+              <p>예약 번호와 연락처가 일치하면 상세 정보를 확인할 수 있습니다.</p>
+            </div>
+
+            <div className="field-grid">
+              <label>
+                예약 번호
                 <input
                   type="number"
                   min="1"
-                  max="50"
-                  value={form.fromFloor}
-                  onChange={(event) => updateField('fromFloor', Number(event.target.value))}
-                  required
-                />
-              </label>
-              <div className="switch-row">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={form.fromElevator}
-                    onChange={(event) => updateField('fromElevator', event.target.checked)}
-                  />
-                  엘리베이터
-                </label>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={form.fromLadderTruck}
-                    onChange={(event) => updateField('fromLadderTruck', event.target.checked)}
-                  />
-                  사다리차
-                </label>
-              </div>
-            </fieldset>
-
-            <fieldset>
-              <legend>도착지</legend>
-              <label>
-                주소
-                <input
-                  value={form.toAddress}
-                  onChange={(event) => updateField('toAddress', event.target.value)}
-                  placeholder="서울시 송파구 올림픽로 1"
+                  value={searchForm.reservationId}
+                  onChange={(event) =>
+                    setSearchForm((current) => ({
+                      ...current,
+                      reservationId: event.target.value,
+                    }))
+                  }
+                  placeholder="1"
                   required
                 />
               </label>
               <label>
-                층수
+                연락처
                 <input
-                  type="number"
-                  min="1"
-                  max="50"
-                  value={form.toFloor}
-                  onChange={(event) => updateField('toFloor', Number(event.target.value))}
+                  value={searchForm.phone}
+                  onChange={(event) =>
+                    setSearchForm((current) => ({ ...current, phone: event.target.value }))
+                  }
+                  placeholder="010-1234-5678"
                   required
                 />
               </label>
-              <div className="switch-row">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={form.toElevator}
-                    onChange={(event) => updateField('toElevator', event.target.checked)}
-                  />
-                  엘리베이터
-                </label>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={form.toLadderTruck}
-                    onChange={(event) => updateField('toLadderTruck', event.target.checked)}
-                  />
-                  사다리차
-                </label>
-              </div>
-            </fieldset>
-          </div>
+            </div>
 
-          <div className="field-grid">
-            <label className="wide">
-              요청사항
-              <textarea
-                value={form.memo}
-                onChange={(event) => updateField('memo', event.target.value)}
-                placeholder="깨지기 쉬운 짐, 주차 정보 등을 적어주세요."
-              />
-            </label>
-            <label>
-              쿠폰 코드
-              <input
-                value={form.couponCode}
-                onChange={(event) => updateField('couponCode', event.target.value)}
-                placeholder="WELCOME10"
-              />
-            </label>
-          </div>
+            {searchErrorMessage && <p className="message error">{searchErrorMessage}</p>}
 
-          {errorMessage && <p className="message error">{errorMessage}</p>}
-
-          <button className="submit-button" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? '예약 접수 중' : '예약 신청'}
-          </button>
-        </form>
+            <button className="submit-button" type="submit" disabled={isSearching}>
+              {isSearching ? '예약 조회 중' : '예약 조회'}
+            </button>
+          </form>
+        )}
 
         <aside className="status-panel">
-          <h2>접수 결과</h2>
+          <h2>{activeView === 'create' ? '접수 결과' : '예약 상세'}</h2>
           {reservation ? (
             <div className="result">
               <strong>예약 #{reservation.id}</strong>
@@ -325,6 +456,14 @@ function App() {
                   </dd>
                 </div>
                 <div>
+                  <dt>출발</dt>
+                  <dd>{reservation.fromAddress}</dd>
+                </div>
+                <div>
+                  <dt>도착</dt>
+                  <dd>{reservation.toAddress}</dd>
+                </div>
+                <div>
                   <dt>유형</dt>
                   <dd>{reservation.moveTypeLabel}</dd>
                 </div>
@@ -333,13 +472,44 @@ function App() {
                   <dd>{reservation.statusLabel}</dd>
                 </div>
                 <div>
+                  <dt>거리</dt>
+                  <dd>{reservation.distanceKm === null ? '확인 전' : `${reservation.distanceKm}km`}</dd>
+                </div>
+                <div>
+                  <dt>할인</dt>
+                  <dd>{reservation.discountAmount.toLocaleString()}원</dd>
+                </div>
+                <div>
                   <dt>예상금액</dt>
                   <dd>{reservation.finalEstimatedPrice.toLocaleString()}원</dd>
                 </div>
               </dl>
+              <div className="action-state">
+                {reservation.editable && <span>수정 가능</span>}
+                {reservation.cancelable && <span>취소 가능</span>}
+                {reservation.estimateAcceptable && <span>견적 동의 가능</span>}
+                {reservation.estimateAccepted && <span>견적 동의 완료</span>}
+              </div>
+              {reservation.estimateLines.length > 0 && (
+                <div className="estimate-lines">
+                  <h3>견적 내역</h3>
+                  <dl>
+                    {reservation.estimateLines.map((line) => (
+                      <div key={line.label}>
+                        <dt>{line.label}</dt>
+                        <dd>{line.amount.toLocaleString()}원</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              )}
             </div>
           ) : (
-            <p className="empty-state">예약 신청을 완료하면 접수 결과가 여기에 표시됩니다.</p>
+            <p className="empty-state">
+              {activeView === 'create'
+                ? '예약 신청을 완료하면 접수 결과가 여기에 표시됩니다.'
+                : '예약을 조회하면 상세 정보가 여기에 표시됩니다.'}
+            </p>
           )}
         </aside>
       </section>
