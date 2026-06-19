@@ -55,6 +55,7 @@ type ReservationResponse = {
   estimateAcceptable: boolean
   estimateAccepted: boolean
   acceptedEstimatePrice: number | null
+  estimateAcceptedAt: string | null
   estimateLines: Array<{
     label: string
     amount: number
@@ -135,6 +136,7 @@ function App() {
   const [isSearching, setIsSearching] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const [isCanceling, setIsCanceling] = useState(false)
+  const [isAcceptingEstimate, setIsAcceptingEstimate] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [searchErrorMessage, setSearchErrorMessage] = useState('')
   const [actionMessage, setActionMessage] = useState('')
@@ -319,6 +321,52 @@ function App() {
       setActionMessage(error instanceof Error ? error.message : '예약 취소에 실패했습니다.')
     } finally {
       setIsCanceling(false)
+    }
+  }
+
+  const acceptEstimate = async () => {
+    if (!reservation || !searchForm.phone) {
+      setActionMessage('예약 조회에 사용한 연락처가 필요합니다.')
+      return
+    }
+
+    const confirmed = window.confirm(
+      `${reservation.finalEstimatedPrice.toLocaleString()}원 견적에 동의하시겠습니까?`,
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    setIsAcceptingEstimate(true)
+    setActionMessage('')
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/reservations/${reservation.id}/estimate/accept`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ phone: searchForm.phone }),
+        },
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        const error = data as ApiErrorResponse
+        throw new Error(error.message || '견적 동의에 실패했습니다.')
+      }
+
+      setReservation(data as ReservationResponse)
+      setEditForm(null)
+      setActionMessage('견적 동의가 완료되었습니다. 예약이 확정되었습니다.')
+    } catch (error) {
+      setActionMessage(error instanceof Error ? error.message : '견적 동의에 실패했습니다.')
+    } finally {
+      setIsAcceptingEstimate(false)
     }
   }
 
@@ -750,6 +798,12 @@ function App() {
                   <dt>예상금액</dt>
                   <dd>{reservation.finalEstimatedPrice.toLocaleString()}원</dd>
                 </div>
+                {reservation.acceptedEstimatePrice !== null && (
+                  <div>
+                    <dt>동의금액</dt>
+                    <dd>{reservation.acceptedEstimatePrice.toLocaleString()}원</dd>
+                  </div>
+                )}
               </dl>
               <div className="action-state">
                 {reservation.editable && <span>수정 가능</span>}
@@ -770,10 +824,23 @@ function App() {
                   </dl>
                 </div>
               )}
-              {(actionMessage || reservation.editable || reservation.cancelable) && (
+              {(actionMessage ||
+                reservation.editable ||
+                reservation.cancelable ||
+                reservation.estimateAcceptable) && (
                 <div className="customer-actions">
                   {actionMessage && <p className="message info">{actionMessage}</p>}
-                  <div className="button-row">
+                  <div className="button-row customer-action-grid">
+                    {reservation.estimateAcceptable && (
+                      <button
+                        className="submit-button primary-action"
+                        type="button"
+                        disabled={isAcceptingEstimate}
+                        onClick={acceptEstimate}
+                      >
+                        {isAcceptingEstimate ? '견적 동의 처리 중' : '견적 동의'}
+                      </button>
+                    )}
                     {reservation.editable && (
                       <button className="submit-button secondary" type="button" onClick={startEdit}>
                         예약 수정

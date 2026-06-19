@@ -302,6 +302,14 @@ legend {
   margin-top: 0;
 }
 
+.customer-action-grid {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+
+.primary-action {
+  background: #b6523a;
+}
+
 .secondary {
   color: #534941;
   background: #efe7df;
