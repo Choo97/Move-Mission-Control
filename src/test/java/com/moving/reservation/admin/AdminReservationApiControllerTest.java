@@ -1,0 +1,94 @@
+package com.moving.reservation.admin;
+
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.moving.reservation.reservation.MoveType;
+import com.moving.reservation.reservation.ReservationCreateRequest;
+import com.moving.reservation.reservation.ReservationService;
+import com.moving.reservation.reservation.ReservationStatus;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+@Transactional
+class AdminReservationApiControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ReservationService reservationService;
+
+    @Test
+    void 관리자_예약목록_API는_로그인이_필요하다() throws Exception {
+        mockMvc.perform(get("/api/admin/reservations"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"));
+    }
+
+    @Test
+    void 관리자_예약목록_API는_예약목록을_JSON으로_조회한다() throws Exception {
+        reservationService.create(reservationCreateRequest("React관리자고객", "010-1111-2222"));
+
+        mockMvc.perform(get("/api/admin/reservations")
+                        .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").isNumber())
+                .andExpect(jsonPath("$.content[0].customerName").value("React관리자고객"))
+                .andExpect(jsonPath("$.content[0].phone").value("010-1111-2222"))
+                .andExpect(jsonPath("$.content[0].status").value(ReservationStatus.RECEIVED.name()))
+                .andExpect(jsonPath("$.content[0].statusLabel").value("접수"))
+                .andExpect(jsonPath("$.content[0].moveType").value(MoveType.STUDIO.name()))
+                .andExpect(jsonPath("$.content[0].finalEstimatedPrice").isNumber())
+                .andExpect(jsonPath("$.pageNumber").value(0))
+                .andExpect(jsonPath("$.pageSize").value(10))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1));
+    }
+
+    @Test
+    void 관리자_예약목록_API는_상태와_페이지_크기를_적용한다() throws Exception {
+        reservationService.create(reservationCreateRequest("조회대상", "010-1111-2222"));
+        reservationService.create(reservationCreateRequest("조회제외", "010-3333-4444"));
+
+        mockMvc.perform(get("/api/admin/reservations")
+                        .param("status", ReservationStatus.RECEIVED.name())
+                        .param("size", "20")
+                        .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.pageSize").value(20))
+                .andExpect(jsonPath("$.totalElements").value(2));
+    }
+
+    private ReservationCreateRequest reservationCreateRequest(String customerName, String phone) {
+        ReservationCreateRequest request = new ReservationCreateRequest();
+        request.setCustomerName(customerName);
+        request.setPhone(phone);
+        request.setEmail("admin-api@example.com");
+        request.setMoveDate(LocalDate.now().plusDays(7));
+        request.setMoveTime(LocalTime.of(10, 30));
+        request.setFromAddress("서울시 강남구 테헤란로 1");
+        request.setToAddress("서울시 송파구 올림픽로 1");
+        request.setMoveType(MoveType.STUDIO);
+        request.setFromElevator(true);
+        request.setToElevator(true);
+        request.setFromFloor(3);
+        request.setToFloor(5);
+        request.setMemo("관리자 API 테스트 예약입니다.");
+        return request;
+    }
+}

@@ -1,4 +1,10 @@
 export type { ApiErrorResponse } from './types/api'
+export type {
+  AdminReservationListItemResponse,
+  AdminReservationListQuery,
+  AdminReservationPageResponse,
+  AdminReservationSort,
+} from './types/adminReservation'
 export type { CustomerGuideItem } from './types/customerGuide'
 export type { ReviewApiResponse, ReviewForm, ReviewResponse } from './types/review'
 export type {

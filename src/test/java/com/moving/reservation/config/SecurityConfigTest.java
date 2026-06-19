@@ -59,6 +59,13 @@ class SecurityConfigTest {
     }
 
     @Test
+    void 관리자권한이_없으면_관리자_API에_접근할_수_없다() throws Exception {
+        mockMvc.perform(get("/api/admin/reservations")
+                        .with(user("customer").roles("USER")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void 고객용_예약신청화면은_로그인없이_접근할_수_있다() throws Exception {
         mockMvc.perform(get("/reservations/new")
                         .with(csrf()))
