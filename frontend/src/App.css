@@ -426,6 +426,42 @@ h3 {
   gap: 10px;
 }
 
+.admin-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 22px 0 12px;
+}
+
+.admin-section-heading h3 {
+  margin: 0;
+}
+
+.admin-email-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: 6px;
+}
+
+.admin-email-actions button {
+  min-height: 34px;
+  border: 1px solid #d8cec4;
+  border-radius: 6px;
+  padding: 0 9px;
+  color: #534941;
+  background: #fffdfb;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-email-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .admin-history-heading div {
   display: flex;
   gap: 5px;
@@ -1010,6 +1046,15 @@ dd {
 
   .admin-distance-update {
     grid-template-columns: 1fr;
+  }
+
+  .admin-section-heading {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .admin-email-actions {
+    justify-content: start;
   }
 
   .workspace,

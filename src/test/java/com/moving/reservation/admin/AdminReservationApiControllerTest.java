@@ -1,8 +1,10 @@
 package com.moving.reservation.admin;
 
+import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -351,6 +353,41 @@ class AdminReservationApiControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
                 .andExpect(jsonPath("$.message").value("관리자 메모는 1,000자 이내로 입력해 주세요."));
+    }
+
+    @Test
+    void 관리자_이메일발송_API는_발송결과와_갱신된_이력을_JSON으로_응답한다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("이메일발송고객", "010-9999-0007"));
+
+        mockMvc.perform(post("/api/admin/reservations/{id}/notifications/email/send", reservation.getId())
+                        .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sentCount").value(0))
+                .andExpect(jsonPath("$.failedCount").value(1))
+                .andExpect(jsonPath("$.reservation.notifications[?(@.channel == 'EMAIL')].status")
+                        .value(hasItem("FAILED")))
+                .andExpect(jsonPath("$.reservation.notifications[?(@.channel == 'EMAIL')].failureReason")
+                        .value(hasItem("이메일 발송 설정이 비활성화되어 있습니다.")))
+                .andExpect(jsonPath("$.reservation.auditLogs[0].action").value("준비 이메일 발송"));
+    }
+
+    @Test
+    void 관리자_실패이메일_재발송_API는_실패알림을_다시_처리한다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("이메일재발송고객", "010-9999-0008"));
+
+        mockMvc.perform(post("/api/admin/reservations/{id}/notifications/email/send", reservation.getId())
+                        .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.failedCount").value(1));
+
+        mockMvc.perform(post("/api/admin/reservations/{id}/notifications/email/resend-failed", reservation.getId())
+                        .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sentCount").value(0))
+                .andExpect(jsonPath("$.failedCount").value(1))
+                .andExpect(jsonPath("$.reservation.notifications[?(@.channel == 'EMAIL')].status")
+                        .value(hasItem("FAILED")))
+                .andExpect(jsonPath("$.reservation.auditLogs[0].action").value("실패 이메일 재발송"));
     }
 
     private ReservationCreateRequest reservationCreateRequest(String customerName, String phone) {

@@ -1,6 +1,7 @@
 export type { ApiErrorResponse } from './types/api'
 export type {
   AdminAuditLogResponse,
+  AdminEmailSendResponse,
   AdminNotificationHistoryResponse,
   AdminReservationCustomerActionHistoryResponse,
   AdminReservationDetailResponse,

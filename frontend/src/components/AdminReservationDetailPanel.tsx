@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import {
   calculateAdminReservationDistance,
   getAdminReservation,
+  resendAdminReservationFailedEmails,
+  sendAdminReservationEmails,
   updateAdminReservationDistance,
   updateAdminReservationEstimate,
   updateAdminReservationMemo,
@@ -38,6 +40,8 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
   const [isUpdatingDistance, setIsUpdatingDistance] = useState(false)
   const [isUpdatingEstimate, setIsUpdatingEstimate] = useState(false)
   const [isUpdatingMemo, setIsUpdatingMemo] = useState(false)
+  const [isResendingEmail, setIsResendingEmail] = useState(false)
+  const [isSendingEmail, setIsSendingEmail] = useState(false)
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [actionMessage, setActionMessage] = useState('')
@@ -213,6 +217,46 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
       setErrorMessage(getErrorMessage(error, '관리자 예약 메모 저장에 실패했습니다.'))
     } finally {
       setIsUpdatingMemo(false)
+    }
+  }
+
+  const sendReadyEmails = async () => {
+    if (!reservation) {
+      return
+    }
+
+    setIsSendingEmail(true)
+    setErrorMessage('')
+    setActionMessage('')
+
+    try {
+      const result = await sendAdminReservationEmails(reservation.id)
+      setReservation(result.reservation)
+      setActionMessage(`이메일 ${result.sentCount}건 발송, ${result.failedCount}건 실패로 처리했습니다.`)
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error, '관리자 예약 이메일 발송에 실패했습니다.'))
+    } finally {
+      setIsSendingEmail(false)
+    }
+  }
+
+  const resendFailedEmails = async () => {
+    if (!reservation) {
+      return
+    }
+
+    setIsResendingEmail(true)
+    setErrorMessage('')
+    setActionMessage('')
+
+    try {
+      const result = await resendAdminReservationFailedEmails(reservation.id)
+      setReservation(result.reservation)
+      setActionMessage(`실패 이메일 ${result.sentCount}건 재발송, ${result.failedCount}건 실패로 처리했습니다.`)
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error, '관리자 예약 실패 이메일 재발송에 실패했습니다.'))
+    } finally {
+      setIsResendingEmail(false)
     }
   }
 
@@ -436,7 +480,35 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
           </section>
 
           <section>
-            <h3>알림 이력</h3>
+            <div className="admin-section-heading">
+              <h3>알림 이력</h3>
+              <div className="admin-email-actions">
+                <button
+                  type="button"
+                  disabled={
+                    isSendingEmail ||
+                    !reservation.notifications.some(
+                      (notification) => notification.channel === 'EMAIL' && notification.status === 'READY',
+                    )
+                  }
+                  onClick={sendReadyEmails}
+                >
+                  {isSendingEmail ? '발송 중' : '준비 이메일 발송'}
+                </button>
+                <button
+                  type="button"
+                  disabled={
+                    isResendingEmail ||
+                    !reservation.notifications.some(
+                      (notification) => notification.channel === 'EMAIL' && notification.status === 'FAILED',
+                    )
+                  }
+                  onClick={resendFailedEmails}
+                >
+                  {isResendingEmail ? '재발송 중' : '실패 이메일 재발송'}
+                </button>
+              </div>
+            </div>
             {reservation.notifications.length > 0 ? (
               <ul className="admin-history-list notification-history-list">
                 {reservation.notifications.map((notification) => (

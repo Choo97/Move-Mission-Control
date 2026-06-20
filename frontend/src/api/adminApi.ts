@@ -1,6 +1,7 @@
 import { API_BASE_URL } from '../reservationData'
 import type {
   ApiErrorResponse,
+  AdminEmailSendResponse,
   AdminReservationDetailResponse,
   AdminReservationListQuery,
   AdminReservationPageResponse,
@@ -121,6 +122,32 @@ export async function updateAdminReservationMemo(reservationId: number, adminMem
   }
 
   return response.json() as Promise<AdminReservationDetailResponse>
+}
+
+export async function sendAdminReservationEmails(reservationId: number) {
+  const response = await fetch(`${API_BASE_URL}/api/admin/reservations/${reservationId}/notifications/email/send`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    await throwApiError(response, '관리자 예약 이메일 발송에 실패했습니다.')
+  }
+
+  return response.json() as Promise<AdminEmailSendResponse>
+}
+
+export async function resendAdminReservationFailedEmails(reservationId: number) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/admin/reservations/${reservationId}/notifications/email/resend-failed`,
+    { method: 'POST', credentials: 'include' },
+  )
+
+  if (!response.ok) {
+    await throwApiError(response, '관리자 예약 실패 이메일 재발송에 실패했습니다.')
+  }
+
+  return response.json() as Promise<AdminEmailSendResponse>
 }
 
 async function throwApiError(response: Response, fallbackMessage: string): Promise<never> {

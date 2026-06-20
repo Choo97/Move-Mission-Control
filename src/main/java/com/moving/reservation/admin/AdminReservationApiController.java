@@ -5,6 +5,7 @@ import com.moving.reservation.reservation.ReservationService;
 import com.moving.reservation.reservation.ReservationSort;
 import com.moving.reservation.reservation.ReservationStatus;
 import com.moving.reservation.notification.CustomerNotificationService;
+import com.moving.reservation.notification.EmailNotificationSendResult;
 import java.time.LocalDate;
 import java.util.List;
 import java.security.Principal;
@@ -15,6 +16,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -163,6 +165,42 @@ public class AdminReservationApiController {
         );
 
         return detailResponse(reservation);
+    }
+
+    @PostMapping("/{id}/notifications/email/send")
+    public AdminEmailSendResponse sendReadyEmails(@PathVariable Long id, Principal principal) {
+        Reservation reservation = reservationService.get(id);
+        EmailNotificationSendResult result = customerNotificationService.sendReadyEmails(id);
+        adminAuditLogService.record(
+                reservation,
+                "준비 이메일 발송",
+                result.sentCount() + "건 발송, " + result.failedCount() + "건 실패로 처리했습니다.",
+                principal.getName()
+        );
+
+        return new AdminEmailSendResponse(
+                result.sentCount(),
+                result.failedCount(),
+                detailResponse(reservation)
+        );
+    }
+
+    @PostMapping("/{id}/notifications/email/resend-failed")
+    public AdminEmailSendResponse resendFailedEmails(@PathVariable Long id, Principal principal) {
+        Reservation reservation = reservationService.get(id);
+        EmailNotificationSendResult result = customerNotificationService.resendFailedEmails(id);
+        adminAuditLogService.record(
+                reservation,
+                "실패 이메일 재발송",
+                result.sentCount() + "건 재발송, " + result.failedCount() + "건 실패로 처리했습니다.",
+                principal.getName()
+        );
+
+        return new AdminEmailSendResponse(
+                result.sentCount(),
+                result.failedCount(),
+                detailResponse(reservation)
+        );
     }
 
     private int selectedPageSize(int size) {

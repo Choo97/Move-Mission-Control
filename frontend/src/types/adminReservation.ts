@@ -71,6 +71,12 @@ export type AdminAuditLogResponse = {
   createdAt: string
 }
 
+export type AdminEmailSendResponse = {
+  sentCount: number
+  failedCount: number
+  reservation: AdminReservationDetailResponse
+}
+
 export type AdminReservationDetailResponse = {
   id: number
   customerName: string
