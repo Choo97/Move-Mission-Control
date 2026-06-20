@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
+  AdminAuthenticationRequiredError,
   calculateAdminReservationDistance,
   getAdminReservation,
   resendAdminReservationFailedEmails,
@@ -43,9 +44,15 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
   const [isUpdatingMemo, setIsUpdatingMemo] = useState(false)
   const [isResendingEmail, setIsResendingEmail] = useState(false)
   const [isSendingEmail, setIsSendingEmail] = useState(false)
+  const [isAuthenticationRequired, setIsAuthenticationRequired] = useState(false)
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [actionMessage, setActionMessage] = useState('')
+
+  const showAdminError = useCallback((error: unknown, fallbackMessage: string) => {
+    setIsAuthenticationRequired(error instanceof AdminAuthenticationRequiredError)
+    setErrorMessage(getErrorMessage(error, fallbackMessage))
+  }, [])
 
   useEffect(() => {
     const loadReservation = async () => {
@@ -61,14 +68,14 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
         setDistanceAmount(loadedReservation.distanceKm === null ? '' : String(loadedReservation.distanceKm))
         setAdminMemo(loadedReservation.adminMemo ?? '')
       } catch (error) {
-        setErrorMessage(getErrorMessage(error, '관리자 예약 상세를 불러오지 못했습니다.'))
+        showAdminError(error, '관리자 예약 상세를 불러오지 못했습니다.')
       } finally {
         setIsLoading(false)
       }
     }
 
     void loadReservation()
-  }, [reservationId])
+  }, [reservationId, showAdminError])
 
   const submitStatusUpdate = async () => {
     if (!reservation || selectedStatus === reservation.status) {
@@ -88,7 +95,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
       setActionMessage(`예약 상태가 '${updatedReservation.statusLabel}'(으)로 변경되었습니다.`)
       onReservationChanged()
     } catch (error) {
-      setErrorMessage(getErrorMessage(error, '관리자 예약 상태 변경에 실패했습니다.'))
+      showAdminError(error, '관리자 예약 상태 변경에 실패했습니다.')
     } finally {
       setIsUpdatingStatus(false)
     }
@@ -126,7 +133,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
       setActionMessage(`견적 금액이 ${formatPrice(updatedReservation.estimatedPrice)}으로 저장되었습니다.`)
       onReservationChanged()
     } catch (error) {
-      setErrorMessage(getErrorMessage(error, '관리자 예약 견적 저장에 실패했습니다.'))
+      showAdminError(error, '관리자 예약 견적 저장에 실패했습니다.')
     } finally {
       setIsUpdatingEstimate(false)
     }
@@ -168,7 +175,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
       )
       onReservationChanged()
     } catch (error) {
-      setErrorMessage(getErrorMessage(error, '관리자 예약 이동 거리 저장에 실패했습니다.'))
+      showAdminError(error, '관리자 예약 이동 거리 저장에 실패했습니다.')
     } finally {
       setIsUpdatingDistance(false)
     }
@@ -192,7 +199,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
       setActionMessage(`이동 거리를 ${updatedReservation.distanceKm}km로 자동 계산하고 견적에 반영했습니다.`)
       onReservationChanged()
     } catch (error) {
-      setErrorMessage(getErrorMessage(error, '관리자 예약 이동 거리 자동 계산에 실패했습니다.'))
+      showAdminError(error, '관리자 예약 이동 거리 자동 계산에 실패했습니다.')
     } finally {
       setIsCalculatingDistance(false)
     }
@@ -219,7 +226,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
       setAdminMemo(updatedReservation.adminMemo ?? '')
       setActionMessage(adminMemo.trim() === '' ? '관리자 메모를 비웠습니다.' : '관리자 메모를 저장했습니다.')
     } catch (error) {
-      setErrorMessage(getErrorMessage(error, '관리자 예약 메모 저장에 실패했습니다.'))
+      showAdminError(error, '관리자 예약 메모 저장에 실패했습니다.')
     } finally {
       setIsUpdatingMemo(false)
     }
@@ -239,7 +246,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
       setReservation(result.reservation)
       setActionMessage(`이메일 ${result.sentCount}건 발송, ${result.failedCount}건 실패로 처리했습니다.`)
     } catch (error) {
-      setErrorMessage(getErrorMessage(error, '관리자 예약 이메일 발송에 실패했습니다.'))
+      showAdminError(error, '관리자 예약 이메일 발송에 실패했습니다.')
     } finally {
       setIsSendingEmail(false)
     }
@@ -259,7 +266,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
       setReservation(result.reservation)
       setActionMessage(`실패 이메일 ${result.sentCount}건 재발송, ${result.failedCount}건 실패로 처리했습니다.`)
     } catch (error) {
-      setErrorMessage(getErrorMessage(error, '관리자 예약 실패 이메일 재발송에 실패했습니다.'))
+      showAdminError(error, '관리자 예약 실패 이메일 재발송에 실패했습니다.')
     } finally {
       setIsResendingEmail(false)
     }
@@ -278,7 +285,15 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
       </div>
 
       {isLoading && <p className="admin-loading">예약 상세를 불러오는 중입니다.</p>}
-      {errorMessage && <p className="message error">{errorMessage}</p>}
+      {errorMessage &&
+        (isAuthenticationRequired ? (
+          <div className="admin-auth-notice">
+            <strong>{errorMessage}</strong>
+            <a href={`${API_BASE_URL}/login`}>관리자 로그인</a>
+          </div>
+        ) : (
+          <p className="message error">{errorMessage}</p>
+        ))}
       {actionMessage && <p className="message info">{actionMessage}</p>}
 
       {reservation && (

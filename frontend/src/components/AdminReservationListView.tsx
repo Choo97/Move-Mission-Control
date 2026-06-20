@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getAdminReservations } from '../api/adminApi'
+import { AdminAuthenticationRequiredError, getAdminReservations } from '../api/adminApi'
 import { getErrorMessage } from '../api/apiError'
 import { API_BASE_URL } from '../reservationData'
 import { AdminReservationDetailPanel } from './AdminReservationDetailPanel'
@@ -42,17 +42,20 @@ export function AdminReservationListView() {
   const [selectedReservationId, setSelectedReservationId] = useState<number | null>(null)
   const [refreshVersion, setRefreshVersion] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
+  const [isAuthenticationRequired, setIsAuthenticationRequired] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
   useEffect(() => {
     const loadReservations = async () => {
       setIsLoading(true)
+      setIsAuthenticationRequired(false)
       setErrorMessage('')
 
       try {
         setReservationPage(await getAdminReservations(query))
       } catch (error) {
         setReservationPage(null)
+        setIsAuthenticationRequired(error instanceof AdminAuthenticationRequiredError)
         setErrorMessage(getErrorMessage(error, '관리자 예약 목록을 불러오지 못했습니다.'))
       } finally {
         setIsLoading(false)
@@ -143,7 +146,15 @@ export function AdminReservationListView() {
         </label>
       </div>
 
-      {errorMessage && <p className="message error">{errorMessage}</p>}
+      {errorMessage &&
+        (isAuthenticationRequired ? (
+          <div className="admin-auth-notice">
+            <strong>{errorMessage}</strong>
+            <a href={`${API_BASE_URL}/login`}>관리자 로그인</a>
+          </div>
+        ) : (
+          <p className="message error">{errorMessage}</p>
+        ))}
       {isLoading && <p className="admin-loading">예약 목록을 불러오는 중입니다.</p>}
 
       <div className="admin-master-detail">

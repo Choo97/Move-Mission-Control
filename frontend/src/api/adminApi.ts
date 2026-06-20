@@ -8,6 +8,13 @@ import type {
   ReservationStatus,
 } from '../types'
 
+export class AdminAuthenticationRequiredError extends Error {
+  constructor() {
+    super('관리자 로그인이 필요하거나 로그인 세션이 만료되었습니다.')
+    this.name = 'AdminAuthenticationRequiredError'
+  }
+}
+
 const appendQueryParam = (params: URLSearchParams, key: string, value: string | number | boolean | undefined) => {
   if (value !== undefined && value !== '') {
     params.set(key, String(value))
@@ -151,6 +158,14 @@ export async function resendAdminReservationFailedEmails(reservationId: number) 
 }
 
 async function throwApiError(response: Response, fallbackMessage: string): Promise<never> {
+  if (response.status === 401) {
+    throw new AdminAuthenticationRequiredError()
+  }
+
+  if (response.status === 403) {
+    throw new Error('관리자 권한이 필요한 기능입니다.')
+  }
+
   const message = await response
     .json()
     .then((data: ApiErrorResponse) => data.message || fallbackMessage)

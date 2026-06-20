@@ -6,7 +6,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.moving.reservation.reservation.MoveType;
@@ -39,8 +38,7 @@ class AdminReservationApiControllerTest {
     @Test
     void 관리자_예약목록_API는_로그인이_필요하다() throws Exception {
         mockMvc.perform(get("/api/admin/reservations"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("**/login"));
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -110,8 +108,7 @@ class AdminReservationApiControllerTest {
         var reservation = reservationService.create(reservationCreateRequest("상세권한고객", "010-7777-8888"));
 
         mockMvc.perform(get("/api/admin/reservations/{id}", reservation.getId()))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("**/login"));
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

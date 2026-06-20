@@ -66,6 +66,12 @@ class SecurityConfigTest {
     }
 
     @Test
+    void 로그인하지_않으면_관리자_API는_401을_응답한다() throws Exception {
+        mockMvc.perform(get("/api/admin/reservations"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void 고객용_예약신청화면은_로그인없이_접근할_수_있다() throws Exception {
         mockMvc.perform(get("/reservations/new")
                         .with(csrf()))
