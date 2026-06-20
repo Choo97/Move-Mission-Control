@@ -137,6 +137,30 @@ public class AdminReservationApiController {
         return detailResponse(reservation);
     }
 
+    @PatchMapping("/{id}/memo")
+    public AdminReservationDetailResponse updateMemo(@PathVariable Long id,
+                                                     @RequestBody AdminReservationMemoUpdateRequest request,
+                                                     Principal principal) {
+        String adminMemo = request.getAdminMemo();
+
+        if (adminMemo != null && adminMemo.length() > 1000) {
+            throw new IllegalArgumentException("관리자 메모는 1,000자 이내로 입력해 주세요.");
+        }
+
+        Reservation reservation = reservationService.get(id);
+        reservationService.updateAdminMemo(id, adminMemo, principal.getName());
+        adminAuditLogService.record(
+                reservation,
+                "관리자 메모 저장",
+                adminMemo == null || adminMemo.isBlank()
+                        ? "관리자 메모를 비웠습니다."
+                        : "관리자 메모를 저장했습니다.",
+                principal.getName()
+        );
+
+        return detailResponse(reservation);
+    }
+
     private int selectedPageSize(int size) {
         return ALLOWED_PAGE_SIZES.contains(size) ? size : DEFAULT_PAGE_SIZE;
     }

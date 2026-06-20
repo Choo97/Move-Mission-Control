@@ -4,6 +4,7 @@ import {
   getAdminReservation,
   updateAdminReservationDistance,
   updateAdminReservationEstimate,
+  updateAdminReservationMemo,
   updateAdminReservationStatus,
 } from '../api/adminApi'
 import { getErrorMessage } from '../api/apiError'
@@ -31,10 +32,12 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
   const [selectedStatus, setSelectedStatus] = useState<ReservationStatus>('RECEIVED')
   const [estimateAmount, setEstimateAmount] = useState('')
   const [distanceAmount, setDistanceAmount] = useState('')
+  const [adminMemo, setAdminMemo] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isCalculatingDistance, setIsCalculatingDistance] = useState(false)
   const [isUpdatingDistance, setIsUpdatingDistance] = useState(false)
   const [isUpdatingEstimate, setIsUpdatingEstimate] = useState(false)
+  const [isUpdatingMemo, setIsUpdatingMemo] = useState(false)
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [actionMessage, setActionMessage] = useState('')
@@ -51,6 +54,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
         setSelectedStatus(loadedReservation.status)
         setEstimateAmount(String(loadedReservation.estimatedPrice))
         setDistanceAmount(loadedReservation.distanceKm === null ? '' : String(loadedReservation.distanceKm))
+        setAdminMemo(loadedReservation.adminMemo ?? '')
       } catch (error) {
         setErrorMessage(getErrorMessage(error, '관리자 예약 상세를 불러오지 못했습니다.'))
       } finally {
@@ -182,6 +186,33 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
       setErrorMessage(getErrorMessage(error, '관리자 예약 이동 거리 자동 계산에 실패했습니다.'))
     } finally {
       setIsCalculatingDistance(false)
+    }
+  }
+
+  const submitAdminMemoUpdate = async () => {
+    if (!reservation || adminMemo === (reservation.adminMemo ?? '')) {
+      return
+    }
+
+    if (adminMemo.length > 1000) {
+      setErrorMessage('관리자 메모는 1,000자 이내로 입력해 주세요.')
+      setActionMessage('')
+      return
+    }
+
+    setIsUpdatingMemo(true)
+    setErrorMessage('')
+    setActionMessage('')
+
+    try {
+      const updatedReservation = await updateAdminReservationMemo(reservation.id, adminMemo)
+      setReservation(updatedReservation)
+      setAdminMemo(updatedReservation.adminMemo ?? '')
+      setActionMessage(adminMemo.trim() === '' ? '관리자 메모를 비웠습니다.' : '관리자 메모를 저장했습니다.')
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error, '관리자 예약 메모 저장에 실패했습니다.'))
+    } finally {
+      setIsUpdatingMemo(false)
     }
   }
 
@@ -344,9 +375,25 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
                 <strong>고객 요청사항</strong>
                 <p>{reservation.memo || '입력된 요청사항이 없습니다.'}</p>
               </div>
-              <div>
+              <div className="admin-memo-editor">
                 <strong>관리자 메모</strong>
-                <p>{reservation.adminMemo || '저장된 관리자 메모가 없습니다.'}</p>
+                <textarea
+                  maxLength={1000}
+                  placeholder="상담 내용과 현장 특이사항을 기록하세요."
+                  value={adminMemo}
+                  onChange={(event) => setAdminMemo(event.target.value)}
+                />
+                <div className="admin-memo-footer">
+                  <span>{adminMemo.length}/1,000자</span>
+                  <button
+                    type="button"
+                    disabled={isUpdatingMemo || adminMemo === (reservation.adminMemo ?? '')}
+                    onClick={submitAdminMemoUpdate}
+                  >
+                    {isUpdatingMemo ? '저장 중' : '메모 저장'}
+                  </button>
+                </div>
+                {reservation.adminMemoUpdatedBy && <small>최근 저장: {reservation.adminMemoUpdatedBy}</small>}
               </div>
             </div>
           </section>

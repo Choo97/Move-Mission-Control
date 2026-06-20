@@ -293,6 +293,60 @@ class AdminReservationApiControllerTest {
                 .andExpect(jsonPath("$.message").value("Kakao REST API 키를 설정하면 자동 거리 계산을 사용할 수 있습니다."));
     }
 
+    @Test
+    void 관리자_메모_API는_메모를_저장하고_상세를_JSON으로_응답한다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("메모저장고객", "010-9999-0004"));
+
+        mockMvc.perform(patch("/api/admin/reservations/{id}/memo", reservation.getId())
+                        .with(user("admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "adminMemo": "엘리베이터 예약 여부를 확인해야 합니다."
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(reservation.getId()))
+                .andExpect(jsonPath("$.adminMemo").value("엘리베이터 예약 여부를 확인해야 합니다."))
+                .andExpect(jsonPath("$.adminMemoUpdatedBy").value("admin"));
+    }
+
+    @Test
+    void 관리자_메모_API는_빈문자열로_메모를_삭제한다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("메모삭제고객", "010-9999-0005"));
+        reservationService.updateAdminMemo(reservation.getId(), "삭제 전 메모", "admin");
+
+        mockMvc.perform(patch("/api/admin/reservations/{id}/memo", reservation.getId())
+                        .with(user("admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "adminMemo": ""
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.adminMemo").value(""))
+                .andExpect(jsonPath("$.adminMemoUpdatedBy").value("admin"));
+    }
+
+    @Test
+    void 관리자_메모_API는_천자를_초과하면_400을_응답한다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("메모오류고객", "010-9999-0006"));
+        String longMemo = "가".repeat(1001);
+
+        mockMvc.perform(patch("/api/admin/reservations/{id}/memo", reservation.getId())
+                        .with(user("admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "adminMemo": "%s"
+                                }
+                                """.formatted(longMemo)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("관리자 메모는 1,000자 이내로 입력해 주세요."));
+    }
+
     private ReservationCreateRequest reservationCreateRequest(String customerName, String phone) {
         ReservationCreateRequest request = new ReservationCreateRequest();
         request.setCustomerName(customerName);
