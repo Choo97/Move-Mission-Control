@@ -16,6 +16,7 @@ import type { AdminReservationDetailResponse, ReservationStatus } from '../types
 type Props = {
   reservationId: number
   onClose: () => void
+  onReservationChanged: () => void
 }
 
 const formatPrice = (price: number) => `${price.toLocaleString()}원`
@@ -29,7 +30,7 @@ const statusOptions: Array<{ value: ReservationStatus; label: string }> = [
   { value: 'CANCELED', label: '취소' },
 ]
 
-export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
+export function AdminReservationDetailPanel({ reservationId, onClose, onReservationChanged }: Props) {
   const [reservation, setReservation] = useState<AdminReservationDetailResponse | null>(null)
   const [selectedStatus, setSelectedStatus] = useState<ReservationStatus>('RECEIVED')
   const [estimateAmount, setEstimateAmount] = useState('')
@@ -85,6 +86,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
       setEstimateAmount(String(updatedReservation.estimatedPrice))
       setDistanceAmount(updatedReservation.distanceKm === null ? '' : String(updatedReservation.distanceKm))
       setActionMessage(`예약 상태가 '${updatedReservation.statusLabel}'(으)로 변경되었습니다.`)
+      onReservationChanged()
     } catch (error) {
       setErrorMessage(getErrorMessage(error, '관리자 예약 상태 변경에 실패했습니다.'))
     } finally {
@@ -122,6 +124,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
       setEstimateAmount(String(updatedReservation.estimatedPrice))
       setDistanceAmount(updatedReservation.distanceKm === null ? '' : String(updatedReservation.distanceKm))
       setActionMessage(`견적 금액이 ${formatPrice(updatedReservation.estimatedPrice)}으로 저장되었습니다.`)
+      onReservationChanged()
     } catch (error) {
       setErrorMessage(getErrorMessage(error, '관리자 예약 견적 저장에 실패했습니다.'))
     } finally {
@@ -163,6 +166,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
           ? '이동 거리를 확인 전으로 저장했습니다.'
           : `이동 거리를 ${updatedReservation.distanceKm}km로 저장하고 견적을 다시 계산했습니다.`,
       )
+      onReservationChanged()
     } catch (error) {
       setErrorMessage(getErrorMessage(error, '관리자 예약 이동 거리 저장에 실패했습니다.'))
     } finally {
@@ -186,6 +190,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
       setEstimateAmount(String(updatedReservation.estimatedPrice))
       setDistanceAmount(updatedReservation.distanceKm === null ? '' : String(updatedReservation.distanceKm))
       setActionMessage(`이동 거리를 ${updatedReservation.distanceKm}km로 자동 계산하고 견적에 반영했습니다.`)
+      onReservationChanged()
     } catch (error) {
       setErrorMessage(getErrorMessage(error, '관리자 예약 이동 거리 자동 계산에 실패했습니다.'))
     } finally {

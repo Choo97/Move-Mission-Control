@@ -40,6 +40,7 @@ export function AdminReservationListView() {
   const [query, setQuery] = useState<AdminReservationListQuery>(initialQuery)
   const [reservationPage, setReservationPage] = useState<AdminReservationPageResponse | null>(null)
   const [selectedReservationId, setSelectedReservationId] = useState<number | null>(null)
+  const [refreshVersion, setRefreshVersion] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -59,7 +60,7 @@ export function AdminReservationListView() {
     }
 
     void loadReservations()
-  }, [query])
+  }, [query, refreshVersion])
 
   const updateQuery = <K extends keyof AdminReservationListQuery>(
     key: K,
@@ -237,6 +238,7 @@ export function AdminReservationListView() {
           <AdminReservationDetailPanel
             reservationId={selectedReservationId}
             onClose={() => setSelectedReservationId(null)}
+            onReservationChanged={() => setRefreshVersion((current) => current + 1)}
           />
         )}
       </div>
