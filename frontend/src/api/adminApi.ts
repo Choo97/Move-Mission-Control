@@ -80,6 +80,34 @@ export async function updateAdminReservationEstimate(reservationId: number, esti
   return response.json() as Promise<AdminReservationDetailResponse>
 }
 
+export async function updateAdminReservationDistance(reservationId: number, distanceKm: number | null) {
+  const response = await fetch(`${API_BASE_URL}/api/admin/reservations/${reservationId}/distance`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ distanceKm }),
+  })
+
+  if (!response.ok) {
+    await throwApiError(response, '관리자 예약 이동 거리 저장에 실패했습니다.')
+  }
+
+  return response.json() as Promise<AdminReservationDetailResponse>
+}
+
+export async function calculateAdminReservationDistance(reservationId: number) {
+  const response = await fetch(`${API_BASE_URL}/api/admin/reservations/${reservationId}/distance/calculate`, {
+    method: 'PATCH',
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    await throwApiError(response, '관리자 예약 이동 거리 자동 계산에 실패했습니다.')
+  }
+
+  return response.json() as Promise<AdminReservationDetailResponse>
+}
+
 async function throwApiError(response: Response, fallbackMessage: string): Promise<never> {
   const message = await response
     .json()

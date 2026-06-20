@@ -41,7 +41,9 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/api/reservations/search", "POST"),
                                 new AntPathRequestMatcher("/api/reviews", "POST"),
                                 new AntPathRequestMatcher("/api/admin/reservations/*/status", "PATCH"),
-                                new AntPathRequestMatcher("/api/admin/reservations/*/estimate", "PATCH")
+                                new AntPathRequestMatcher("/api/admin/reservations/*/estimate", "PATCH"),
+                                new AntPathRequestMatcher("/api/admin/reservations/*/distance", "PATCH"),
+                                new AntPathRequestMatcher("/api/admin/reservations/*/distance/calculate", "PATCH")
                         )
                 )
                 .authorizeHttpRequests(auth -> auth

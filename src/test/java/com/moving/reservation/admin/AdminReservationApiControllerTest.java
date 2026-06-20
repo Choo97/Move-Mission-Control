@@ -213,6 +213,86 @@ class AdminReservationApiControllerTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void 관리자_이동거리_API는_거리를_저장하고_상세를_JSON으로_응답한다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("거리변경고객", "010-7777-9999"));
+
+        mockMvc.perform(patch("/api/admin/reservations/{id}/distance", reservation.getId())
+                        .with(user("admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "distanceKm": 12
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(reservation.getId()))
+                .andExpect(jsonPath("$.distanceKm").value(12))
+                .andExpect(jsonPath("$.estimatedPrice").isNumber())
+                .andExpect(jsonPath("$.finalEstimatedPrice").isNumber());
+    }
+
+    @Test
+    void 관리자_이동거리_API는_null이면_확인전으로_저장한다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("거리초기화고객", "010-8888-9999"));
+        reservationService.updateDistance(reservation.getId(), 12);
+
+        mockMvc.perform(patch("/api/admin/reservations/{id}/distance", reservation.getId())
+                        .with(user("admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "distanceKm": null
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(reservation.getId()))
+                .andExpect(jsonPath("$.distanceKm").doesNotExist());
+    }
+
+    @Test
+    void 관리자_이동거리_API는_음수면_400을_응답한다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("거리오류고객", "010-9999-0001"));
+
+        mockMvc.perform(patch("/api/admin/reservations/{id}/distance", reservation.getId())
+                        .with(user("admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "distanceKm": -1
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("이동 거리는 0km 이상이어야 합니다."));
+    }
+
+    @Test
+    void 관리자_이동거리_API는_CSRF_토큰없이_호출할_수_있다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("거리CSRF고객", "010-9999-0002"));
+
+        mockMvc.perform(patch("/api/admin/reservations/{id}/distance", reservation.getId())
+                        .with(user("admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "distanceKm": 7
+                                }
+                                """))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void 관리자_이동거리_자동계산_API는_Kakao키가_없으면_400을_응답한다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("거리자동고객", "010-9999-0003"));
+
+        mockMvc.perform(patch("/api/admin/reservations/{id}/distance/calculate", reservation.getId())
+                        .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("Kakao REST API 키를 설정하면 자동 거리 계산을 사용할 수 있습니다."));
+    }
+
     private ReservationCreateRequest reservationCreateRequest(String customerName, String phone) {
         ReservationCreateRequest request = new ReservationCreateRequest();
         request.setCustomerName(customerName);

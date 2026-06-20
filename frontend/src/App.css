@@ -391,7 +391,8 @@ h3 {
 }
 
 .admin-status-update,
-.admin-estimate-update {
+.admin-estimate-update,
+.admin-distance-update {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 104px;
   gap: 10px;
@@ -402,8 +403,13 @@ h3 {
   margin-bottom: 14px;
 }
 
+.admin-distance-update {
+  grid-template-columns: minmax(0, 1fr) 92px 92px;
+}
+
 .admin-status-update button,
-.admin-estimate-update button {
+.admin-estimate-update button,
+.admin-distance-update button {
   min-height: 42px;
   border: 0;
   border-radius: 6px;
@@ -414,7 +420,8 @@ h3 {
 }
 
 .admin-status-update button:disabled,
-.admin-estimate-update button:disabled {
+.admin-estimate-update button:disabled,
+.admin-distance-update button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }
@@ -919,6 +926,10 @@ dd {
   }
 
   .admin-master-detail {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-distance-update {
     grid-template-columns: 1fr;
   }
 

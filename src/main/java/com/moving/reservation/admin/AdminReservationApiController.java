@@ -64,13 +64,7 @@ public class AdminReservationApiController {
     public AdminReservationDetailResponse detail(@PathVariable Long id) {
         Reservation reservation = reservationService.get(id);
 
-        return AdminReservationDetailResponse.from(
-                reservation,
-                reservationService.estimateLines(reservation),
-                reservationService.findPhotos(id),
-                reservationService.findStatusHistories(id),
-                reservationService.findCustomerActionHistories(id)
-        );
+        return detailResponse(reservation);
     }
 
     @PatchMapping("/{id}/status")
@@ -80,13 +74,7 @@ public class AdminReservationApiController {
         reservationService.updateStatus(id, request.getStatus(), principal.getName());
         Reservation reservation = reservationService.get(id);
 
-        return AdminReservationDetailResponse.from(
-                reservation,
-                reservationService.estimateLines(reservation),
-                reservationService.findPhotos(id),
-                reservationService.findStatusHistories(id),
-                reservationService.findCustomerActionHistories(id)
-        );
+        return detailResponse(reservation);
     }
 
     @PatchMapping("/{id}/estimate")
@@ -110,16 +98,56 @@ public class AdminReservationApiController {
                 principal.getName()
         );
 
-        return AdminReservationDetailResponse.from(
+        return detailResponse(reservation);
+    }
+
+    @PatchMapping("/{id}/distance")
+    public AdminReservationDetailResponse updateDistance(@PathVariable Long id,
+                                                         @RequestBody AdminReservationDistanceUpdateRequest request,
+                                                         Principal principal) {
+        if (request.getDistanceKm() != null && request.getDistanceKm() < 0) {
+            throw new IllegalArgumentException("이동 거리는 0km 이상이어야 합니다.");
+        }
+
+        Reservation reservation = reservationService.get(id);
+        reservationService.updateDistance(id, request.getDistanceKm());
+        adminAuditLogService.record(
                 reservation,
-                reservationService.estimateLines(reservation),
-                reservationService.findPhotos(id),
-                reservationService.findStatusHistories(id),
-                reservationService.findCustomerActionHistories(id)
+                "이동 거리 저장",
+                request.getDistanceKm() == null
+                        ? "이동 거리를 확인 전으로 저장했습니다."
+                        : "이동 거리를 " + request.getDistanceKm() + "km로 저장했습니다.",
+                principal.getName()
         );
+
+        return detailResponse(reservation);
+    }
+
+    @PatchMapping("/{id}/distance/calculate")
+    public AdminReservationDetailResponse calculateDistance(@PathVariable Long id, Principal principal) {
+        Reservation reservation = reservationService.get(id);
+        int distanceKm = reservationService.calculateAndUpdateDistance(id);
+        adminAuditLogService.record(
+                reservation,
+                "이동 거리 자동 계산",
+                "지도 API로 이동 거리를 " + distanceKm + "km로 계산해 저장했습니다.",
+                principal.getName()
+        );
+
+        return detailResponse(reservation);
     }
 
     private int selectedPageSize(int size) {
         return ALLOWED_PAGE_SIZES.contains(size) ? size : DEFAULT_PAGE_SIZE;
+    }
+
+    private AdminReservationDetailResponse detailResponse(Reservation reservation) {
+        return AdminReservationDetailResponse.from(
+                reservation,
+                reservationService.estimateLines(reservation),
+                reservationService.findPhotos(reservation.getId()),
+                reservationService.findStatusHistories(reservation.getId()),
+                reservationService.findCustomerActionHistories(reservation.getId())
+        );
     }
 }

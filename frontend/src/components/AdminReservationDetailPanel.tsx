@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import {
+  calculateAdminReservationDistance,
   getAdminReservation,
+  updateAdminReservationDistance,
   updateAdminReservationEstimate,
   updateAdminReservationStatus,
 } from '../api/adminApi'
@@ -28,7 +30,10 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
   const [reservation, setReservation] = useState<AdminReservationDetailResponse | null>(null)
   const [selectedStatus, setSelectedStatus] = useState<ReservationStatus>('RECEIVED')
   const [estimateAmount, setEstimateAmount] = useState('')
+  const [distanceAmount, setDistanceAmount] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isCalculatingDistance, setIsCalculatingDistance] = useState(false)
+  const [isUpdatingDistance, setIsUpdatingDistance] = useState(false)
   const [isUpdatingEstimate, setIsUpdatingEstimate] = useState(false)
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -45,6 +50,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
         setReservation(loadedReservation)
         setSelectedStatus(loadedReservation.status)
         setEstimateAmount(String(loadedReservation.estimatedPrice))
+        setDistanceAmount(loadedReservation.distanceKm === null ? '' : String(loadedReservation.distanceKm))
       } catch (error) {
         setErrorMessage(getErrorMessage(error, '관리자 예약 상세를 불러오지 못했습니다.'))
       } finally {
@@ -69,6 +75,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
       setReservation(updatedReservation)
       setSelectedStatus(updatedReservation.status)
       setEstimateAmount(String(updatedReservation.estimatedPrice))
+      setDistanceAmount(updatedReservation.distanceKm === null ? '' : String(updatedReservation.distanceKm))
       setActionMessage(`예약 상태가 '${updatedReservation.statusLabel}'(으)로 변경되었습니다.`)
     } catch (error) {
       setErrorMessage(getErrorMessage(error, '관리자 예약 상태 변경에 실패했습니다.'))
@@ -105,11 +112,76 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
       setReservation(updatedReservation)
       setSelectedStatus(updatedReservation.status)
       setEstimateAmount(String(updatedReservation.estimatedPrice))
+      setDistanceAmount(updatedReservation.distanceKm === null ? '' : String(updatedReservation.distanceKm))
       setActionMessage(`견적 금액이 ${formatPrice(updatedReservation.estimatedPrice)}으로 저장되었습니다.`)
     } catch (error) {
       setErrorMessage(getErrorMessage(error, '관리자 예약 견적 저장에 실패했습니다.'))
     } finally {
       setIsUpdatingEstimate(false)
+    }
+  }
+
+  const submitDistanceUpdate = async () => {
+    if (!reservation) {
+      return
+    }
+
+    const nextDistance = distanceAmount.trim() === '' ? null : Number(distanceAmount)
+
+    if (nextDistance !== null && Number.isNaN(nextDistance)) {
+      setErrorMessage('이동 거리를 숫자로 입력해 주세요.')
+      setActionMessage('')
+      return
+    }
+
+    if (nextDistance !== null && nextDistance < 0) {
+      setErrorMessage('이동 거리는 0km 이상이어야 합니다.')
+      setActionMessage('')
+      return
+    }
+
+    setIsUpdatingDistance(true)
+    setErrorMessage('')
+    setActionMessage('')
+
+    try {
+      const updatedReservation = await updateAdminReservationDistance(reservation.id, nextDistance)
+      setReservation(updatedReservation)
+      setSelectedStatus(updatedReservation.status)
+      setEstimateAmount(String(updatedReservation.estimatedPrice))
+      setDistanceAmount(updatedReservation.distanceKm === null ? '' : String(updatedReservation.distanceKm))
+      setActionMessage(
+        updatedReservation.distanceKm === null
+          ? '이동 거리를 확인 전으로 저장했습니다.'
+          : `이동 거리를 ${updatedReservation.distanceKm}km로 저장하고 견적을 다시 계산했습니다.`,
+      )
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error, '관리자 예약 이동 거리 저장에 실패했습니다.'))
+    } finally {
+      setIsUpdatingDistance(false)
+    }
+  }
+
+  const calculateDistance = async () => {
+    if (!reservation) {
+      return
+    }
+
+    setIsCalculatingDistance(true)
+    setErrorMessage('')
+    setActionMessage('')
+
+    try {
+      const updatedReservation = await calculateAdminReservationDistance(reservation.id)
+      setReservation(updatedReservation)
+      setSelectedStatus(updatedReservation.status)
+      setEstimateAmount(String(updatedReservation.estimatedPrice))
+      setDistanceAmount(updatedReservation.distanceKm === null ? '' : String(updatedReservation.distanceKm))
+      setActionMessage(`이동 거리를 ${updatedReservation.distanceKm}km로 자동 계산하고 견적에 반영했습니다.`)
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error, '관리자 예약 이동 거리 자동 계산에 실패했습니다.'))
+    } finally {
+      setIsCalculatingDistance(false)
     }
   }
 
@@ -196,6 +268,36 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
                 onClick={submitStatusUpdate}
               >
                 {isUpdatingStatus ? '변경 중' : '상태 저장'}
+              </button>
+            </div>
+          </section>
+
+          <section>
+            <h3>이동 거리</h3>
+            <div className="admin-distance-update">
+              <label>
+                거리(km)
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder="확인 전"
+                  value={distanceAmount}
+                  onChange={(event) => setDistanceAmount(event.target.value)}
+                />
+              </label>
+              <button
+                type="button"
+                disabled={
+                  isUpdatingDistance ||
+                  (distanceAmount.trim() === '' ? null : Number(distanceAmount)) === reservation.distanceKm
+                }
+                onClick={submitDistanceUpdate}
+              >
+                {isUpdatingDistance ? '저장 중' : '거리 저장'}
+              </button>
+              <button type="button" disabled={isCalculatingDistance} onClick={calculateDistance}>
+                {isCalculatingDistance ? '계산 중' : '자동 계산'}
               </button>
             </div>
           </section>
