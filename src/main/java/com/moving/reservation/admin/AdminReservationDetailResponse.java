@@ -7,6 +7,7 @@ import com.moving.reservation.reservation.ReservationCustomerActionHistory;
 import com.moving.reservation.reservation.ReservationEstimateLine;
 import com.moving.reservation.reservation.ReservationPhoto;
 import com.moving.reservation.reservation.ReservationStatusHistory;
+import com.moving.reservation.notification.CustomerNotification;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -52,14 +53,18 @@ public record AdminReservationDetailResponse(
         List<ReservationApiPhotoResponse> photos,
         List<ReservationApiEstimateLineResponse> estimateLines,
         List<AdminReservationStatusHistoryResponse> statusHistories,
-        List<AdminReservationCustomerActionHistoryResponse> customerActionHistories
+        List<AdminReservationCustomerActionHistoryResponse> customerActionHistories,
+        List<AdminNotificationHistoryResponse> notifications,
+        List<AdminAuditLogResponse> auditLogs
 ) {
 
     public static AdminReservationDetailResponse from(Reservation reservation,
                                                       List<ReservationEstimateLine> estimateLines,
                                                       List<ReservationPhoto> photos,
                                                       List<ReservationStatusHistory> statusHistories,
-                                                      List<ReservationCustomerActionHistory> customerActionHistories) {
+                                                      List<ReservationCustomerActionHistory> customerActionHistories,
+                                                      List<CustomerNotification> notifications,
+                                                      List<AdminAuditLog> auditLogs) {
         return new AdminReservationDetailResponse(
                 reservation.getId(),
                 reservation.getCustomerName(),
@@ -108,6 +113,12 @@ public record AdminReservationDetailResponse(
                         .toList(),
                 customerActionHistories.stream()
                         .map(AdminReservationCustomerActionHistoryResponse::from)
+                        .toList(),
+                notifications.stream()
+                        .map(AdminNotificationHistoryResponse::from)
+                        .toList(),
+                auditLogs.stream()
+                        .map(AdminAuditLogResponse::from)
                         .toList()
         );
     }

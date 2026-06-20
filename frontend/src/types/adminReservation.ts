@@ -48,6 +48,29 @@ export type AdminReservationCustomerActionHistoryResponse = {
   createdAt: string
 }
 
+export type AdminNotificationHistoryResponse = {
+  id: number
+  type: string
+  typeLabel: string
+  channel: 'SMS' | 'EMAIL' | 'KAKAO_ALIMTALK'
+  channelLabel: string
+  status: 'READY' | 'SENT' | 'FAILED'
+  statusLabel: string
+  recipientContact: string
+  message: string
+  failureReason: string | null
+  sentAt: string | null
+  createdAt: string
+}
+
+export type AdminAuditLogResponse = {
+  id: number
+  action: string
+  detail: string
+  createdBy: string
+  createdAt: string
+}
+
 export type AdminReservationDetailResponse = {
   id: number
   customerName: string
@@ -97,6 +120,8 @@ export type AdminReservationDetailResponse = {
   }>
   statusHistories: AdminReservationStatusHistoryResponse[]
   customerActionHistories: AdminReservationCustomerActionHistoryResponse[]
+  notifications: AdminNotificationHistoryResponse[]
+  auditLogs: AdminAuditLogResponse[]
 }
 
 export type AdminReservationListQuery = {

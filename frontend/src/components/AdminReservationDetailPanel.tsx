@@ -435,6 +435,53 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
             )}
           </section>
 
+          <section>
+            <h3>알림 이력</h3>
+            {reservation.notifications.length > 0 ? (
+              <ul className="admin-history-list notification-history-list">
+                {reservation.notifications.map((notification) => (
+                  <li key={notification.id}>
+                    <div className="admin-history-heading">
+                      <strong>{notification.typeLabel}</strong>
+                      <div>
+                        <span className="history-badge">{notification.channelLabel}</span>
+                        <span className={`history-badge ${notification.status.toLowerCase()}`}>
+                          {notification.statusLabel}
+                        </span>
+                      </div>
+                    </div>
+                    <span>
+                      {notification.createdAt.replace('T', ' ').slice(0, 16)} · {notification.recipientContact}
+                    </span>
+                    <p>{notification.message}</p>
+                    {notification.failureReason && <p className="history-error">{notification.failureReason}</p>}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="admin-empty inline">알림 이력이 없습니다.</p>
+            )}
+          </section>
+
+          <section>
+            <h3>관리자 감사로그</h3>
+            {reservation.auditLogs.length > 0 ? (
+              <ul className="admin-history-list">
+                {reservation.auditLogs.map((auditLog) => (
+                  <li key={auditLog.id}>
+                    <strong>{auditLog.action}</strong>
+                    <span>
+                      {auditLog.createdAt.replace('T', ' ').slice(0, 16)} · {auditLog.createdBy}
+                    </span>
+                    <p>{auditLog.detail}</p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="admin-empty inline">관리자 감사로그가 없습니다.</p>
+            )}
+          </section>
+
           <div className="admin-detail-actions">
             <a className="admin-row-link" href={`${API_BASE_URL}/admin/reservations/${reservation.id}`}>
               기존 상세 화면 열기

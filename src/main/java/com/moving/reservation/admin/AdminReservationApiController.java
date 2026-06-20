@@ -4,6 +4,7 @@ import com.moving.reservation.reservation.Reservation;
 import com.moving.reservation.reservation.ReservationService;
 import com.moving.reservation.reservation.ReservationSort;
 import com.moving.reservation.reservation.ReservationStatus;
+import com.moving.reservation.notification.CustomerNotificationService;
 import java.time.LocalDate;
 import java.util.List;
 import java.security.Principal;
@@ -28,11 +29,14 @@ public class AdminReservationApiController {
 
     private final ReservationService reservationService;
     private final AdminAuditLogService adminAuditLogService;
+    private final CustomerNotificationService customerNotificationService;
 
     public AdminReservationApiController(ReservationService reservationService,
-                                         AdminAuditLogService adminAuditLogService) {
+                                         AdminAuditLogService adminAuditLogService,
+                                         CustomerNotificationService customerNotificationService) {
         this.reservationService = reservationService;
         this.adminAuditLogService = adminAuditLogService;
+        this.customerNotificationService = customerNotificationService;
     }
 
     @GetMapping
@@ -171,7 +175,9 @@ public class AdminReservationApiController {
                 reservationService.estimateLines(reservation),
                 reservationService.findPhotos(reservation.getId()),
                 reservationService.findStatusHistories(reservation.getId()),
-                reservationService.findCustomerActionHistories(reservation.getId())
+                reservationService.findCustomerActionHistories(reservation.getId()),
+                customerNotificationService.findByReservationId(reservation.getId()),
+                adminAuditLogService.findByReservationId(reservation.getId())
         );
     }
 }

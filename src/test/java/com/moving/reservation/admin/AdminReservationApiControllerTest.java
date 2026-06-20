@@ -96,7 +96,11 @@ class AdminReservationApiControllerTest {
                 .andExpect(jsonPath("$.estimateLines").isArray())
                 .andExpect(jsonPath("$.photos").isArray())
                 .andExpect(jsonPath("$.statusHistories[0].changedStatus").value(ReservationStatus.CONSULTING.name()))
-                .andExpect(jsonPath("$.customerActionHistories").isArray());
+                .andExpect(jsonPath("$.customerActionHistories").isArray())
+                .andExpect(jsonPath("$.notifications.length()").value(3))
+                .andExpect(jsonPath("$.notifications[0].type").value("STATUS_CHANGED"))
+                .andExpect(jsonPath("$.notifications[0].status").value("READY"))
+                .andExpect(jsonPath("$.auditLogs").isArray());
     }
 
     @Test
@@ -308,7 +312,9 @@ class AdminReservationApiControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(reservation.getId()))
                 .andExpect(jsonPath("$.adminMemo").value("엘리베이터 예약 여부를 확인해야 합니다."))
-                .andExpect(jsonPath("$.adminMemoUpdatedBy").value("admin"));
+                .andExpect(jsonPath("$.adminMemoUpdatedBy").value("admin"))
+                .andExpect(jsonPath("$.auditLogs[0].action").value("관리자 메모 저장"))
+                .andExpect(jsonPath("$.auditLogs[0].createdBy").value("admin"));
     }
 
     @Test

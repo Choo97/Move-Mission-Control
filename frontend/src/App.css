@@ -419,6 +419,44 @@ h3 {
   font-weight: 700;
 }
 
+.admin-history-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.admin-history-heading div {
+  display: flex;
+  gap: 5px;
+}
+
+.admin-history-heading .history-badge {
+  display: inline-flex;
+  margin-top: 0;
+  border-radius: 999px;
+  padding: 4px 7px;
+  color: #5f5149;
+  background: #efe7df;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.admin-history-heading .history-badge.sent {
+  color: #27623b;
+  background: #e9f6ed;
+}
+
+.admin-history-heading .history-badge.failed {
+  color: #8b1e16;
+  background: #fff0ec;
+}
+
+.admin-history-list .history-error {
+  color: #8b1e16;
+  font-weight: 800;
+}
+
 .admin-empty.inline {
   border: 1px solid #eee5dc;
   border-radius: 6px;
