@@ -2,6 +2,7 @@ package com.moving.reservation.admin;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -104,6 +106,58 @@ class AdminReservationApiControllerTest {
         mockMvc.perform(get("/api/admin/reservations/{id}", reservation.getId()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrlPattern("**/login"));
+    }
+
+    @Test
+    void 관리자_예약상태_API는_상태를_변경하고_상세를_JSON으로_응답한다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("상태변경고객", "010-1111-9999"));
+
+        mockMvc.perform(patch("/api/admin/reservations/{id}/status", reservation.getId())
+                        .with(user("admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "status": "CONSULTING"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(reservation.getId()))
+                .andExpect(jsonPath("$.status").value(ReservationStatus.CONSULTING.name()))
+                .andExpect(jsonPath("$.statusLabel").value("상담중"))
+                .andExpect(jsonPath("$.statusHistories[0].changedStatus").value(ReservationStatus.CONSULTING.name()))
+                .andExpect(jsonPath("$.statusHistories[0].changedBy").value("admin"));
+    }
+
+    @Test
+    void 관리자_예약상태_API는_불가능한_상태전환이면_400을_응답한다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("상태오류고객", "010-2222-9999"));
+
+        mockMvc.perform(patch("/api/admin/reservations/{id}/status", reservation.getId())
+                        .with(user("admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "status": "COMPLETED"
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("현재 상태에서는 '완료'(으)로 변경할 수 없습니다."));
+    }
+
+    @Test
+    void 관리자_예약상태_API는_CSRF_토큰없이_호출할_수_있다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("상태CSRF고객", "010-3333-9999"));
+
+        mockMvc.perform(patch("/api/admin/reservations/{id}/status", reservation.getId())
+                        .with(user("admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "status": "CONSULTING"
+                                }
+                                """))
+                .andExpect(status().isOk());
     }
 
     private ReservationCreateRequest reservationCreateRequest(String customerName, String phone) {

@@ -1,8 +1,10 @@
 import { API_BASE_URL } from '../reservationData'
 import type {
+  ApiErrorResponse,
   AdminReservationDetailResponse,
   AdminReservationListQuery,
   AdminReservationPageResponse,
+  ReservationStatus,
 } from '../types'
 
 const appendQueryParam = (params: URLSearchParams, key: string, value: string | number | boolean | undefined) => {
@@ -30,7 +32,7 @@ export async function getAdminReservations(query: AdminReservationListQuery = {}
   )
 
   if (!response.ok) {
-    throw new Error('관리자 예약 목록을 불러오지 못했습니다.')
+    await throwApiError(response, '관리자 예약 목록을 불러오지 못했습니다.')
   }
 
   return response.json() as Promise<AdminReservationPageResponse>
@@ -42,8 +44,32 @@ export async function getAdminReservation(reservationId: number) {
   })
 
   if (!response.ok) {
-    throw new Error('관리자 예약 상세를 불러오지 못했습니다.')
+    await throwApiError(response, '관리자 예약 상세를 불러오지 못했습니다.')
   }
 
   return response.json() as Promise<AdminReservationDetailResponse>
+}
+
+export async function updateAdminReservationStatus(reservationId: number, status: ReservationStatus) {
+  const response = await fetch(`${API_BASE_URL}/api/admin/reservations/${reservationId}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ status }),
+  })
+
+  if (!response.ok) {
+    await throwApiError(response, '관리자 예약 상태 변경에 실패했습니다.')
+  }
+
+  return response.json() as Promise<AdminReservationDetailResponse>
+}
+
+async function throwApiError(response: Response, fallbackMessage: string): Promise<never> {
+  const message = await response
+    .json()
+    .then((data: ApiErrorResponse) => data.message || fallbackMessage)
+    .catch(() => fallbackMessage)
+
+  throw new Error(message)
 }

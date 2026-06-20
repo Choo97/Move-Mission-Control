@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { getAdminReservation } from '../api/adminApi'
+import { getAdminReservation, updateAdminReservationStatus } from '../api/adminApi'
 import { getErrorMessage } from '../api/apiError'
 import { API_BASE_URL } from '../reservationData'
-import type { AdminReservationDetailResponse } from '../types'
+import type { AdminReservationDetailResponse, ReservationStatus } from '../types'
 
 type Props = {
   reservationId: number
@@ -11,10 +11,22 @@ type Props = {
 
 const formatPrice = (price: number) => `${price.toLocaleString()}원`
 
+const statusOptions: Array<{ value: ReservationStatus; label: string }> = [
+  { value: 'RECEIVED', label: '접수' },
+  { value: 'CONSULTING', label: '상담중' },
+  { value: 'ESTIMATE_SENT', label: '견적안내' },
+  { value: 'CONFIRMED', label: '확정' },
+  { value: 'COMPLETED', label: '완료' },
+  { value: 'CANCELED', label: '취소' },
+]
+
 export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
   const [reservation, setReservation] = useState<AdminReservationDetailResponse | null>(null)
+  const [selectedStatus, setSelectedStatus] = useState<ReservationStatus>('RECEIVED')
   const [isLoading, setIsLoading] = useState(false)
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [statusMessage, setStatusMessage] = useState('')
 
   useEffect(() => {
     const loadReservation = async () => {
@@ -23,7 +35,9 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
       setReservation(null)
 
       try {
-        setReservation(await getAdminReservation(reservationId))
+        const loadedReservation = await getAdminReservation(reservationId)
+        setReservation(loadedReservation)
+        setSelectedStatus(loadedReservation.status)
       } catch (error) {
         setErrorMessage(getErrorMessage(error, '관리자 예약 상세를 불러오지 못했습니다.'))
       } finally {
@@ -33,6 +47,27 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
 
     void loadReservation()
   }, [reservationId])
+
+  const submitStatusUpdate = async () => {
+    if (!reservation || selectedStatus === reservation.status) {
+      return
+    }
+
+    setIsUpdatingStatus(true)
+    setErrorMessage('')
+    setStatusMessage('')
+
+    try {
+      const updatedReservation = await updateAdminReservationStatus(reservation.id, selectedStatus)
+      setReservation(updatedReservation)
+      setSelectedStatus(updatedReservation.status)
+      setStatusMessage(`예약 상태가 '${updatedReservation.statusLabel}'(으)로 변경되었습니다.`)
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error, '관리자 예약 상태 변경에 실패했습니다.'))
+    } finally {
+      setIsUpdatingStatus(false)
+    }
+  }
 
   return (
     <aside className="admin-detail-panel">
@@ -48,6 +83,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
 
       {isLoading && <p className="admin-loading">예약 상세를 불러오는 중입니다.</p>}
       {errorMessage && <p className="message error">{errorMessage}</p>}
+      {statusMessage && <p className="message info">{statusMessage}</p>}
 
       {reservation && (
         <div className="admin-detail-content">
@@ -92,6 +128,32 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
                 <dd>{formatPrice(reservation.finalEstimatedPrice)}</dd>
               </div>
             </dl>
+          </section>
+
+          <section>
+            <h3>상태 변경</h3>
+            <div className="admin-status-update">
+              <label>
+                예약 상태
+                <select
+                  value={selectedStatus}
+                  onChange={(event) => setSelectedStatus(event.target.value as ReservationStatus)}
+                >
+                  {statusOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                type="button"
+                disabled={isUpdatingStatus || selectedStatus === reservation.status}
+                onClick={submitStatusUpdate}
+              >
+                {isUpdatingStatus ? '변경 중' : '상태 저장'}
+              </button>
+            </div>
           </section>
 
           <section>
