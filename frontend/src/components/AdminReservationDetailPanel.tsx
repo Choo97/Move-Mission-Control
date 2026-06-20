@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react'
-import { getAdminReservation, updateAdminReservationStatus } from '../api/adminApi'
+import {
+  getAdminReservation,
+  updateAdminReservationEstimate,
+  updateAdminReservationStatus,
+} from '../api/adminApi'
 import { getErrorMessage } from '../api/apiError'
 import { API_BASE_URL } from '../reservationData'
 import type { AdminReservationDetailResponse, ReservationStatus } from '../types'
@@ -23,10 +27,12 @@ const statusOptions: Array<{ value: ReservationStatus; label: string }> = [
 export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
   const [reservation, setReservation] = useState<AdminReservationDetailResponse | null>(null)
   const [selectedStatus, setSelectedStatus] = useState<ReservationStatus>('RECEIVED')
+  const [estimateAmount, setEstimateAmount] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isUpdatingEstimate, setIsUpdatingEstimate] = useState(false)
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
-  const [statusMessage, setStatusMessage] = useState('')
+  const [actionMessage, setActionMessage] = useState('')
 
   useEffect(() => {
     const loadReservation = async () => {
@@ -38,6 +44,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
         const loadedReservation = await getAdminReservation(reservationId)
         setReservation(loadedReservation)
         setSelectedStatus(loadedReservation.status)
+        setEstimateAmount(String(loadedReservation.estimatedPrice))
       } catch (error) {
         setErrorMessage(getErrorMessage(error, '관리자 예약 상세를 불러오지 못했습니다.'))
       } finally {
@@ -55,17 +62,54 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
 
     setIsUpdatingStatus(true)
     setErrorMessage('')
-    setStatusMessage('')
+    setActionMessage('')
 
     try {
       const updatedReservation = await updateAdminReservationStatus(reservation.id, selectedStatus)
       setReservation(updatedReservation)
       setSelectedStatus(updatedReservation.status)
-      setStatusMessage(`예약 상태가 '${updatedReservation.statusLabel}'(으)로 변경되었습니다.`)
+      setEstimateAmount(String(updatedReservation.estimatedPrice))
+      setActionMessage(`예약 상태가 '${updatedReservation.statusLabel}'(으)로 변경되었습니다.`)
     } catch (error) {
       setErrorMessage(getErrorMessage(error, '관리자 예약 상태 변경에 실패했습니다.'))
     } finally {
       setIsUpdatingStatus(false)
+    }
+  }
+
+  const submitEstimateUpdate = async () => {
+    if (!reservation) {
+      return
+    }
+
+    const nextEstimateAmount = Number(estimateAmount)
+
+    if (estimateAmount.trim() === '' || Number.isNaN(nextEstimateAmount)) {
+      setErrorMessage('견적 금액을 숫자로 입력해 주세요.')
+      setActionMessage('')
+      return
+    }
+
+    if (nextEstimateAmount < 0) {
+      setErrorMessage('견적 금액은 0원 이상이어야 합니다.')
+      setActionMessage('')
+      return
+    }
+
+    setIsUpdatingEstimate(true)
+    setErrorMessage('')
+    setActionMessage('')
+
+    try {
+      const updatedReservation = await updateAdminReservationEstimate(reservation.id, nextEstimateAmount)
+      setReservation(updatedReservation)
+      setSelectedStatus(updatedReservation.status)
+      setEstimateAmount(String(updatedReservation.estimatedPrice))
+      setActionMessage(`견적 금액이 ${formatPrice(updatedReservation.estimatedPrice)}으로 저장되었습니다.`)
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error, '관리자 예약 견적 저장에 실패했습니다.'))
+    } finally {
+      setIsUpdatingEstimate(false)
     }
   }
 
@@ -83,7 +127,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
 
       {isLoading && <p className="admin-loading">예약 상세를 불러오는 중입니다.</p>}
       {errorMessage && <p className="message error">{errorMessage}</p>}
-      {statusMessage && <p className="message info">{statusMessage}</p>}
+      {actionMessage && <p className="message info">{actionMessage}</p>}
 
       {reservation && (
         <div className="admin-detail-content">
@@ -158,6 +202,25 @@ export function AdminReservationDetailPanel({ reservationId, onClose }: Props) {
 
           <section>
             <h3>견적 내역</h3>
+            <div className="admin-estimate-update">
+              <label>
+                견적 금액
+                <input
+                  type="number"
+                  min="0"
+                  step="1000"
+                  value={estimateAmount}
+                  onChange={(event) => setEstimateAmount(event.target.value)}
+                />
+              </label>
+              <button
+                type="button"
+                disabled={isUpdatingEstimate || Number(estimateAmount) === reservation.estimatedPrice}
+                onClick={submitEstimateUpdate}
+              >
+                {isUpdatingEstimate ? '저장 중' : '견적 저장'}
+              </button>
+            </div>
             <dl className="admin-detail-grid compact">
               {reservation.estimateLines.map((line) => (
                 <div key={line.label}>

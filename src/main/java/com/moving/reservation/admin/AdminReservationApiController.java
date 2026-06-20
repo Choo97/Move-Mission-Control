@@ -27,9 +27,12 @@ public class AdminReservationApiController {
     private static final List<Integer> ALLOWED_PAGE_SIZES = List.of(10, 20, 50);
 
     private final ReservationService reservationService;
+    private final AdminAuditLogService adminAuditLogService;
 
-    public AdminReservationApiController(ReservationService reservationService) {
+    public AdminReservationApiController(ReservationService reservationService,
+                                         AdminAuditLogService adminAuditLogService) {
         this.reservationService = reservationService;
+        this.adminAuditLogService = adminAuditLogService;
     }
 
     @GetMapping
@@ -76,6 +79,36 @@ public class AdminReservationApiController {
                                                        Principal principal) {
         reservationService.updateStatus(id, request.getStatus(), principal.getName());
         Reservation reservation = reservationService.get(id);
+
+        return AdminReservationDetailResponse.from(
+                reservation,
+                reservationService.estimateLines(reservation),
+                reservationService.findPhotos(id),
+                reservationService.findStatusHistories(id),
+                reservationService.findCustomerActionHistories(id)
+        );
+    }
+
+    @PatchMapping("/{id}/estimate")
+    public AdminReservationDetailResponse updateEstimate(@PathVariable Long id,
+                                                         @RequestBody AdminReservationEstimateUpdateRequest request,
+                                                         Principal principal) {
+        if (request.getEstimatedPrice() == null) {
+            throw new IllegalArgumentException("견적 금액을 입력해 주세요.");
+        }
+
+        if (request.getEstimatedPrice() < 0) {
+            throw new IllegalArgumentException("견적 금액은 0원 이상이어야 합니다.");
+        }
+
+        Reservation reservation = reservationService.get(id);
+        reservationService.updateEstimate(id, request.getEstimatedPrice());
+        adminAuditLogService.record(
+                reservation,
+                "견적 금액 저장",
+                "견적 금액을 " + String.format("%,d", request.getEstimatedPrice()) + "원으로 저장했습니다.",
+                principal.getName()
+        );
 
         return AdminReservationDetailResponse.from(
                 reservation,

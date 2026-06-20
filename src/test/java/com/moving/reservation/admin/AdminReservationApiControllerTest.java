@@ -160,6 +160,59 @@ class AdminReservationApiControllerTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void 관리자_견적금액_API는_견적을_저장하고_상세를_JSON으로_응답한다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("견적변경고객", "010-4444-9999"));
+        reservationService.updateStatus(reservation.getId(), ReservationStatus.CONSULTING, "admin");
+
+        mockMvc.perform(patch("/api/admin/reservations/{id}/estimate", reservation.getId())
+                        .with(user("admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "estimatedPrice": 350000
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(reservation.getId()))
+                .andExpect(jsonPath("$.estimatedPrice").value(350000))
+                .andExpect(jsonPath("$.finalEstimatedPrice").value(350000))
+                .andExpect(jsonPath("$.status").value(ReservationStatus.ESTIMATE_SENT.name()))
+                .andExpect(jsonPath("$.statusLabel").value("견적안내"));
+    }
+
+    @Test
+    void 관리자_견적금액_API는_음수면_400을_응답한다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("견적오류고객", "010-5555-9999"));
+
+        mockMvc.perform(patch("/api/admin/reservations/{id}/estimate", reservation.getId())
+                        .with(user("admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "estimatedPrice": -1
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("견적 금액은 0원 이상이어야 합니다."));
+    }
+
+    @Test
+    void 관리자_견적금액_API는_CSRF_토큰없이_호출할_수_있다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("견적CSRF고객", "010-6666-9999"));
+
+        mockMvc.perform(patch("/api/admin/reservations/{id}/estimate", reservation.getId())
+                        .with(user("admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "estimatedPrice": 320000
+                                }
+                                """))
+                .andExpect(status().isOk());
+    }
+
     private ReservationCreateRequest reservationCreateRequest(String customerName, String phone) {
         ReservationCreateRequest request = new ReservationCreateRequest();
         request.setCustomerName(customerName);

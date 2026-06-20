@@ -390,14 +390,20 @@ h3 {
   padding-top: 14px;
 }
 
-.admin-status-update {
+.admin-status-update,
+.admin-estimate-update {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 104px;
   gap: 10px;
   align-items: end;
 }
 
-.admin-status-update button {
+.admin-estimate-update {
+  margin-bottom: 14px;
+}
+
+.admin-status-update button,
+.admin-estimate-update button {
   min-height: 42px;
   border: 0;
   border-radius: 6px;
@@ -407,7 +413,8 @@ h3 {
   cursor: pointer;
 }
 
-.admin-status-update button:disabled {
+.admin-status-update button:disabled,
+.admin-estimate-update button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }

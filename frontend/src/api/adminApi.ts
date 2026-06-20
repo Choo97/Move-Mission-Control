@@ -65,6 +65,21 @@ export async function updateAdminReservationStatus(reservationId: number, status
   return response.json() as Promise<AdminReservationDetailResponse>
 }
 
+export async function updateAdminReservationEstimate(reservationId: number, estimatedPrice: number) {
+  const response = await fetch(`${API_BASE_URL}/api/admin/reservations/${reservationId}/estimate`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ estimatedPrice }),
+  })
+
+  if (!response.ok) {
+    await throwApiError(response, '관리자 예약 견적 저장에 실패했습니다.')
+  }
+
+  return response.json() as Promise<AdminReservationDetailResponse>
+}
+
 async function throwApiError(response: Response, fallbackMessage: string): Promise<never> {
   const message = await response
     .json()
