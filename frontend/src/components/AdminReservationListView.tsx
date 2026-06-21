@@ -27,20 +27,45 @@ const sortOptions: Array<{ value: AdminReservationSort; label: string }> = [
 
 const pageSizeOptions = [10, 20, 50]
 
-const initialQuery: AdminReservationListQuery = {
-  status: undefined,
-  keyword: '',
-  needsDistance: false,
-  sort: 'PRIORITY',
-  page: 0,
-  size: 10,
+const readInitialAdminState = () => {
+  const params = new URLSearchParams(window.location.search)
+  const statusValue = params.get('status')
+  const sortValue = params.get('sort')
+  const pageValue = Number(params.get('page'))
+  const sizeValue = Number(params.get('size'))
+  const reservationIdValue = Number(params.get('reservationId'))
+
+  const query: AdminReservationListQuery = {
+    status: statusOptions.some(({ value }) => value === statusValue)
+      ? (statusValue as ReservationStatus)
+      : undefined,
+    keyword: params.get('keyword') ?? '',
+    needsDistance: params.get('needsDistance') === 'true',
+    sort: sortOptions.some(({ value }) => value === sortValue)
+      ? (sortValue as AdminReservationSort)
+      : 'PRIORITY',
+    page: Number.isInteger(pageValue) && pageValue >= 0 ? pageValue : 0,
+    size: pageSizeOptions.includes(sizeValue) ? sizeValue : 10,
+  }
+
+  return {
+    query,
+    selectedReservationId:
+      Number.isInteger(reservationIdValue) && reservationIdValue > 0
+        ? reservationIdValue
+        : null,
+  }
 }
 
+const initialAdminState = readInitialAdminState()
+
 export function AdminReservationListView() {
-  const [query, setQuery] = useState<AdminReservationListQuery>(initialQuery)
-  const [keywordInput, setKeywordInput] = useState(initialQuery.keyword ?? '')
+  const [query, setQuery] = useState<AdminReservationListQuery>(initialAdminState.query)
+  const [keywordInput, setKeywordInput] = useState(initialAdminState.query.keyword ?? '')
   const [reservationPage, setReservationPage] = useState<AdminReservationPageResponse | null>(null)
-  const [selectedReservationId, setSelectedReservationId] = useState<number | null>(null)
+  const [selectedReservationId, setSelectedReservationId] = useState<number | null>(
+    initialAdminState.selectedReservationId,
+  )
   const [refreshVersion, setRefreshVersion] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [isAuthenticationRequired, setIsAuthenticationRequired] = useState(false)
@@ -79,6 +104,30 @@ export function AdminReservationListView() {
 
     return () => window.clearTimeout(debounceTimer)
   }, [keywordInput])
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    params.set('view', 'admin')
+
+    const setOrDelete = (key: string, value: string | number | undefined, keep: boolean) => {
+      if (keep) {
+        params.set(key, String(value))
+      } else {
+        params.delete(key)
+      }
+    }
+
+    setOrDelete('status', query.status, Boolean(query.status))
+    setOrDelete('keyword', query.keyword, Boolean(query.keyword))
+    setOrDelete('sort', query.sort, query.sort !== 'PRIORITY')
+    setOrDelete('page', query.page, query.page !== 0)
+    setOrDelete('size', query.size, query.size !== 10)
+    setOrDelete('needsDistance', 'true', Boolean(query.needsDistance))
+    setOrDelete('reservationId', selectedReservationId ?? undefined, selectedReservationId !== null)
+
+    const queryString = params.toString()
+    window.history.replaceState(null, '', `${window.location.pathname}?${queryString}`)
+  }, [query, selectedReservationId])
 
   const updateQuery = <K extends keyof AdminReservationListQuery>(
     key: K,

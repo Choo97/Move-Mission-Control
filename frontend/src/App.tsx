@@ -33,8 +33,25 @@ import type {
   ReviewResponse,
 } from './types'
 
+type ActiveView = 'create' | 'search' | 'admin'
+
+const adminQueryKeys = [
+  'status',
+  'keyword',
+  'sort',
+  'page',
+  'size',
+  'needsDistance',
+  'reservationId',
+]
+
+const getInitialView = (): ActiveView => {
+  const view = new URLSearchParams(window.location.search).get('view')
+  return view === 'search' || view === 'admin' ? view : 'create'
+}
+
 function App() {
-  const [activeView, setActiveView] = useState<'create' | 'search' | 'admin'>('create')
+  const [activeView, setActiveView] = useState<ActiveView>(getInitialView)
   const [form, setForm] = useState<ReservationForm>(initialForm)
   const [searchForm, setSearchForm] = useState<ReservationSearchForm>(initialSearchForm)
   const [editForm, setEditForm] = useState<ReservationEditForm | null>(null)
@@ -57,6 +74,28 @@ function App() {
   const [reservation, setReservation] = useState<ReservationResponse | null>(null)
 
   const today = useMemo(() => new Date().toISOString().slice(0, 10), [])
+
+  const changeView = (nextView: ActiveView) => {
+    setActiveView(nextView)
+
+    const params = new URLSearchParams(window.location.search)
+    if (nextView === 'create') {
+      params.delete('view')
+    } else {
+      params.set('view', nextView)
+    }
+
+    if (nextView !== 'admin') {
+      adminQueryKeys.forEach((key) => params.delete(key))
+    }
+
+    const queryString = params.toString()
+    window.history.replaceState(
+      null,
+      '',
+      `${window.location.pathname}${queryString ? `?${queryString}` : ''}`,
+    )
+  }
 
   const resetReservationContext = () => {
     setReservation(null)
@@ -118,7 +157,7 @@ function App() {
         phone: submittedPhone,
       })
       setForm(initialForm)
-      setActiveView('search')
+      changeView('search')
     } catch (error) {
       setErrorMessage(getErrorMessage(error, '예약 신청에 실패했습니다.'))
     } finally {
@@ -304,7 +343,7 @@ function App() {
           type="button"
           className={activeView === 'create' ? 'active' : ''}
           onClick={() => {
-            setActiveView('create')
+            changeView('create')
             setErrorMessage('')
             setActionMessage('')
           }}
@@ -315,7 +354,7 @@ function App() {
           type="button"
           className={activeView === 'search' ? 'active' : ''}
           onClick={() => {
-            setActiveView('search')
+            changeView('search')
             setSearchErrorMessage('')
             setActionMessage('')
           }}
@@ -326,7 +365,7 @@ function App() {
           type="button"
           className={activeView === 'admin' ? 'active' : ''}
           onClick={() => {
-            setActiveView('admin')
+            changeView('admin')
             setActionMessage('')
           }}
         >
