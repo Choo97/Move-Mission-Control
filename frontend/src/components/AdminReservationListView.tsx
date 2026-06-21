@@ -38,6 +38,7 @@ const initialQuery: AdminReservationListQuery = {
 
 export function AdminReservationListView() {
   const [query, setQuery] = useState<AdminReservationListQuery>(initialQuery)
+  const [keywordInput, setKeywordInput] = useState(initialQuery.keyword ?? '')
   const [reservationPage, setReservationPage] = useState<AdminReservationPageResponse | null>(null)
   const [selectedReservationId, setSelectedReservationId] = useState<number | null>(null)
   const [refreshVersion, setRefreshVersion] = useState(0)
@@ -64,6 +65,20 @@ export function AdminReservationListView() {
 
     void loadReservations()
   }, [query, refreshVersion])
+
+  useEffect(() => {
+    const debounceTimer = window.setTimeout(() => {
+      setQuery((current) => {
+        if ((current.keyword ?? '') === keywordInput) {
+          return current
+        }
+
+        return { ...current, keyword: keywordInput, page: 0 }
+      })
+    }, 400)
+
+    return () => window.clearTimeout(debounceTimer)
+  }, [keywordInput])
 
   const updateQuery = <K extends keyof AdminReservationListQuery>(
     key: K,
@@ -108,9 +123,9 @@ export function AdminReservationListView() {
         <label>
           검색어
           <input
-            value={query.keyword ?? ''}
+            value={keywordInput}
             placeholder="고객명, 연락처, 주소"
-            onChange={(event) => updateQuery('keyword', event.target.value)}
+            onChange={(event) => setKeywordInput(event.target.value)}
           />
         </label>
         <label>
