@@ -129,20 +129,6 @@ public class AdminReservationApiController {
         return detailResponse(reservation);
     }
 
-    @PatchMapping("/{id}/distance/calculate")
-    public AdminReservationDetailResponse calculateDistance(@PathVariable Long id, Principal principal) {
-        Reservation reservation = reservationService.get(id);
-        int distanceKm = reservationService.calculateAndUpdateDistance(id);
-        adminAuditLogService.record(
-                reservation,
-                "이동 거리 자동 계산",
-                "지도 API로 이동 거리를 " + distanceKm + "km로 계산해 저장했습니다.",
-                principal.getName()
-        );
-
-        return detailResponse(reservation);
-    }
-
     @PatchMapping("/{id}/memo")
     public AdminReservationDetailResponse updateMemo(@PathVariable Long id,
                                                      @RequestBody AdminReservationMemoUpdateRequest request,

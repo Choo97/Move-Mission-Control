@@ -46,7 +46,6 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/api/admin/reservations/*/status", "PATCH"),
                                 new AntPathRequestMatcher("/api/admin/reservations/*/estimate", "PATCH"),
                                 new AntPathRequestMatcher("/api/admin/reservations/*/distance", "PATCH"),
-                                new AntPathRequestMatcher("/api/admin/reservations/*/distance/calculate", "PATCH"),
                                 new AntPathRequestMatcher("/api/admin/reservations/*/memo", "PATCH"),
                                 new AntPathRequestMatcher("/api/admin/reservations/*/notifications/email/send", "POST"),
                                 new AntPathRequestMatcher("/api/admin/reservations/*/notifications/email/resend-failed", "POST")

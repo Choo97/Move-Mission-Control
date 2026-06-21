@@ -418,28 +418,6 @@ public class AdminReservationController {
         return "redirect:" + detailRedirectUrl(id, returnQuery);
     }
 
-    @PostMapping("/{id}/distance/calculate")
-    public String calculateDistance(@PathVariable Long id,
-                                    @RequestParam(required = false) String returnQuery,
-                                    Principal principal,
-                                    RedirectAttributes redirectAttributes) {
-        Reservation reservation = reservationService.get(id);
-        try {
-            int distanceKm = reservationService.calculateAndUpdateDistance(id);
-            redirectAttributes.addFlashAttribute("distanceMessage", distanceKm + "km 이동 거리를 자동 계산해 견적에 반영했습니다.");
-            adminAuditLogService.record(
-                    reservation,
-                    "이동 거리 자동 계산",
-                    "지도 API로 이동 거리를 " + distanceKm + "km로 계산해 저장했습니다.",
-                    principal.getName()
-            );
-        } catch (IllegalArgumentException | IllegalStateException exception) {
-            redirectAttributes.addFlashAttribute("distanceError", exception.getMessage());
-        }
-
-        return "redirect:" + detailRedirectUrl(id, returnQuery);
-    }
-
     @PostMapping("/{id}/memo")
     public String updateAdminMemo(@PathVariable Long id,
                                   @RequestParam(required = false) String adminMemo,

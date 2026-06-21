@@ -89,17 +89,6 @@ GitHub Actions도 같은 테스트 명령어를 실행합니다. GitHub 저장�
 | `ReviewServiceTest` | 완료 예약 리뷰 작성, 미완료 예약 차단, 중복 리뷰 차단, 평균 평점 |
 | `ReviewApiControllerTest` | 고객 리뷰 작성 REST API 성공 응답, 미완료 예약 차단, 연락처 불일치 오류, CSRF 없이 JSON 호출 |
 
-## Kakao 지도 API 설정
-
-관리자 예약 상세 화면에서 `지도 API로 거리 자동 계산` 버튼을 사용하려면 Kakao REST API 키가 필요합니다.
-
-```bat
-set KAKAO_MAP_ENABLED=true
-set KAKAO_REST_API_KEY=발급받은_REST_API_KEY
-```
-
-API 키가 설정되지 않은 상태에서도 서비스는 실행됩니다. 이 경우 관리자가 이동 거리(km)를 직접 입력하면 견적 계산에 반영됩니다.
-
 ## 이메일 발송 설정
 
 예약 접수 시 이메일을 입력하면 이메일 안내 이력이 `발송 준비` 상태로 생성됩니다. 실제 SMTP 발송을 사용하려면 서버 실행 전에 아래 환경변수를 설정합니다.

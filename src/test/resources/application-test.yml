@@ -18,11 +18,6 @@ notification:
     enabled: false
     from:
 
-map:
-  kakao:
-    enabled: false
-    rest-api-key:
-
 upload:
   reservation-photo:
     directory: target/test-uploads/reservation-photos

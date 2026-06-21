@@ -38,11 +38,6 @@ server:
         http-only: true
         same-site: strict
 
-map:
-  kakao:
-    enabled: ${KAKAO_MAP_ENABLED:false}
-    rest-api-key: ${KAKAO_REST_API_KEY:}
-
 notification:
   email:
     enabled: ${NOTIFICATION_EMAIL_ENABLED:false}

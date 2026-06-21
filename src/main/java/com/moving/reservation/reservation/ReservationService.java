@@ -2,7 +2,6 @@ package com.moving.reservation.reservation;
 
 import com.moving.reservation.coupon.Coupon;
 import com.moving.reservation.coupon.CouponService;
-import com.moving.reservation.map.KakaoDistanceService;
 import com.moving.reservation.notification.CustomerNotificationService;
 import com.moving.reservation.review.ReviewService;
 import java.time.LocalDate;
@@ -29,7 +28,6 @@ public class ReservationService {
     private final CouponService couponService;
     private final ReviewService reviewService;
     private final ReservationEstimateCalculator estimateCalculator;
-    private final KakaoDistanceService kakaoDistanceService;
     private final CustomerNotificationService customerNotificationService;
 
     public ReservationService(ReservationRepository reservationRepository,
@@ -40,7 +38,6 @@ public class ReservationService {
                               CouponService couponService,
                               ReviewService reviewService,
                               ReservationEstimateCalculator estimateCalculator,
-                              KakaoDistanceService kakaoDistanceService,
                               CustomerNotificationService customerNotificationService) {
         this.reservationRepository = reservationRepository;
         this.statusHistoryRepository = statusHistoryRepository;
@@ -50,7 +47,6 @@ public class ReservationService {
         this.couponService = couponService;
         this.reviewService = reviewService;
         this.estimateCalculator = estimateCalculator;
-        this.kakaoDistanceService = kakaoDistanceService;
         this.customerNotificationService = customerNotificationService;
     }
 
@@ -344,18 +340,6 @@ public class ReservationService {
         Reservation reservation = get(id);
         reservation.updateDistance(distanceKm);
         recalculateBaseEstimate(reservation);
-    }
-
-    @Transactional
-    public int calculateAndUpdateDistance(Long id) {
-        Reservation reservation = get(id);
-        int distanceKm = kakaoDistanceService.calculateDistanceKm(
-                reservation.getFromAddress(),
-                reservation.getToAddress()
-        );
-        reservation.updateDistance(distanceKm);
-        recalculateBaseEstimate(reservation);
-        return distanceKm;
     }
 
     private void changeStatus(Reservation reservation, ReservationStatus status, String changedBy) {

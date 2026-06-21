@@ -286,17 +286,6 @@ class AdminReservationApiControllerTest {
     }
 
     @Test
-    void 관리자_이동거리_자동계산_API는_Kakao키가_없으면_400을_응답한다() throws Exception {
-        var reservation = reservationService.create(reservationCreateRequest("거리자동고객", "010-9999-0003"));
-
-        mockMvc.perform(patch("/api/admin/reservations/{id}/distance/calculate", reservation.getId())
-                        .with(user("admin").roles("ADMIN")))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
-                .andExpect(jsonPath("$.message").value("Kakao REST API 키를 설정하면 자동 거리 계산을 사용할 수 있습니다."));
-    }
-
-    @Test
     void 관리자_메모_API는_메모를_저장하고_상세를_JSON으로_응답한다() throws Exception {
         var reservation = reservationService.create(reservationCreateRequest("메모저장고객", "010-9999-0004"));
 

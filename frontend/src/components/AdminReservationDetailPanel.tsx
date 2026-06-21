@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
   AdminAuthenticationRequiredError,
-  calculateAdminReservationDistance,
   getAdminReservation,
   resendAdminReservationFailedEmails,
   sendAdminReservationEmails,
@@ -38,7 +37,6 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
   const [distanceAmount, setDistanceAmount] = useState('')
   const [adminMemo, setAdminMemo] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [isCalculatingDistance, setIsCalculatingDistance] = useState(false)
   const [isUpdatingDistance, setIsUpdatingDistance] = useState(false)
   const [isUpdatingEstimate, setIsUpdatingEstimate] = useState(false)
   const [isUpdatingMemo, setIsUpdatingMemo] = useState(false)
@@ -178,30 +176,6 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
       showAdminError(error, '관리자 예약 이동 거리 저장에 실패했습니다.')
     } finally {
       setIsUpdatingDistance(false)
-    }
-  }
-
-  const calculateDistance = async () => {
-    if (!reservation) {
-      return
-    }
-
-    setIsCalculatingDistance(true)
-    setErrorMessage('')
-    setActionMessage('')
-
-    try {
-      const updatedReservation = await calculateAdminReservationDistance(reservation.id)
-      setReservation(updatedReservation)
-      setSelectedStatus(updatedReservation.status)
-      setEstimateAmount(String(updatedReservation.estimatedPrice))
-      setDistanceAmount(updatedReservation.distanceKm === null ? '' : String(updatedReservation.distanceKm))
-      setActionMessage(`이동 거리를 ${updatedReservation.distanceKm}km로 자동 계산하고 견적에 반영했습니다.`)
-      onReservationChanged()
-    } catch (error) {
-      showAdminError(error, '관리자 예약 이동 거리 자동 계산에 실패했습니다.')
-    } finally {
-      setIsCalculatingDistance(false)
     }
   }
 
@@ -390,9 +364,6 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
                 onClick={submitDistanceUpdate}
               >
                 {isUpdatingDistance ? '저장 중' : '거리 저장'}
-              </button>
-              <button type="button" disabled={isCalculatingDistance} onClick={calculateDistance}>
-                {isCalculatingDistance ? '계산 중' : '자동 계산'}
               </button>
             </div>
           </section>
