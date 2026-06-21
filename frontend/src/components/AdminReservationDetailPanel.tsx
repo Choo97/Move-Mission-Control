@@ -20,6 +20,7 @@ type Props = {
 }
 
 const formatPrice = (price: number) => `${price.toLocaleString()}원`
+const formatAdjustment = (price: number) => `${price > 0 ? '+' : ''}${price.toLocaleString()}원`
 
 const statusOptions: Array<{ value: ReservationStatus; label: string }> = [
   { value: 'RECEIVED', label: '접수' },
@@ -396,9 +397,25 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
                   <dd>{formatPrice(line.amount)}</dd>
                 </div>
               ))}
-              <div>
-                <dt>할인</dt>
-                <dd>{formatPrice(reservation.discountAmount)}</dd>
+              <div className="admin-estimate-summary">
+                <dt>기본 계산 합계</dt>
+                <dd>{formatPrice(reservation.baseEstimatedPrice)}</dd>
+              </div>
+              {reservation.estimatedPrice !== reservation.baseEstimatedPrice && (
+                <div>
+                  <dt>관리자 조정</dt>
+                  <dd>{formatAdjustment(reservation.estimatedPrice - reservation.baseEstimatedPrice)}</dd>
+                </div>
+              )}
+              {reservation.discountAmount > 0 && (
+                <div>
+                  <dt>{reservation.couponName ? `${reservation.couponName} 할인` : '쿠폰 할인'}</dt>
+                  <dd>-{formatPrice(reservation.discountAmount)}</dd>
+                </div>
+              )}
+              <div className="admin-estimate-total">
+                <dt>최종 견적</dt>
+                <dd>{formatPrice(reservation.finalEstimatedPrice)}</dd>
               </div>
             </dl>
           </section>

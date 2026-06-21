@@ -345,6 +345,21 @@ h3 {
   gap: 8px;
 }
 
+.admin-estimate-summary,
+.admin-estimate-total {
+  border-top: 1px solid #d9dde2;
+  padding-top: 10px;
+}
+
+.admin-estimate-summary dd,
+.admin-estimate-total dd {
+  font-weight: 700;
+}
+
+.admin-estimate-total dd {
+  color: #b6523a;
+}
+
 .admin-note-grid {
   display: grid;
   gap: 10px;
