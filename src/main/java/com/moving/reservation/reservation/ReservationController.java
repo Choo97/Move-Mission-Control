@@ -117,7 +117,7 @@ public class ReservationController {
             Reservation reservation = reservationService.create(request);
             ReservationAccessSession.authorize(session, reservation.getId());
             return "redirect:/reservations/" + reservation.getId();
-        } catch (IllegalArgumentException | IllegalStateException exception) {
+        } catch (IllegalArgumentException | IllegalStateException | ReservationScheduleConflictException exception) {
             model.addAttribute("moveTypes", MoveType.values());
             model.addAttribute("uploadError", exception.getMessage());
             return "reservation/new";

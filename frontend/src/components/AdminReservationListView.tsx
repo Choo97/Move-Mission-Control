@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react'
-import { AdminAuthenticationRequiredError, getAdminReservations } from '../api/adminApi'
+import {
+  AdminAuthenticationRequiredError,
+  getAdminReservationConflictAttempts,
+  getAdminReservations,
+} from '../api/adminApi'
 import { getErrorMessage } from '../api/apiError'
 import { API_BASE_URL } from '../reservationData'
 import { AdminReservationDetailPanel } from './AdminReservationDetailPanel'
 import type {
   AdminReservationListQuery,
   AdminReservationPageResponse,
+  AdminReservationConflictAttemptResponse,
   AdminReservationSort,
   ReservationStatus,
 } from '../types'
@@ -63,6 +68,7 @@ export function AdminReservationListView() {
   const [query, setQuery] = useState<AdminReservationListQuery>(initialAdminState.query)
   const [keywordInput, setKeywordInput] = useState(initialAdminState.query.keyword ?? '')
   const [reservationPage, setReservationPage] = useState<AdminReservationPageResponse | null>(null)
+  const [conflictAttempts, setConflictAttempts] = useState<AdminReservationConflictAttemptResponse[]>([])
   const [selectedReservationId, setSelectedReservationId] = useState<number | null>(
     initialAdminState.selectedReservationId,
   )
@@ -78,9 +84,15 @@ export function AdminReservationListView() {
       setErrorMessage('')
 
       try {
-        setReservationPage(await getAdminReservations(query))
+        const [nextReservationPage, nextConflictAttempts] = await Promise.all([
+          getAdminReservations(query),
+          getAdminReservationConflictAttempts(),
+        ])
+        setReservationPage(nextReservationPage)
+        setConflictAttempts(nextConflictAttempts)
       } catch (error) {
         setReservationPage(null)
+        setConflictAttempts([])
         setIsAuthenticationRequired(error instanceof AdminAuthenticationRequiredError)
         setErrorMessage(getErrorMessage(error, '관리자 예약 목록을 불러오지 못했습니다.'))
       } finally {
@@ -151,6 +163,30 @@ export function AdminReservationListView() {
           기존 관리자 화면
         </a>
       </div>
+
+      {conflictAttempts.length > 0 && (
+        <section className="admin-conflict-attempts" aria-labelledby="conflict-attempts-title">
+          <div>
+            <p className="eyebrow">Schedule Conflict</p>
+            <h3 id="conflict-attempts-title">중복 시간 예약 시도</h3>
+            <p>예약은 생성되지 않았으며, 고객에게 다른 시간을 선택하도록 안내했습니다.</p>
+          </div>
+          <ul>
+            {conflictAttempts.map((attempt) => (
+              <li key={attempt.id}>
+                <strong>{attempt.customerName}</strong>
+                <span>{attempt.phone}</span>
+                <span>
+                  희망 {attempt.moveDate} {attempt.moveTime.slice(0, 5)}
+                </span>
+                <time dateTime={attempt.attemptedAt}>
+                  시도 {attempt.attemptedAt.replace('T', ' ').slice(0, 16)}
+                </time>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="admin-filters" aria-label="관리자 예약 목록 필터">
         <label>

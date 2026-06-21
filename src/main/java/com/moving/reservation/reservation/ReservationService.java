@@ -28,6 +28,7 @@ public class ReservationService {
     private final CouponService couponService;
     private final ReviewService reviewService;
     private final ReservationEstimateCalculator estimateCalculator;
+    private final ReservationConflictAttemptService conflictAttemptService;
     private final CustomerNotificationService customerNotificationService;
 
     public ReservationService(ReservationRepository reservationRepository,
@@ -38,6 +39,7 @@ public class ReservationService {
                               CouponService couponService,
                               ReviewService reviewService,
                               ReservationEstimateCalculator estimateCalculator,
+                              ReservationConflictAttemptService conflictAttemptService,
                               CustomerNotificationService customerNotificationService) {
         this.reservationRepository = reservationRepository;
         this.statusHistoryRepository = statusHistoryRepository;
@@ -47,11 +49,18 @@ public class ReservationService {
         this.couponService = couponService;
         this.reviewService = reviewService;
         this.estimateCalculator = estimateCalculator;
+        this.conflictAttemptService = conflictAttemptService;
         this.customerNotificationService = customerNotificationService;
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = ReservationScheduleConflictException.class)
     public Reservation create(ReservationCreateRequest request) {
+        if (reservationRepository.existsByMoveDateAndMoveTimeAndStatusNot(
+                request.getMoveDate(), request.getMoveTime(), ReservationStatus.CANCELED)) {
+            conflictAttemptService.record(request);
+            throw new ReservationScheduleConflictException();
+        }
+
         Reservation reservation = request.toEntity();
         reservation.applyBaseEstimate(estimateCalculator.calculate(
                 request.getMoveType(),

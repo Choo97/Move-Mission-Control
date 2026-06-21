@@ -4,6 +4,7 @@ export type {
   AdminEmailSendResponse,
   AdminNotificationHistoryResponse,
   AdminReservationCustomerActionHistoryResponse,
+  AdminReservationConflictAttemptResponse,
   AdminReservationDetailResponse,
   AdminReservationListItemResponse,
   AdminReservationListQuery,

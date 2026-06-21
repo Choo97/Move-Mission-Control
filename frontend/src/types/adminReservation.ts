@@ -140,3 +140,12 @@ export type AdminReservationListQuery = {
   page?: number
   size?: number
 }
+
+export type AdminReservationConflictAttemptResponse = {
+  id: number
+  customerName: string
+  phone: string
+  moveDate: string
+  moveTime: string
+  attemptedAt: string
+}

@@ -17,4 +17,8 @@ public record ApiErrorResponse(
     public static ApiErrorResponse notFound(String message) {
         return new ApiErrorResponse("NOT_FOUND", message);
     }
+
+    public static ApiErrorResponse conflict(String message) {
+        return new ApiErrorResponse("RESERVATION_SCHEDULE_CONFLICT", message);
+    }
 }

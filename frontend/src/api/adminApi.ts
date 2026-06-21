@@ -2,6 +2,7 @@ import { API_BASE_URL } from '../reservationData'
 import type {
   ApiErrorResponse,
   AdminEmailSendResponse,
+  AdminReservationConflictAttemptResponse,
   AdminReservationDetailResponse,
   AdminReservationListQuery,
   AdminReservationPageResponse,
@@ -44,6 +45,18 @@ export async function getAdminReservations(query: AdminReservationListQuery = {}
   }
 
   return response.json() as Promise<AdminReservationPageResponse>
+}
+
+export async function getAdminReservationConflictAttempts() {
+  const response = await fetch(`${API_BASE_URL}/api/admin/reservation-conflict-attempts`, {
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    await throwApiError(response, '중복 시간 예약 시도 이력을 불러오지 못했습니다.')
+  }
+
+  return response.json() as Promise<AdminReservationConflictAttemptResponse[]>
 }
 
 export async function getAdminReservation(reservationId: number) {
