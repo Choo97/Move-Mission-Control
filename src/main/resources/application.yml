@@ -44,6 +44,11 @@ notification:
     from: ${NOTIFICATION_EMAIL_FROM:}
     subject-prefix: ${NOTIFICATION_EMAIL_SUBJECT_PREFIX:[Move Mission Control]}
 
+privacy:
+  retention:
+    conflict-attempt-days: ${PRIVACY_CONFLICT_ATTEMPT_RETENTION_DAYS:30}
+    cleanup-cron: "${PRIVACY_RETENTION_CLEANUP_CRON:0 0 3 * * *}"
+
 upload:
   reservation-photo:
     directory: ${RESERVATION_PHOTO_UPLOAD_DIR:uploads/reservation-photos}

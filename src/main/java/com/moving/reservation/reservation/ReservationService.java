@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,6 +30,7 @@ public class ReservationService {
     private final ReviewService reviewService;
     private final ReservationEstimateCalculator estimateCalculator;
     private final ReservationConflictAttemptService conflictAttemptService;
+    private final boolean scheduleConflictEnabled;
     private final CustomerNotificationService customerNotificationService;
 
     public ReservationService(ReservationRepository reservationRepository,
@@ -40,6 +42,7 @@ public class ReservationService {
                               ReviewService reviewService,
                               ReservationEstimateCalculator estimateCalculator,
                               ReservationConflictAttemptService conflictAttemptService,
+                              @Value("${reservation.schedule-conflict.enabled:true}") boolean scheduleConflictEnabled,
                               CustomerNotificationService customerNotificationService) {
         this.reservationRepository = reservationRepository;
         this.statusHistoryRepository = statusHistoryRepository;
@@ -50,12 +53,13 @@ public class ReservationService {
         this.reviewService = reviewService;
         this.estimateCalculator = estimateCalculator;
         this.conflictAttemptService = conflictAttemptService;
+        this.scheduleConflictEnabled = scheduleConflictEnabled;
         this.customerNotificationService = customerNotificationService;
     }
 
     @Transactional(noRollbackFor = ReservationScheduleConflictException.class)
     public Reservation create(ReservationCreateRequest request) {
-        if (reservationRepository.existsByMoveDateAndMoveTimeAndStatusNot(
+        if (scheduleConflictEnabled && reservationRepository.existsByMoveDateAndMoveTimeAndStatusNot(
                 request.getMoveDate(), request.getMoveTime(), ReservationStatus.CANCELED)) {
             conflictAttemptService.record(request);
             throw new ReservationScheduleConflictException();

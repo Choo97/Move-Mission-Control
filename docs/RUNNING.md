@@ -106,6 +106,17 @@ set MAIL_SMTP_STARTTLS_ENABLE=true
 
 SMTP 설정이 꺼져 있으면 애플리케이션은 정상 실행되지만, 관리자 화면에서 이메일 발송을 시도할 때 실패 이력으로 기록됩니다.
 
+## 개인정보 보관 기간 설정
+
+예약으로 성립하지 않은 중복 시간 예약 시도 기록은 기본 30일 동안 보관하고, 매일 오전 3시에 자동 삭제합니다.
+
+```text
+PRIVACY_CONFLICT_ATTEMPT_RETENTION_DAYS=30
+PRIVACY_RETENTION_CLEANUP_CRON=0 0 3 * * *
+```
+
+실제 예약, 견적, 결제 근거 데이터는 이 자동 삭제 대상에 포함하지 않습니다. 운영 환경에서 관련 법률과 사업 정책에 따른 보관 기간을 확정한 뒤 별도의 익명화 또는 파기 정책을 적용해야 합니다.
+
 ## MySQL Database 접속 정보
 
 ```text

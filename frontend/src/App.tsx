@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import './App.css'
 import { AdminReservationListView } from './components/AdminReservationListView'
@@ -24,6 +24,7 @@ import {
   initialSearchForm,
   toEditForm,
 } from './reservationData'
+import { clearReservationDraft, loadReservationDraft, saveReservationDraft } from './reservationDraft'
 import type {
   ReservationEditForm,
   ReservationForm,
@@ -52,7 +53,7 @@ const getInitialView = (): ActiveView => {
 
 function App() {
   const [activeView, setActiveView] = useState<ActiveView>(getInitialView)
-  const [form, setForm] = useState<ReservationForm>(initialForm)
+  const [form, setForm] = useState<ReservationForm>(loadReservationDraft)
   const [searchForm, setSearchForm] = useState<ReservationSearchForm>(initialSearchForm)
   const [editForm, setEditForm] = useState<ReservationEditForm | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -74,6 +75,11 @@ function App() {
   const [reservation, setReservation] = useState<ReservationResponse | null>(null)
 
   const today = useMemo(() => new Date().toISOString().slice(0, 10), [])
+
+  useEffect(() => {
+    const saveTimer = window.setTimeout(() => saveReservationDraft(form), 300)
+    return () => window.clearTimeout(saveTimer)
+  }, [form])
 
   const changeView = (nextView: ActiveView) => {
     setActiveView(nextView)
@@ -156,6 +162,7 @@ function App() {
         reservationId: String(createdReservation.id),
         phone: submittedPhone,
       })
+      clearReservationDraft()
       setForm(initialForm)
       changeView('search')
     } catch (error) {
