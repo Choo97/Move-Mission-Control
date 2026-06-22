@@ -47,6 +47,9 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/api/admin/reservations/*/estimate", "PATCH"),
                                 new AntPathRequestMatcher("/api/admin/reservations/*/distance", "PATCH"),
                                 new AntPathRequestMatcher("/api/admin/reservations/*/memo", "PATCH"),
+                                new AntPathRequestMatcher("/api/admin/operating-schedules/*", "PUT"),
+                                new AntPathRequestMatcher("/api/admin/holidays", "POST"),
+                                new AntPathRequestMatcher("/api/admin/holidays/*", "DELETE"),
                                 new AntPathRequestMatcher("/api/admin/reservations/*/notifications/email/send", "POST"),
                                 new AntPathRequestMatcher("/api/admin/reservations/*/notifications/email/resend-failed", "POST")
                         )
@@ -61,6 +64,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/reviews").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/api/reservations/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/customer-guides/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/availability").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/", "/login", "/faq", "/css/**", "/js/**", "/reservations", "/reservations/**",
                                 "/reviews", "/reviews/**", "/uploads/**").permitAll()

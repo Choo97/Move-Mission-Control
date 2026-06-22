@@ -6,6 +6,8 @@ import type {
   AdminReservationDetailResponse,
   AdminReservationListQuery,
   AdminReservationPageResponse,
+  OperatingHolidayResponse,
+  OperatingScheduleResponse,
   ReservationStatus,
 } from '../types'
 
@@ -14,6 +16,51 @@ export class AdminAuthenticationRequiredError extends Error {
     super('관리자 로그인이 필요하거나 로그인 세션이 만료되었습니다.')
     this.name = 'AdminAuthenticationRequiredError'
   }
+}
+
+export async function getOperatingSchedules() {
+  const response = await fetch(`${API_BASE_URL}/api/admin/operating-schedules`, { credentials: 'include' })
+  if (!response.ok) await throwApiError(response, '요일별 운영시간을 불러오지 못했습니다.')
+  return response.json() as Promise<OperatingScheduleResponse[]>
+}
+
+export async function updateOperatingSchedule(
+  scheduleId: number,
+  schedule: Pick<OperatingScheduleResponse, 'open' | 'startTime' | 'endTime' | 'slotMinutes'>,
+) {
+  const response = await fetch(`${API_BASE_URL}/api/admin/operating-schedules/${scheduleId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(schedule),
+  })
+  if (!response.ok) await throwApiError(response, '요일별 운영시간 저장에 실패했습니다.')
+  return response.json() as Promise<OperatingScheduleResponse>
+}
+
+export async function getOperatingHolidays() {
+  const response = await fetch(`${API_BASE_URL}/api/admin/holidays`, { credentials: 'include' })
+  if (!response.ok) await throwApiError(response, '휴무일을 불러오지 못했습니다.')
+  return response.json() as Promise<OperatingHolidayResponse[]>
+}
+
+export async function addOperatingHoliday(holidayDate: string, reason: string) {
+  const response = await fetch(`${API_BASE_URL}/api/admin/holidays`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ holidayDate, reason }),
+  })
+  if (!response.ok) await throwApiError(response, '휴무일 등록에 실패했습니다.')
+  return response.json() as Promise<OperatingHolidayResponse>
+}
+
+export async function deleteOperatingHoliday(holidayId: number) {
+  const response = await fetch(`${API_BASE_URL}/api/admin/holidays/${holidayId}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  })
+  if (!response.ok) await throwApiError(response, '휴무일 삭제에 실패했습니다.')
 }
 
 const appendQueryParam = (params: URLSearchParams, key: string, value: string | number | boolean | undefined) => {

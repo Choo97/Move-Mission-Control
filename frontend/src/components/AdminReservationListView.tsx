@@ -7,6 +7,7 @@ import {
 import { getErrorMessage } from '../api/apiError'
 import { API_BASE_URL } from '../reservationData'
 import { AdminReservationDetailPanel } from './AdminReservationDetailPanel'
+import { AdminAvailabilitySettings } from './AdminAvailabilitySettings'
 import type {
   AdminReservationListQuery,
   AdminReservationPageResponse,
@@ -163,6 +164,8 @@ export function AdminReservationListView() {
           기존 관리자 화면
         </a>
       </div>
+
+      <AdminAvailabilitySettings />
 
       {conflictAttempts.length > 0 && (
         <section className="admin-conflict-attempts" aria-labelledby="conflict-attempts-title">

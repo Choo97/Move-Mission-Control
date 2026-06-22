@@ -4,9 +4,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import com.moving.reservation.coupon.CouponService;
+import com.moving.reservation.availability.AvailabilityService;
 import com.moving.reservation.notification.CustomerNotificationService;
 import com.moving.reservation.review.ReviewService;
 import java.time.LocalDate;
@@ -19,9 +19,10 @@ class ReservationScheduleConflictUnitTest {
     void 동일한_날짜와_시간의_활성예약이_있으면_시도이력을_남기고_예약을_차단한다() {
         ReservationRepository reservationRepository = mock(ReservationRepository.class);
         ReservationConflictAttemptService conflictAttemptService = mock(ReservationConflictAttemptService.class);
+        AvailabilityService availabilityService = mock(AvailabilityService.class);
         ReservationCreateRequest request = reservationRequest();
-        when(reservationRepository.existsByMoveDateAndMoveTimeAndStatusNot(
-                request.getMoveDate(), request.getMoveTime(), ReservationStatus.CANCELED)).thenReturn(true);
+        org.mockito.Mockito.doThrow(new ReservationScheduleConflictException())
+                .when(availabilityService).ensureAvailable(request.getMoveDate(), request.getMoveTime());
 
         ReservationService reservationService = new ReservationService(
                 reservationRepository,
@@ -33,6 +34,7 @@ class ReservationScheduleConflictUnitTest {
                 mock(ReviewService.class),
                 mock(ReservationEstimateCalculator.class),
                 conflictAttemptService,
+                availabilityService,
                 true,
                 mock(CustomerNotificationService.class)
         );

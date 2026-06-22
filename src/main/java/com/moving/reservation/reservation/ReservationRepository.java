@@ -36,9 +36,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     Optional<Reservation> findByIdAndPhone(Long id, String phone);
 
-    boolean existsByMoveDateAndMoveTimeAndStatusNot(LocalDate moveDate,
-                                                     java.time.LocalTime moveTime,
-                                                     ReservationStatus status);
+    List<Reservation> findByMoveDateAndStatusNot(LocalDate moveDate, ReservationStatus status);
 
     @Query("""
             select reservation

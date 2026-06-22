@@ -13,6 +13,11 @@ export type {
   AdminReservationStatusHistoryResponse,
 } from './types/adminReservation'
 export type { CustomerGuideItem } from './types/customerGuide'
+export type {
+  AvailabilityResponse,
+  OperatingHolidayResponse,
+  OperatingScheduleResponse,
+} from './types/availability'
 export type { ReviewApiResponse, ReviewForm, ReviewResponse } from './types/review'
 export type {
   MoveType,

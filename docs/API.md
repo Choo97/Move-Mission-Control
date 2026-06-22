@@ -27,6 +27,7 @@ React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 기능 
 
 | 구분 | Method | URL | 용도 |
 | --- | --- | --- | --- |
+| 예약 일정 | `GET` | `/api/availability?date={yyyy-MM-dd}` | 날짜별 예약 가능 시간 조회 |
 | 고객 예약 | `POST` | `/api/reservations` | 예약 신청 |
 | 고객 예약 | `POST` | `/api/reservations/search` | 예약 번호와 연락처로 예약 조회 |
 | 고객 예약 | `PATCH` | `/api/reservations/{reservationId}` | 예약 정보 수정 |
@@ -116,6 +117,14 @@ npm run dev
 7. 관리자 화면 React 전환은 고객 화면 전환 이후 별도 작업으로 판단합니다.
 
 중요한 기준은 같은 고객 기능 안에서 Thymeleaf와 React URL을 섞지 않는 것입니다. 전환 중에는 기존 `/reservations/**`는 유지하고, React 고객 화면은 `frontend/` 개발 서버에서 먼저 검증한 뒤 배포 방식을 결정합니다. 현재 React 고객 화면은 예약 신청, 예약 번호/연락처 기반 예약 조회, 예약 진행 단계 확인, 예약 수정, 예약 취소, 견적 동의, 짐 사진 업로드, 고객 리뷰 작성을 제공합니다.
+
+## 예약 가능 시간 API
+
+```http
+GET /api/availability?date=2026-07-01
+```
+
+요일별 운영시간, 지정 휴무일, 이미 접수된 예약을 반영해 고객이 선택할 수 있는 시간 목록을 반환합니다.
 
 ## 고객 예약 API
 

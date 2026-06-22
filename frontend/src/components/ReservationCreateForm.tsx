@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
+import { getAvailability } from '../api/customerApi'
 import { moveTypeOptions } from '../reservationData'
 import type { MoveType, ReservationForm } from '../types'
 
@@ -19,6 +21,50 @@ export function ReservationCreateForm({
   onSubmit,
   onChange,
 }: Props) {
+  const [availableTimes, setAvailableTimes] = useState<string[]>([])
+  const [availabilityMessage, setAvailabilityMessage] = useState('날짜를 선택해 주세요.')
+  const [isLoadingAvailability, setIsLoadingAvailability] = useState(Boolean(form.moveDate))
+
+  useEffect(() => {
+    if (!form.moveDate) {
+      return
+    }
+
+    let active = true
+    void getAvailability(form.moveDate)
+      .then((availability) => {
+        if (!active) return
+        const times = availability.availableTimes.map((time) => time.slice(0, 5))
+        setAvailableTimes(times)
+        setAvailabilityMessage(
+          availability.closed
+            ? availability.closureReason ?? '휴무일입니다.'
+            : times.length === 0
+              ? '선택한 날짜의 예약이 마감되었습니다.'
+              : '',
+        )
+        if (!times.includes(form.moveTime)) {
+          onChange('moveTime', times[0] ?? '')
+        }
+      })
+      .catch(() => {
+        if (!active) return
+        setAvailableTimes([])
+        setAvailabilityMessage('예약 가능 시간을 불러오지 못했습니다.')
+        onChange('moveTime', '')
+      })
+      .finally(() => {
+        if (active) setIsLoadingAvailability(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [form.moveDate, form.moveTime, onChange])
+
+  const displayedTimes = form.moveDate ? availableTimes : []
+  const displayedMessage = form.moveDate ? availabilityMessage : '날짜를 선택해 주세요.'
+
   return (
     <form className="reservation-form" onSubmit={onSubmit}>
       <div className="section-heading">
@@ -70,18 +116,27 @@ export function ReservationCreateForm({
             type="date"
             min={today}
             value={form.moveDate}
-            onChange={(event) => onChange('moveDate', event.target.value)}
+            onChange={(event) => {
+              setIsLoadingAvailability(Boolean(event.target.value))
+              onChange('moveDate', event.target.value)
+            }}
             required
           />
         </label>
         <label>
           희망 시간
-          <input
-            type="time"
+          <select
             value={form.moveTime}
             onChange={(event) => onChange('moveTime', event.target.value)}
+            disabled={!form.moveDate || isLoadingAvailability || displayedTimes.length === 0}
             required
-          />
+          >
+            <option value="">{isLoadingAvailability ? '확인 중' : '시간 선택'}</option>
+            {displayedTimes.map((time) => (
+              <option key={time} value={time}>{time}</option>
+            ))}
+          </select>
+          {displayedMessage && <span className="field-message">{displayedMessage}</span>}
         </label>
       </div>
 

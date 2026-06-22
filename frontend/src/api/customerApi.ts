@@ -1,6 +1,7 @@
 import { API_BASE_URL } from '../reservationData'
 import type {
   ApiErrorResponse,
+  AvailabilityResponse,
   CustomerGuideItem,
   ReservationEditForm,
   ReservationForm,
@@ -20,6 +21,11 @@ async function readJson<T>(response: Response, fallbackMessage: string): Promise
   }
 
   return data as T
+}
+
+export async function getAvailability(date: string) {
+  const response = await fetch(`${API_BASE_URL}/api/availability?date=${encodeURIComponent(date)}`)
+  return readJson<AvailabilityResponse>(response, '예약 가능 시간을 불러오지 못했습니다.')
 }
 
 export async function createReservation(form: ReservationForm) {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import './App.css'
 import { AdminReservationListView } from './components/AdminReservationListView'
@@ -129,9 +129,9 @@ function App() {
     }
   }
 
-  const updateField = <K extends keyof ReservationForm>(key: K, value: ReservationForm[K]) => {
+  const updateField = useCallback(<K extends keyof ReservationForm>(key: K, value: ReservationForm[K]) => {
     setForm((current) => ({ ...current, [key]: value }))
-  }
+  }, [])
 
   const updateSearchField = <K extends keyof ReservationSearchForm>(
     key: K,

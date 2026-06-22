@@ -1,5 +1,6 @@
 package com.moving.reservation.reservation;
 
+import com.moving.reservation.availability.AvailabilityService;
 import com.moving.reservation.coupon.Coupon;
 import com.moving.reservation.coupon.CouponService;
 import com.moving.reservation.notification.CustomerNotificationService;
@@ -30,6 +31,7 @@ public class ReservationService {
     private final ReviewService reviewService;
     private final ReservationEstimateCalculator estimateCalculator;
     private final ReservationConflictAttemptService conflictAttemptService;
+    private final AvailabilityService availabilityService;
     private final boolean scheduleConflictEnabled;
     private final CustomerNotificationService customerNotificationService;
 
@@ -42,6 +44,7 @@ public class ReservationService {
                               ReviewService reviewService,
                               ReservationEstimateCalculator estimateCalculator,
                               ReservationConflictAttemptService conflictAttemptService,
+                              AvailabilityService availabilityService,
                               @Value("${reservation.schedule-conflict.enabled:true}") boolean scheduleConflictEnabled,
                               CustomerNotificationService customerNotificationService) {
         this.reservationRepository = reservationRepository;
@@ -53,16 +56,20 @@ public class ReservationService {
         this.reviewService = reviewService;
         this.estimateCalculator = estimateCalculator;
         this.conflictAttemptService = conflictAttemptService;
+        this.availabilityService = availabilityService;
         this.scheduleConflictEnabled = scheduleConflictEnabled;
         this.customerNotificationService = customerNotificationService;
     }
 
     @Transactional(noRollbackFor = ReservationScheduleConflictException.class)
     public Reservation create(ReservationCreateRequest request) {
-        if (scheduleConflictEnabled && reservationRepository.existsByMoveDateAndMoveTimeAndStatusNot(
-                request.getMoveDate(), request.getMoveTime(), ReservationStatus.CANCELED)) {
-            conflictAttemptService.record(request);
-            throw new ReservationScheduleConflictException();
+        if (scheduleConflictEnabled) {
+            try {
+                availabilityService.ensureAvailable(request.getMoveDate(), request.getMoveTime());
+            } catch (ReservationScheduleConflictException exception) {
+                conflictAttemptService.record(request);
+                throw exception;
+            }
         }
 
         Reservation reservation = request.toEntity();
@@ -314,6 +321,10 @@ public class ReservationService {
 
         if (!reservation.isEditable()) {
             throw new IllegalArgumentException("현재 상태에서는 예약을 수정할 수 없습니다.");
+        }
+
+        if (scheduleConflictEnabled) {
+            availabilityService.ensureAvailable(request.getMoveDate(), request.getMoveTime(), reservation.getId());
         }
 
         String changeDetail = customerUpdateChangeDetail(reservation, request);

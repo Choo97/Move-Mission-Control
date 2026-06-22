@@ -155,6 +155,87 @@ h3 {
   background: #fff5f1;
 }
 
+.field-message {
+  color: #765c53;
+  font-size: 13px;
+}
+
+.admin-availability-settings {
+  margin-bottom: 18px;
+  padding: 18px 0;
+  border-top: 1px solid #d9dde2;
+  border-bottom: 1px solid #d9dde2;
+}
+
+.admin-section-heading,
+.holiday-form,
+.operating-schedule-row,
+.holiday-editor li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-section-heading {
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.admin-section-heading h3,
+.holiday-editor h4 {
+  margin: 0;
+}
+
+.operating-schedule-list {
+  display: grid;
+  gap: 8px;
+}
+
+.operating-schedule-row {
+  display: grid;
+  grid-template-columns: 70px 72px 110px 18px 110px 90px 64px;
+}
+
+.operating-schedule-row input[type='time'],
+.operating-schedule-row select {
+  min-width: 0;
+}
+
+.holiday-editor {
+  margin-top: 20px;
+}
+
+.holiday-form {
+  margin-top: 10px;
+}
+
+.holiday-form input:last-of-type {
+  flex: 1;
+}
+
+.holiday-editor ul {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.holiday-editor li span {
+  flex: 1;
+}
+
+@media (max-width: 760px) {
+  .operating-schedule-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .holiday-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
 .admin-conflict-attempts h3,
 .admin-conflict-attempts p {
   margin: 0;
