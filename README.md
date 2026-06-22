@@ -25,6 +25,7 @@ Spring Boot 기반 이사 예약 웹 서비스입니다. 고객은 이사 예약
 - 견적 동의 및 예약 확정
 - 짐 사진 업로드
 - 완료 예약 리뷰 작성
+- React 자주 묻는 질문 조회
 
 ### 관리자 기능
 
@@ -67,7 +68,9 @@ http://localhost:5173/
 
 ```text
 메인 화면       http://localhost:8081/
-예약 신청       http://localhost:8081/reservations/new
+예약 신청       http://localhost:8081/?view=create
+예약 조회       http://localhost:8081/?view=search
+자주 묻는 질문  http://localhost:8081/?view=faq
 자주 묻는 질문  http://localhost:8081/faq
 관리자 화면     http://localhost:8081/admin/reservations
 관리자 달력     http://localhost:8081/admin/calendar

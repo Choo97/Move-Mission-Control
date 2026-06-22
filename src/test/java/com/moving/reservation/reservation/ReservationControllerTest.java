@@ -37,17 +37,15 @@ class ReservationControllerTest {
     @Test
     void 예약신청_화면을_로그인없이_조회한다() throws Exception {
         mockMvc.perform(get("/reservations/new"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("reservation/new"))
-                .andExpect(model().attributeExists("reservationCreateRequest", "moveTypes"));
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/?view=create"));
     }
 
     @Test
     void 예약조회_화면을_로그인없이_조회한다() throws Exception {
         mockMvc.perform(get("/reservations/search"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("reservation/search"))
-                .andExpect(model().attributeExists("reservationSearchRequest"));
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/?view=search"));
     }
 
     @Test
@@ -56,8 +54,7 @@ class ReservationControllerTest {
 
         mockMvc.perform(get("/reservations/{id}", reservation.getId()))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/reservations/search"))
-                .andExpect(flash().attribute("searchError", "예약 조회를 먼저 인증해 주세요."));
+                .andExpect(redirectedUrl("/?view=search&reservationId=" + reservation.getId()));
     }
 
     @Test
@@ -76,20 +73,8 @@ class ReservationControllerTest {
 
         mockMvc.perform(get("/reservations/{id}", reservation.getId())
                         .session(session))
-                .andExpect(status().isOk())
-                .andExpect(view().name("reservation/detail"))
-                .andExpect(model().attribute("reservation", reservation))
-                .andExpect(model().attributeExists(
-                        "estimateLines",
-                        "photos",
-                        "customerActionHistories",
-                        "customerDetailTitle",
-                        "customerDetailDescription",
-                        "customerSteps",
-                        "customerNextGuide",
-                        "customerGuideItems"
-                ))
-                .andExpect(model().attribute("customerDetailTitle", "예약이 접수되었습니다"));
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/?view=search&reservationId=" + reservation.getId()));
     }
 
     @Test

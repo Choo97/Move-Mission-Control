@@ -3,6 +3,7 @@ import type {
   ApiErrorResponse,
   AvailabilityResponse,
   CustomerGuideItem,
+  FaqResponse,
   ReservationEditForm,
   ReservationForm,
   ReservationPhotoResponse,
@@ -113,4 +114,9 @@ export async function getCustomerGuides(status: string) {
   const response = await fetch(`${API_BASE_URL}/api/customer-guides/${status}`)
 
   return readJson<CustomerGuideItem[]>(response, '고객 안내를 불러오지 못했습니다.')
+}
+
+export async function getFaqs() {
+  const response = await fetch(`${API_BASE_URL}/api/faqs`)
+  return readJson<FaqResponse[]>(response, '자주 묻는 질문을 불러오지 못했습니다.')
 }

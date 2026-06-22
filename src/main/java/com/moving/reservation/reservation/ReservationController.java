@@ -43,10 +43,8 @@ public class ReservationController {
     }
 
     @GetMapping("/new")
-    public String newReservation(Model model) {
-        model.addAttribute("reservationCreateRequest", new ReservationCreateRequest());
-        model.addAttribute("moveTypes", MoveType.values());
-        return "reservation/new";
+    public String newReservation() {
+        return "redirect:/?view=create";
     }
 
     @GetMapping("/estimate-preview")
@@ -77,11 +75,8 @@ public class ReservationController {
     }
 
     @GetMapping("/search")
-    public String searchForm(Model model) {
-        if (!model.containsAttribute("reservationSearchRequest")) {
-            model.addAttribute("reservationSearchRequest", new ReservationSearchRequest());
-        }
-        return "reservation/search";
+    public String searchForm() {
+        return "redirect:/?view=search";
     }
 
     @PostMapping("/search")
@@ -125,28 +120,8 @@ public class ReservationController {
     }
 
     @GetMapping("/{id}")
-    public String detail(@PathVariable Long id,
-                         Model model,
-                         HttpSession session,
-                         Authentication authentication,
-                         RedirectAttributes redirectAttributes) {
-        if (!hasReservationAccess(id, session, authentication)) {
-            redirectAttributes.addFlashAttribute("searchError", "예약 조회를 먼저 인증해 주세요.");
-            return "redirect:/reservations/search";
-        }
-
-        Reservation reservation = reservationService.get(id);
-        model.addAttribute("reservation", reservation);
-        model.addAttribute("estimateLines", reservationService.estimateLines(reservation));
-        model.addAttribute("photos", reservationService.findPhotos(id));
-        model.addAttribute("customerActionHistories", reservationService.findCustomerActionHistories(id));
-        model.addAttribute("review", reviewService.findByReservationId(id).orElse(null));
-        model.addAttribute("customerDetailTitle", customerDetailTitle(reservation));
-        model.addAttribute("customerDetailDescription", customerDetailDescription(reservation));
-        model.addAttribute("customerSteps", customerSteps(reservation));
-        model.addAttribute("customerNextGuide", customerNextGuide(reservation));
-        model.addAttribute("customerGuideItems", customerGuideService.findActiveItems(reservation.getStatus()));
-        return "reservation/detail";
+    public String detail(@PathVariable Long id) {
+        return "redirect:/?view=search&reservationId=" + id;
     }
 
     @GetMapping("/{id}/estimate-document")
@@ -209,20 +184,8 @@ public class ReservationController {
     }
 
     @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable Long id,
-                           Model model,
-                           HttpSession session,
-                           Authentication authentication,
-                           RedirectAttributes redirectAttributes) {
-        if (!hasReservationAccess(id, session, authentication)) {
-            redirectAttributes.addFlashAttribute("searchError", "예약 수정을 하려면 먼저 예약 조회 인증을 해주세요.");
-            return "redirect:/reservations/search";
-        }
-
-        Reservation reservation = reservationService.get(id);
-        model.addAttribute("reservation", reservation);
-        model.addAttribute("reservationUpdateRequest", ReservationUpdateRequest.from(reservation));
-        return "reservation/edit";
+    public String editForm(@PathVariable Long id) {
+        return "redirect:/?view=search&reservationId=" + id;
     }
 
     @PostMapping("/{id}/edit")

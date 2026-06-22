@@ -160,6 +160,31 @@ h3 {
   font-size: 13px;
 }
 
+.faq-view {
+  width: min(920px, 100%);
+}
+
+.faq-list {
+  display: grid;
+  gap: 10px;
+}
+
+.faq-list details {
+  border-bottom: 1px solid #d9dde2;
+  padding: 14px 0;
+}
+
+.faq-list summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.faq-list details p {
+  margin: 12px 0 0;
+  color: #544d49;
+  line-height: 1.7;
+}
+
 .admin-availability-settings {
   margin-bottom: 18px;
   padding: 18px 0;

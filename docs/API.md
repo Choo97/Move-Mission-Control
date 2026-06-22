@@ -34,6 +34,7 @@ React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 기능 
 | 고객 예약 | `POST` | `/api/reservations/{reservationId}/cancel` | 예약 취소 |
 | 고객 예약 | `POST` | `/api/reservations/{reservationId}/estimate/accept` | 최종 견적 동의 및 예약 확정 |
 | 고객 안내 | `GET` | `/api/customer-guides/{status}` | 예약 상태별 고객 안내 문구 조회 |
+| 고객 FAQ | `GET` | `/api/faqs` | 공개 중인 FAQ 조회 |
 | 파일 업로드 | `POST` | `/api/reservations/{reservationId}/photos` | 짐 사진 업로드 |
 | 고객 리뷰 | `POST` | `/api/reviews` | 완료 예약 리뷰 작성 |
 
@@ -79,7 +80,7 @@ React 전환은 고객 화면부터 시작하고, 관리자 화면은 당분간 
 | React | 고객 화면 담당 | 고객이 직접 보는 예약 흐름의 UI 개선 효과가 가장 큼 |
 | `/api/**` | React가 호출하는 REST API | 화면과 데이터 처리를 분리하기 위함 |
 | `/admin/**` | Thymeleaf 유지 | 관리자 기능은 범위가 넓어 나중에 별도 전환 여부를 결정하는 편이 안전함 |
-| `/reservations/**` | 기존 고객 Thymeleaf 화면 유지 | React 전환 중에도 기존 화면으로 기능 확인이 가능해야 함 |
+| `/reservations/**` | React 고객 화면으로 연결 | 기존 북마크와 링크를 유지하면서 React 흐름으로 통합 |
 | `frontend/` | React 프로젝트 위치 | 백엔드와 프론트 코드를 같은 저장소 안에서 명확히 분리하기 위함 |
 
 개발 중에는 아래처럼 두 서버를 함께 실행합니다.
@@ -113,10 +114,10 @@ npm run dev
 3. 고객 예약 조회와 상세 화면을 React로 구현합니다.
 4. 예약 수정, 취소, 견적 동의 화면을 React로 구현합니다.
 5. 짐 사진 업로드와 리뷰 작성 화면을 React로 구현합니다.
-6. 고객 React 화면이 안정화되면 기존 `/reservations/**` Thymeleaf 화면 제거 여부를 결정합니다.
+6. 기존 `/reservations/**` GET 화면은 React 고객 화면으로 리다이렉트하고 POST·견적서 출력 호환 경로는 유지합니다.
 7. 관리자 화면 React 전환은 고객 화면 전환 이후 별도 작업으로 판단합니다.
 
-중요한 기준은 같은 고객 기능 안에서 Thymeleaf와 React URL을 섞지 않는 것입니다. 전환 중에는 기존 `/reservations/**`는 유지하고, React 고객 화면은 `frontend/` 개발 서버에서 먼저 검증한 뒤 배포 방식을 결정합니다. 현재 React 고객 화면은 예약 신청, 예약 번호/연락처 기반 예약 조회, 예약 진행 단계 확인, 예약 수정, 예약 취소, 견적 동의, 짐 사진 업로드, 고객 리뷰 작성을 제공합니다.
+기존 `/reservations/new`, `/reservations/search`, `/reservations/{id}`, `/reservations/{id}/edit`, `/faq` GET 요청은 React 화면으로 연결됩니다. 현재 React 고객 화면은 예약 신청, 예약 번호/연락처 기반 예약 조회, 예약 진행 단계 확인, 예약 수정, 예약 취소, 견적 동의, 짐 사진 업로드, 고객 리뷰, FAQ 조회를 제공합니다.
 
 ## 예약 가능 시간 API
 

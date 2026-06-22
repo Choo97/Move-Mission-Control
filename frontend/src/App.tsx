@@ -6,6 +6,7 @@ import { ReservationCreateForm } from './components/ReservationCreateForm'
 import { ReservationDetailPanel } from './components/ReservationDetailPanel'
 import { ReservationEditFormView } from './components/ReservationEditFormView'
 import { ReservationSearchFormView } from './components/ReservationSearchFormView'
+import { FaqView } from './components/FaqView'
 import {
   acceptEstimate as acceptEstimateApi,
   cancelReservation as cancelReservationApi,
@@ -34,7 +35,7 @@ import type {
   ReviewResponse,
 } from './types'
 
-type ActiveView = 'create' | 'search' | 'admin'
+type ActiveView = 'create' | 'search' | 'faq' | 'admin'
 
 const adminQueryKeys = [
   'status',
@@ -48,13 +49,18 @@ const adminQueryKeys = [
 
 const getInitialView = (): ActiveView => {
   const view = new URLSearchParams(window.location.search).get('view')
-  return view === 'search' || view === 'admin' ? view : 'create'
+  return view === 'search' || view === 'faq' || view === 'admin' ? view : 'create'
 }
+
+const getInitialSearchForm = (): ReservationSearchForm => ({
+  ...initialSearchForm,
+  reservationId: new URLSearchParams(window.location.search).get('reservationId') ?? '',
+})
 
 function App() {
   const [activeView, setActiveView] = useState<ActiveView>(getInitialView)
   const [form, setForm] = useState<ReservationForm>(loadReservationDraft)
-  const [searchForm, setSearchForm] = useState<ReservationSearchForm>(initialSearchForm)
+  const [searchForm, setSearchForm] = useState<ReservationSearchForm>(getInitialSearchForm)
   const [editForm, setEditForm] = useState<ReservationEditForm | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
@@ -359,6 +365,16 @@ function App() {
         </button>
         <button
           type="button"
+          className={activeView === 'faq' ? 'active' : ''}
+          onClick={() => {
+            changeView('faq')
+            setActionMessage('')
+          }}
+        >
+          자주 묻는 질문
+        </button>
+        <button
+          type="button"
           className={activeView === 'search' ? 'active' : ''}
           onClick={() => {
             changeView('search')
@@ -382,6 +398,8 @@ function App() {
 
       {activeView === 'admin' ? (
         <AdminReservationListView />
+      ) : activeView === 'faq' ? (
+        <section className="workspace"><FaqView /></section>
       ) : (
         <section className="workspace">
           {activeView === 'create' ? (

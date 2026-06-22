@@ -75,7 +75,17 @@ class SecurityConfigTest {
     void 고객용_예약신청화면은_로그인없이_접근할_수_있다() throws Exception {
         mockMvc.perform(get("/reservations/new")
                         .with(csrf()))
-                .andExpect(status().isOk());
+                .andExpect(status().is3xxRedirection())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                        .redirectedUrl("/?view=create"));
+    }
+
+    @Test
+    void FAQ_API는_로그인없이_접근할_수_있다() throws Exception {
+        mockMvc.perform(get("/api/faqs"))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$[0].question").isString())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$[0].answer").isString());
     }
 
     @Test
