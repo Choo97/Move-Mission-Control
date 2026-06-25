@@ -1156,6 +1156,102 @@ h3 {
   border-bottom: 1px solid #e4edf7;
 }
 
+.step-count {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 6px 10px;
+  color: #1f5ea8;
+  background: #e5f0fb;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.reservation-stepper {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 22px;
+  padding: 0;
+  list-style: none;
+}
+
+.reservation-stepper li {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  min-width: 0;
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  padding: 10px;
+  background: #f8fbff;
+}
+
+.reservation-stepper li span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  color: #64748b;
+  background: #e8eef6;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.reservation-stepper strong,
+.reservation-stepper small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reservation-stepper strong {
+  color: #30445f;
+  font-size: 13px;
+}
+
+.reservation-stepper small {
+  margin-top: 3px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.reservation-stepper li.current {
+  border-color: #9fc4ed;
+  background: #eef6ff;
+}
+
+.reservation-stepper li.done span,
+.reservation-stepper li.current span {
+  color: #ffffff;
+  background: #1f5ea8;
+}
+
+.step-panel {
+  min-height: 250px;
+}
+
+.step-actions {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.step-actions .submit-button {
+  margin-top: 0;
+}
+
+.step-actions .submit-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  transform: none;
+}
+
 .section-heading p,
 .empty-state {
   margin: 0;
@@ -1688,6 +1784,18 @@ dd {
   }
 
   .button-row {
+    grid-template-columns: 1fr;
+  }
+
+  .reservation-stepper {
+    grid-template-columns: 1fr;
+  }
+
+  .step-panel {
+    min-height: auto;
+  }
+
+  .step-actions {
     grid-template-columns: 1fr;
   }
 
