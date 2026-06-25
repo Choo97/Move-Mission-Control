@@ -42,26 +42,27 @@ Spring Boot 기반 이사 예약 웹 서비스입니다. 고객은 이사 예약
 
 자세한 실행 방법, 환경변수, 테스트, 관리자 계정 설정은 [docs/RUNNING.md](docs/RUNNING.md)에 정리했습니다.
 
-MySQL에 `movemission` 데이터베이스를 만든 뒤 아래 명령으로 실행합니다.
+MySQL에 `movemission` 데이터베이스를 만든 뒤 `.env.example`을 복사해 `.env.local`을 만들고 실행합니다.
 
 ```bash
-mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
+cp .env.example .env.local
+```
+
+터미널 1:
+
+```bash
+bash run-backend.sh
+```
+
+터미널 2:
+
+```bash
+bash run-frontend.sh
 ```
 
 ```text
-http://localhost:8081/
-```
-
-React 고객 화면을 개발 모드로 실행하려면 아래 명령을 사용합니다.
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-```text
-http://localhost:5173/
+고객 React 화면  http://localhost:5173/
+백엔드 화면      http://localhost:8081/
 ```
 
 ## 주요 URL

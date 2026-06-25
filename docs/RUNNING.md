@@ -6,6 +6,34 @@
 
 이 프로젝트는 Java 17, Maven, MySQL이 설치되어 있으면 Windows, macOS, Linux에서 실행할 수 있습니다.
 
+컴퓨터를 껐다 켜면 이전에 실행한 백엔드/프론트엔드 서버는 모두 종료됩니다. 재부팅 후에는 아래 순서대로 다시 실행합니다.
+
+### 재부팅 후 실행 순서
+
+터미널을 2개 열어 각각 실행합니다.
+
+터미널 1: 백엔드 서버
+
+```bash
+bash run-backend.sh
+```
+
+터미널 2: 프론트엔드 서버
+
+```bash
+bash run-frontend.sh
+```
+
+실행 후 접속 주소는 아래와 같습니다.
+
+```text
+고객 React 화면  http://localhost:5173/
+백엔드 화면      http://localhost:8081/
+관리자 화면      http://localhost:8081/admin/reservations
+```
+
+프론트엔드는 `.env.local`의 `VITE_API_BASE_URL` 값을 사용해 백엔드 API에 연결합니다. 기본값은 `http://localhost:8081`입니다.
+
 ### 공통 준비 사항
 
 - Java 17 설치
@@ -21,7 +49,7 @@ CREATE DATABASE movemission CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 애플리케이션은 `spring.jpa.hibernate.ddl-auto=update` 설정을 사용하므로, 서버가 처음 실행될 때 필요한 테이블을 자동으로 생성합니다.
 
-### Git Bash, macOS, Linux
+### Git Bash, macOS, Linux 백엔드 실행
 
 먼저 Bash에서 Java 17이 잡히는지 확인합니다.
 
@@ -38,23 +66,55 @@ export PATH="$JAVA_HOME/bin:$PATH"
 
 WSL의 Bash는 Windows에 설치된 Java를 자동으로 사용하지 않습니다. WSL에서 실행하려면 WSL 안에 Java 17과 Maven을 설치해야 합니다. 지금처럼 Windows에 Java 17이 설치되어 있다면 Git Bash 또는 `cmd`에서 아래 명령으로 실행하는 편이 더 단순합니다.
 
+백엔드만 직접 실행하려면 아래 명령을 사용합니다.
+
 ```bash
-mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
+bash run-backend.sh
 ```
 
-로컬 SMTP 설정까지 함께 적용해서 실행하려면 `.env.example`을 복사해 `.env.local`을 만들고 실제 값을 입력한 뒤 실행합니다.
+`run-backend.sh`는 내부에서 `run-local.sh`를 호출합니다. `run-local.sh`는 `.env.local`을 읽고 `SERVER_PORT` 값으로 Spring Boot 서버를 실행합니다.
+
+로컬 SMTP 설정까지 함께 적용하려면 `.env.example`을 복사해 `.env.local`을 만들고 실제 값을 입력한 뒤 실행합니다.
 
 ```bash
 cp .env.example .env.local
-bash run-local.sh
+bash run-backend.sh
 ```
 
 `.env.local`에는 실제 이메일 계정과 앱 비밀번호가 들어가므로 Git에 올리지 않습니다.
 
-서버가 실행되면 브라우저에서 아래 주소로 접속합니다.
+백엔드 서버가 실행되면 브라우저에서 아래 주소로 접속합니다.
 
 ```text
 http://localhost:8081/
+```
+
+### React 프론트엔드 실행
+
+고객용 React 화면은 별도 터미널에서 실행합니다.
+
+```bash
+bash run-frontend.sh
+```
+
+`run-frontend.sh`는 `.env.local`을 읽고 아래 값을 사용합니다.
+
+```text
+FRONTEND_PORT=5173
+VITE_API_BASE_URL=http://localhost:8081
+```
+
+프론트엔드 서버가 실행되면 아래 주소로 접속합니다.
+
+```text
+http://localhost:5173/
+```
+
+만약 Windows가 `5173` 포트를 예약해서 실행되지 않으면 `.env.local`에서 `FRONTEND_PORT`를 `3000`으로 바꾼 뒤 다시 실행합니다.
+
+```text
+FRONTEND_PORT=3000
+VITE_API_BASE_URL=http://localhost:8081
 ```
 
 관리자 화면은 아래 기본 계정으로 로그인할 수 있습니다.

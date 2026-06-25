@@ -34,6 +34,8 @@ if ! command -v java >/dev/null 2>&1; then
   exit 1
 fi
 
+echo "백엔드 서버를 실행합니다."
+echo "주소: http://localhost:${SERVER_PORT:-8081}/"
 echo "사용 중인 Java 버전:"
 java -version
 
