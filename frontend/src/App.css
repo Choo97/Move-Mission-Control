@@ -1378,6 +1378,65 @@ legend {
   font-size: 22px;
 }
 
+.completion-card {
+  margin-bottom: 18px;
+  border: 1px solid #b8d1ec;
+  border-radius: 8px;
+  padding: 18px;
+  background: #eef6ff;
+}
+
+.completion-card h3 {
+  margin: 0 0 14px;
+  color: #172033;
+  font-size: 18px;
+}
+
+.completion-card p:not(.eyebrow) {
+  margin: 12px 0 0;
+  color: #30445f;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.reservation-number-box {
+  display: grid;
+  gap: 4px;
+  border: 1px solid #9fc4ed;
+  border-radius: 8px;
+  padding: 14px;
+  background: #ffffff;
+}
+
+.reservation-number-box span {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.reservation-number-box strong {
+  margin: 0;
+  color: #1f5ea8;
+  font-size: 36px;
+  line-height: 1;
+}
+
+.completion-card ol {
+  display: grid;
+  gap: 7px;
+  margin: 14px 0 0;
+  padding-left: 18px;
+  color: #30445f;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.completion-card .submit-button {
+  margin-top: 14px;
+}
+
 .action-state {
   display: flex;
   flex-wrap: wrap;

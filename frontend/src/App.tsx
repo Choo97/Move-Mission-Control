@@ -85,6 +85,7 @@ function App() {
   const [searchErrorMessage, setSearchErrorMessage] = useState('')
   const [actionMessage, setActionMessage] = useState('')
   const [reservation, setReservation] = useState<ReservationResponse | null>(null)
+  const [completedReservationId, setCompletedReservationId] = useState<number | null>(null)
 
   const today = useMemo(() => new Date().toISOString().slice(0, 10), [])
 
@@ -170,6 +171,7 @@ function App() {
     try {
       const createdReservation = await createReservation(form)
       await showReservation(createdReservation)
+      setCompletedReservationId(createdReservation.id)
       setSearchForm({
         reservationId: String(createdReservation.id),
         phone: submittedPhone,
@@ -189,6 +191,7 @@ function App() {
     setIsSearching(true)
     setSearchErrorMessage('')
     setActionMessage('')
+    setCompletedReservationId(null)
     resetReservationContext()
 
     try {
@@ -368,6 +371,7 @@ function App() {
             changeView('create')
             setErrorMessage('')
             setActionMessage('')
+            setCompletedReservationId(null)
           }}
         >
           이사 예약
@@ -378,6 +382,7 @@ function App() {
           onClick={() => {
             changeView('faq')
             setActionMessage('')
+            setCompletedReservationId(null)
           }}
         >
           이용 안내
@@ -389,6 +394,7 @@ function App() {
             changeView('search')
             setSearchErrorMessage('')
             setActionMessage('')
+            setCompletedReservationId(null)
           }}
         >
           예약 조회
@@ -399,6 +405,7 @@ function App() {
           onClick={() => {
             changeView('admin')
             setActionMessage('')
+            setCompletedReservationId(null)
           }}
         >
           관리자
@@ -469,6 +476,7 @@ function App() {
           photoFiles={photoFiles}
           reviewForm={reviewForm}
           submittedReview={submittedReview}
+          isNewlyCreated={reservation !== null && reservation.id === completedReservationId}
           isCanceling={isCanceling}
           isAcceptingEstimate={isAcceptingEstimate}
           isUploadingPhotos={isUploadingPhotos}
@@ -480,6 +488,9 @@ function App() {
           onUploadPhotos={uploadPhotos}
           onReviewFormChange={setReviewForm}
           onSubmitReview={submitReview}
+          onShowSearchForm={() => {
+            document.getElementById('reservation-form')?.scrollIntoView({ behavior: 'smooth' })
+          }}
         />
         </section>
         </>

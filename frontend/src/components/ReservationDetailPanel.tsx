@@ -12,6 +12,7 @@ type Props = {
   photoFiles: File[]
   reviewForm: ReviewForm
   submittedReview: ReviewResponse | null
+  isNewlyCreated: boolean
   isCanceling: boolean
   isAcceptingEstimate: boolean
   isUploadingPhotos: boolean
@@ -23,6 +24,7 @@ type Props = {
   onUploadPhotos: (event: FormEvent<HTMLFormElement>) => void
   onReviewFormChange: Dispatch<SetStateAction<ReviewForm>>
   onSubmitReview: (event: FormEvent<HTMLFormElement>) => void
+  onShowSearchForm: () => void
 }
 
 const photoUrl = (fileUrl: string) =>
@@ -38,6 +40,7 @@ export function ReservationDetailPanel({
   photoFiles,
   reviewForm,
   submittedReview,
+  isNewlyCreated,
   isCanceling,
   isAcceptingEstimate,
   isUploadingPhotos,
@@ -49,12 +52,16 @@ export function ReservationDetailPanel({
   onUploadPhotos,
   onReviewFormChange,
   onSubmitReview,
+  onShowSearchForm,
 }: Props) {
   return (
     <aside className="status-panel">
       <h2>{activeView === 'create' ? '접수 결과' : '예약 상세'}</h2>
       {reservation ? (
         <div className="result">
+          {isNewlyCreated && (
+            <ReservationCompleteCard reservation={reservation} onShowSearchForm={onShowSearchForm} />
+          )}
           <strong>예약 #{reservation.id}</strong>
           <ReservationSummary reservation={reservation} />
           <ReservationProgress reservation={reservation} />
@@ -98,6 +105,36 @@ export function ReservationDetailPanel({
         </p>
       )}
     </aside>
+  )
+}
+
+function ReservationCompleteCard({
+  reservation,
+  onShowSearchForm,
+}: {
+  reservation: ReservationResponse
+  onShowSearchForm: () => void
+}) {
+  return (
+    <div className="completion-card" role="status" aria-live="polite">
+      <p className="eyebrow">Reservation Complete</p>
+      <h3>예약 접수가 완료되었습니다</h3>
+      <div className="reservation-number-box">
+        <span>예약번호</span>
+        <strong>{reservation.id}</strong>
+      </div>
+      <p>
+        예약 조회에는 예약번호와 연락처가 필요합니다. 번호를 따로 보관해 주세요.
+      </p>
+      <ol>
+        <li>관리자가 예약 정보를 확인합니다.</li>
+        <li>상담 후 견적 안내가 진행됩니다.</li>
+        <li>견적 동의 후 예약이 확정됩니다.</li>
+      </ol>
+      <button className="submit-button secondary" type="button" onClick={onShowSearchForm}>
+        예약 조회하기
+      </button>
+    </div>
   )
 }
 
