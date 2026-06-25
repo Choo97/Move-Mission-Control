@@ -436,6 +436,85 @@ h3 {
   color: #174a86;
 }
 
+.site-footer {
+  margin-top: 28px;
+  border-top: 1px solid #dce6f2;
+  padding: 32px clamp(20px, 5vw, 72px);
+  background: #ffffff;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.footer-brand strong {
+  display: block;
+  color: #172033;
+  font-size: 20px;
+}
+
+.footer-brand p,
+.footer-note {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.footer-grid section {
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  padding: 18px;
+  background: #f8fbff;
+}
+
+.footer-grid h2 {
+  margin-bottom: 14px;
+  font-size: 16px;
+}
+
+.footer-grid dl div {
+  border-bottom-color: #dce6f2;
+}
+
+.footer-grid dd {
+  color: #30445f;
+}
+
+.footer-links {
+  display: grid;
+  gap: 10px;
+}
+
+.footer-links a,
+.footer-links span {
+  color: #30445f;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.footer-links a {
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+
+.footer-links a:hover {
+  color: #174a86;
+}
+
+.footer-note {
+  margin-top: 18px;
+}
+
 .admin-reservation-view {
   padding: 28px clamp(20px, 5vw, 72px) 48px;
 }
@@ -1572,6 +1651,10 @@ dd {
   }
 
   .process-timeline {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-grid {
     grid-template-columns: 1fr;
   }
 

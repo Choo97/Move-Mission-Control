@@ -484,6 +484,7 @@ function App() {
         </section>
         </>
       )}
+      {activeView !== 'admin' && <SiteFooter />}
     </main>
   )
 }
@@ -583,6 +584,62 @@ function LandingSections({ onReserveClick, onSearchClick, onFaqClick }: LandingP
         </article>
       </div>
     </section>
+  )
+}
+
+function SiteFooter() {
+  return (
+    <footer className="site-footer" aria-label="서비스 정보">
+      <div className="footer-brand">
+        <div className="brand-mark" aria-hidden="true">
+          <span>24</span>
+        </div>
+        <div>
+          <strong>24nalpo</strong>
+          <p>쉽고 빠른 이사 예약 접수 플랫폼</p>
+        </div>
+      </div>
+      <div className="footer-grid">
+        <section>
+          <h2>회사 정보</h2>
+          <dl>
+            <div>
+              <dt>회사명</dt>
+              <dd>24nalpo</dd>
+            </div>
+            <div>
+              <dt>사업자 정보</dt>
+              <dd>운영 정보 확정 후 입력</dd>
+            </div>
+          </dl>
+        </section>
+        <section>
+          <h2>고객센터</h2>
+          <dl>
+            <div>
+              <dt>연락처</dt>
+              <dd>운영 연락처 입력 예정</dd>
+            </div>
+            <div>
+              <dt>이메일</dt>
+              <dd>support@24nalpo.local</dd>
+            </div>
+          </dl>
+        </section>
+        <section>
+          <h2>서비스 안내</h2>
+          <div className="footer-links">
+            <a href="/?view=faq">자주 묻는 질문</a>
+            <a href="/?view=search">예약 조회</a>
+            <span>개인정보처리방침 준비중</span>
+            <span>이용약관 준비중</span>
+          </div>
+        </section>
+      </div>
+      <p className="footer-note">
+        실제 사업자 정보와 약관은 서비스 운영 정보가 확정된 뒤 교체합니다.
+      </p>
+    </footer>
   )
 }
 
