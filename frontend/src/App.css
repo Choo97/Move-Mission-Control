@@ -1135,6 +1135,47 @@ h3 {
   align-self: start;
 }
 
+.search-guide {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.search-guide div {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  padding: 12px;
+  background: #f8fbff;
+}
+
+.search-guide strong {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  color: #ffffff;
+  background: #1f5ea8;
+  font-size: 13px;
+}
+
+.search-guide span {
+  color: #30445f;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.lookup-grid {
+  display: grid;
+  gap: 14px;
+}
+
 .status-panel {
   align-self: start;
   grid-column: 2;
@@ -1376,6 +1417,35 @@ legend {
   margin-bottom: 16px;
   color: #1f5ea8;
   font-size: 22px;
+}
+
+.lookup-result-card {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.lookup-result-card div {
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  padding: 13px;
+  background: #f8fbff;
+}
+
+.lookup-result-card span {
+  display: block;
+  margin-bottom: 5px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.lookup-result-card strong {
+  margin: 0;
+  color: #172033;
+  font-size: 18px;
+  line-height: 1.25;
 }
 
 .completion-card {

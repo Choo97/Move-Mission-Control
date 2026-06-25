@@ -62,6 +62,7 @@ export function ReservationDetailPanel({
           {isNewlyCreated && (
             <ReservationCompleteCard reservation={reservation} onShowSearchForm={onShowSearchForm} />
           )}
+          {activeView === 'search' && <ReservationLookupHeader reservation={reservation} />}
           <strong>예약 #{reservation.id}</strong>
           <ReservationSummary reservation={reservation} />
           <ReservationProgress reservation={reservation} />
@@ -134,6 +135,27 @@ function ReservationCompleteCard({
       <button className="submit-button secondary" type="button" onClick={onShowSearchForm}>
         예약 조회하기
       </button>
+    </div>
+  )
+}
+
+function ReservationLookupHeader({ reservation }: { reservation: ReservationResponse }) {
+  return (
+    <div className="lookup-result-card">
+      <div>
+        <span>현재 상태</span>
+        <strong>{reservation.statusLabel}</strong>
+      </div>
+      <div>
+        <span>이사 일정</span>
+        <strong>
+          {reservation.moveDate} {reservation.moveTime}
+        </strong>
+      </div>
+      <div>
+        <span>예상 금액</span>
+        <strong>{reservation.finalEstimatedPrice.toLocaleString()}원</strong>
+      </div>
     </div>
   )
 }
@@ -460,6 +482,7 @@ function CustomerActions({
 
   return (
     <div className="customer-actions">
+      <h3>다음에 할 수 있는 일</h3>
       {actionMessage && <p className="message info">{actionMessage}</p>}
       <div className="button-row customer-action-grid">
         {reservation.estimateAcceptable && (
