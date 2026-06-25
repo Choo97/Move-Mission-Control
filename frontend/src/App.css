@@ -1,46 +1,65 @@
 .app-shell {
   min-height: 100vh;
-  background: #f7f4f0;
-  color: #252525;
+  background: #f5f8fc;
+  color: #172033;
 }
 
 .top-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: start;
   gap: 24px;
   padding: 28px clamp(20px, 5vw, 72px);
-  border-bottom: 1px solid #e5ddd5;
-  background: #fffaf6;
+  border-bottom: 1px solid #dce6f2;
+  background: #ffffff;
+  box-shadow: 0 6px 22px rgba(30, 64, 114, 0.06);
+}
+
+.brand-mark {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 8px;
+  color: #ffffff;
+  background: #1f5ea8;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.brand-copy {
+  flex: 1;
 }
 
 .view-tabs {
   display: flex;
   gap: 8px;
   padding: 18px clamp(20px, 5vw, 72px) 0;
-  background: #f7f4f0;
+  background: #f5f8fc;
 }
 
 .view-tabs button {
   min-width: 120px;
   min-height: 40px;
-  border: 1px solid #d8cec4;
+  border: 1px solid #cad8e8;
   border-radius: 6px;
-  color: #534941;
-  background: #fffdfb;
+  color: #30445f;
+  background: #ffffff;
   font-weight: 800;
   cursor: pointer;
 }
 
 .view-tabs button.active {
-  border-color: #b6523a;
+  border-color: #1f5ea8;
   color: #ffffff;
-  background: #b6523a;
+  background: #1f5ea8;
 }
 
 .eyebrow {
   margin: 0 0 6px;
-  color: #b6523a;
+  color: #1f5ea8;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -50,7 +69,7 @@
 h1,
 h2 {
   margin: 0;
-  color: #1e1c1a;
+  color: #172033;
   letter-spacing: 0;
 }
 
@@ -81,7 +100,7 @@ h3 {
   border-radius: 6px;
   padding: 0 18px;
   color: #ffffff;
-  background: #b6523a;
+  background: #1f5ea8;
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
@@ -103,6 +122,253 @@ h3 {
   grid-template-columns: minmax(0, 1fr) 340px;
   gap: 24px;
   padding: 28px clamp(20px, 5vw, 72px) 48px;
+}
+
+.landing-page {
+  padding: 28px clamp(20px, 5vw, 72px) 0;
+}
+
+.hero-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+  gap: 32px;
+  align-items: center;
+  min-height: 460px;
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  padding: clamp(28px, 5vw, 56px);
+  background:
+    linear-gradient(135deg, rgba(31, 94, 168, 0.08), rgba(255, 255, 255, 0.76)),
+    #ffffff;
+  box-shadow: 0 18px 45px rgba(30, 64, 114, 0.1);
+}
+
+.hero-copy h2 {
+  max-width: 720px;
+  font-size: clamp(34px, 5vw, 62px);
+  line-height: 1.08;
+}
+
+.hero-copy p:not(.eyebrow) {
+  max-width: 620px;
+  margin: 18px 0 0;
+  color: #4d5e73;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.hero-actions .submit-button {
+  width: auto;
+  min-width: 150px;
+  margin-top: 0;
+}
+
+.moving-visual {
+  position: relative;
+  display: grid;
+  align-items: end;
+  min-height: 300px;
+  border: 1px solid #d7e5f4;
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 26px;
+  background:
+    linear-gradient(90deg, rgba(31, 94, 168, 0.12) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(31, 94, 168, 0.12) 1px, transparent 1px),
+    #eef6ff;
+  background-size: 34px 34px;
+}
+
+.visual-card {
+  position: absolute;
+  top: 28px;
+  right: 28px;
+  display: grid;
+  gap: 7px;
+  min-width: 150px;
+  border: 1px solid #c8d9ec;
+  border-radius: 8px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 14px 28px rgba(30, 64, 114, 0.12);
+}
+
+.visual-card span {
+  color: #68798f;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.visual-card strong {
+  color: #1f5ea8;
+  font-size: 22px;
+}
+
+.truck-body {
+  position: relative;
+  width: min(360px, 100%);
+  height: 150px;
+  margin: 90px auto 12px;
+}
+
+.truck-cargo,
+.truck-cab {
+  position: absolute;
+  bottom: 28px;
+  border: 3px solid #1f5ea8;
+  background: #ffffff;
+}
+
+.truck-cargo {
+  left: 0;
+  display: flex;
+  gap: 10px;
+  align-items: end;
+  width: 230px;
+  height: 96px;
+  border-radius: 8px 0 0 8px;
+  padding: 14px;
+}
+
+.truck-cargo span {
+  width: 48px;
+  height: 42px;
+  border: 2px solid #d18036;
+  border-radius: 4px;
+  background: #ffdfb1;
+}
+
+.truck-cargo span:nth-child(2) {
+  height: 58px;
+}
+
+.truck-cab {
+  right: 0;
+  width: 120px;
+  height: 78px;
+  border-radius: 0 16px 8px 0;
+  background: #dcecff;
+}
+
+.truck-wheel {
+  position: absolute;
+  bottom: 0;
+  width: 46px;
+  height: 46px;
+  border: 8px solid #172033;
+  border-radius: 999px;
+  background: #ffffff;
+}
+
+.truck-wheel.first {
+  left: 54px;
+}
+
+.truck-wheel.second {
+  right: 54px;
+}
+
+.feature-grid,
+.notice-section {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.feature-grid article,
+.notice-section article {
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  padding: 20px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(30, 64, 114, 0.08);
+}
+
+.feature-grid span {
+  color: #1f5ea8;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.feature-grid h3,
+.notice-section h3 {
+  margin: 12px 0 8px;
+  color: #172033;
+}
+
+.feature-grid p,
+.notice-section p {
+  margin: 0;
+  color: #56677c;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.process-section {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  margin-top: 24px;
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  padding: 24px;
+  background: #ffffff;
+}
+
+.process-timeline {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.process-timeline li {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  min-height: 94px;
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  padding: 16px;
+  background: #f7fbff;
+}
+
+.process-timeline span {
+  color: #1f5ea8;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.process-timeline strong {
+  color: #253853;
+  font-size: 14px;
+}
+
+.notice-section {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.text-button {
+  margin-top: 14px;
+  border: 0;
+  padding: 0;
+  color: #1f5ea8;
+  background: transparent;
+  font-weight: 900;
+  cursor: pointer;
 }
 
 .admin-reservation-view {
@@ -735,9 +1001,10 @@ h3 {
 
 .reservation-form,
 .status-panel {
-  border: 1px solid #e5ddd5;
+  border: 1px solid #dce6f2;
   border-radius: 8px;
   background: #ffffff;
+  box-shadow: 0 12px 28px rgba(30, 64, 114, 0.08);
 }
 
 .reservation-form {
@@ -766,7 +1033,7 @@ h3 {
   gap: 16px;
   margin-bottom: 22px;
   padding-bottom: 18px;
-  border-bottom: 1px solid #eee5dc;
+  border-bottom: 1px solid #e4edf7;
 }
 
 .section-heading p,
@@ -789,7 +1056,7 @@ h3 {
 
 label,
 legend {
-  color: #534941;
+  color: #30445f;
   font-size: 14px;
   font-weight: 700;
 }
@@ -808,11 +1075,11 @@ select,
 textarea {
   width: 100%;
   box-sizing: border-box;
-  border: 1px solid #d8cec4;
+  border: 1px solid #cad8e8;
   border-radius: 6px;
   padding: 11px 12px;
-  color: #24211e;
-  background: #fffdfb;
+  color: #172033;
+  background: #ffffff;
   font: inherit;
   font-size: 15px;
 }
@@ -825,8 +1092,8 @@ textarea {
 input:focus,
 select:focus,
 textarea:focus {
-  outline: 3px solid rgba(182, 82, 58, 0.18);
-  border-color: #b6523a;
+  outline: 3px solid rgba(31, 94, 168, 0.18);
+  border-color: #1f5ea8;
 }
 
 fieldset {
@@ -891,7 +1158,7 @@ legend {
 .result strong {
   display: block;
   margin-bottom: 16px;
-  color: #b6523a;
+  color: #1f5ea8;
   font-size: 22px;
 }
 
@@ -1169,12 +1436,12 @@ legend {
 }
 
 .primary-action {
-  background: #b6523a;
+  background: #1f5ea8;
 }
 
 .secondary {
-  color: #534941;
-  background: #efe7df;
+  color: #1f5ea8;
+  background: #e5f0fb;
 }
 
 .danger {
@@ -1216,6 +1483,31 @@ dd {
 
   .view-tabs {
     padding-inline: 18px;
+    overflow-x: auto;
+  }
+
+  .top-bar {
+    gap: 12px;
+  }
+
+  .hero-section,
+  .process-section,
+  .feature-grid,
+  .notice-section {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-section {
+    min-height: auto;
+    padding: 24px;
+  }
+
+  .moving-visual {
+    min-height: 250px;
+  }
+
+  .process-timeline {
+    grid-template-columns: 1fr;
   }
 
   .admin-reservation-view {

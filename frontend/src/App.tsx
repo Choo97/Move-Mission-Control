@@ -37,6 +37,12 @@ import type {
 
 type ActiveView = 'create' | 'search' | 'faq' | 'admin'
 
+type LandingProps = {
+  onReserveClick: () => void
+  onSearchClick: () => void
+  onFaqClick: () => void
+}
+
 const adminQueryKeys = [
   'status',
   'keyword',
@@ -342,9 +348,12 @@ function App() {
   return (
     <main className="app-shell">
       <header className="top-bar">
-        <div>
-          <p className="eyebrow">Move Mission Control</p>
-          <h1>고객 이사 예약</h1>
+        <div className="brand-mark" aria-label="24nalpo">
+          <span>24</span>
+        </div>
+        <div className="brand-copy">
+          <p className="eyebrow">Moving Reservation Platform</p>
+          <h1>24nalpo</h1>
         </div>
         <a className="admin-link" href={`${API_BASE_URL}/admin/reservations`}>
           관리자
@@ -361,7 +370,7 @@ function App() {
             setActionMessage('')
           }}
         >
-          예약 신청
+          이사 예약
         </button>
         <button
           type="button"
@@ -371,7 +380,7 @@ function App() {
             setActionMessage('')
           }}
         >
-          자주 묻는 질문
+          이용 안내
         </button>
         <button
           type="button"
@@ -392,7 +401,7 @@ function App() {
             setActionMessage('')
           }}
         >
-          관리자 목록
+          관리자
         </button>
       </nav>
 
@@ -401,7 +410,25 @@ function App() {
       ) : activeView === 'faq' ? (
         <section className="workspace"><FaqView /></section>
       ) : (
-        <section className="workspace">
+        <>
+        {activeView === 'create' && (
+          <LandingSections
+            onReserveClick={() => {
+              document.getElementById('reservation-form')?.scrollIntoView({ behavior: 'smooth' })
+            }}
+            onSearchClick={() => {
+              changeView('search')
+              setSearchErrorMessage('')
+              setActionMessage('')
+            }}
+            onFaqClick={() => {
+              changeView('faq')
+              setActionMessage('')
+            }}
+          />
+        )}
+
+        <section id="reservation-form" className="workspace">
           {activeView === 'create' ? (
           <ReservationCreateForm
             form={form}
@@ -455,8 +482,107 @@ function App() {
           onSubmitReview={submitReview}
         />
         </section>
+        </>
       )}
     </main>
+  )
+}
+
+function LandingSections({ onReserveClick, onSearchClick, onFaqClick }: LandingProps) {
+  return (
+    <section className="landing-page" aria-label="24nalpo 서비스 소개">
+      <div className="hero-section">
+        <div className="hero-copy">
+          <p className="eyebrow">Public Service Style Moving Platform</p>
+          <h2>간편하게 예약하고 편하게 이사하세요</h2>
+          <p>
+            출발지와 도착지, 이사 날짜만 입력하면 예약 접수가 가능합니다.
+            가능한 시간만 선택할 수 있어 처음 신청하는 고객도 빠르게 진행할 수 있습니다.
+          </p>
+          <div className="hero-actions">
+            <button type="button" className="submit-button primary-action" onClick={onReserveClick}>
+              이사 예약하기
+            </button>
+            <button type="button" className="submit-button secondary" onClick={onSearchClick}>
+              예약 조회하기
+            </button>
+          </div>
+        </div>
+        <div className="moving-visual" aria-hidden="true">
+          <div className="visual-card visual-card-map">
+            <span>START</span>
+            <strong>ROUTE</strong>
+            <span>HOME</span>
+          </div>
+          <div className="truck-body">
+            <div className="truck-cargo">
+              <span />
+              <span />
+              <span />
+            </div>
+            <div className="truck-cab" />
+            <div className="truck-wheel first" />
+            <div className="truck-wheel second" />
+          </div>
+        </div>
+      </div>
+
+      <div className="feature-grid" aria-label="서비스 특징">
+        <article>
+          <span>01</span>
+          <h3>빠른 예약 접수</h3>
+          <p>온라인으로 간편하게 이사 예약을 신청할 수 있습니다.</p>
+        </article>
+        <article>
+          <span>02</span>
+          <h3>예약 가능 시간 확인</h3>
+          <p>운영 시간과 휴무일을 기준으로 가능한 시간만 선택합니다.</p>
+        </article>
+        <article>
+          <span>03</span>
+          <h3>예약 상태 조회</h3>
+          <p>예약번호와 연락처 인증으로 진행 상태를 확인합니다.</p>
+        </article>
+        <article>
+          <span>04</span>
+          <h3>사진 업로드</h3>
+          <p>이삿짐 사진을 등록해 더 정확한 상담을 받을 수 있습니다.</p>
+        </article>
+      </div>
+
+      <div className="process-section">
+        <div>
+          <p className="eyebrow">Reservation Process</p>
+          <h2>예약 진행 절차</h2>
+        </div>
+        <ol className="process-timeline">
+          <li><span>01</span><strong>예약 정보 입력</strong></li>
+          <li><span>02</span><strong>가능 시간 선택</strong></li>
+          <li><span>03</span><strong>예약 접수 완료</strong></li>
+          <li><span>04</span><strong>관리자 확인</strong></li>
+          <li><span>05</span><strong>견적 확인 및 진행</strong></li>
+        </ol>
+      </div>
+
+      <div className="notice-section">
+        <article>
+          <p className="eyebrow">Guide</p>
+          <h3>예약 전 확인사항</h3>
+          <p>출발지와 도착지 주소, 층수, 엘리베이터 여부를 미리 확인하면 접수가 빨라집니다.</p>
+        </article>
+        <article>
+          <p className="eyebrow">Checklist</p>
+          <h3>이사 준비 체크리스트</h3>
+          <p>깨지기 쉬운 짐, 대형 가전, 주차 정보는 요청사항에 남겨 주세요.</p>
+        </article>
+        <article>
+          <p className="eyebrow">Support</p>
+          <h3>자주 묻는 질문</h3>
+          <p>예약 조회, 사진 업로드, 견적 확인 방법은 FAQ에서 확인할 수 있습니다.</p>
+          <button type="button" className="text-button" onClick={onFaqClick}>FAQ 보기</button>
+        </article>
+      </div>
+    </section>
   )
 }
 
