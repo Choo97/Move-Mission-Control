@@ -4,6 +4,7 @@ import com.moving.reservation.reservation.Reservation;
 import com.moving.reservation.reservation.ReservationService;
 import com.moving.reservation.reservation.ReservationSort;
 import com.moving.reservation.reservation.ReservationStatus;
+import com.moving.reservation.reservation.ReservationSummary;
 import com.moving.reservation.notification.CustomerNotificationService;
 import com.moving.reservation.notification.EmailNotificationSendResult;
 import java.time.LocalDate;
@@ -63,7 +64,16 @@ public class AdminReservationApiController {
                 PageRequest.of(Math.max(page, 0), selectedPageSize(size))
         );
 
-        return AdminReservationPageResponse.from(reservationPage);
+        ReservationSummary summary = reservationService.summary();
+        AdminDashboardTaskSummary taskSummary = new AdminDashboardTaskSummary(
+                summary.received(),
+                summary.consulting(),
+                reservationService.countEstimateAcceptancePending(),
+                reservationService.countDistancePending(),
+                customerNotificationService.countFailedEmails()
+        );
+
+        return AdminReservationPageResponse.from(reservationPage, taskSummary);
     }
 
     @GetMapping("/{id}")

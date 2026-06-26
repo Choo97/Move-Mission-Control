@@ -21,12 +21,21 @@ export type AdminReservationListItemResponse = {
 
 export type AdminReservationPageResponse = {
   content: AdminReservationListItemResponse[]
+  taskSummary: AdminDashboardTaskSummary
   pageNumber: number
   pageSize: number
   totalElements: number
   totalPages: number
   first: boolean
   last: boolean
+}
+
+export type AdminDashboardTaskSummary = {
+  receivedCount: number
+  consultingCount: number
+  estimateAcceptancePendingCount: number
+  distancePendingCount: number
+  failedEmailCount: number
 }
 
 export type AdminReservationStatusHistoryResponse = {

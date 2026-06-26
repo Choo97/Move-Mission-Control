@@ -9,6 +9,7 @@ import { API_BASE_URL } from '../reservationData'
 import { AdminReservationDetailPanel } from './AdminReservationDetailPanel'
 import { AdminAvailabilitySettings } from './AdminAvailabilitySettings'
 import type {
+  AdminDashboardTaskSummary,
   AdminReservationListQuery,
   AdminReservationPageResponse,
   AdminReservationConflictAttemptResponse,
@@ -166,6 +167,8 @@ export function AdminReservationListView() {
       </div>
 
       <AdminAvailabilitySettings />
+
+      {reservationPage?.taskSummary && <AdminTaskSummaryCards summary={reservationPage.taskSummary} />}
 
       {conflictAttempts.length > 0 && (
         <section className="admin-conflict-attempts" aria-labelledby="conflict-attempts-title">
@@ -355,6 +358,63 @@ export function AdminReservationListView() {
             onReservationChanged={() => setRefreshVersion((current) => current + 1)}
           />
         )}
+      </div>
+    </section>
+  )
+}
+
+function AdminTaskSummaryCards({ summary }: { summary: AdminDashboardTaskSummary }) {
+  const totalCount =
+    summary.receivedCount +
+    summary.consultingCount +
+    summary.estimateAcceptancePendingCount +
+    summary.distancePendingCount +
+    summary.failedEmailCount
+  const taskCards = [
+    {
+      label: '접수 대기',
+      value: summary.receivedCount,
+      description: '상담 시작이 필요한 예약',
+    },
+    {
+      label: '상담 진행',
+      value: summary.consultingCount,
+      description: '상담 메모와 견적 확인 필요',
+    },
+    {
+      label: '고객 동의 대기',
+      value: summary.estimateAcceptancePendingCount,
+      description: '견적 안내 후 동의 전 예약',
+    },
+    {
+      label: '거리 확인 필요',
+      value: summary.distancePendingCount,
+      description: '거리 입력 후 견적 점검 필요',
+    },
+    {
+      label: '이메일 실패',
+      value: summary.failedEmailCount,
+      description: '발송 실패 이력 확인 필요',
+    },
+  ]
+
+  return (
+    <section className="admin-task-summary" aria-labelledby="admin-task-summary-title">
+      <div className="admin-task-summary-heading">
+        <div>
+          <p className="eyebrow">Today Focus</p>
+          <h3 id="admin-task-summary-title">처리 우선순위 요약</h3>
+        </div>
+        <span>확인 필요 {totalCount.toLocaleString()}건</span>
+      </div>
+      <div className="admin-task-card-grid">
+        {taskCards.map((card) => (
+          <article key={card.label}>
+            <span>{card.label}</span>
+            <strong>{card.value.toLocaleString()}</strong>
+            <p>{card.description}</p>
+          </article>
+        ))}
       </div>
     </section>
   )

@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 
 public record AdminReservationPageResponse(
         List<AdminReservationListItemResponse> content,
+        AdminDashboardTaskSummary taskSummary,
         int pageNumber,
         int pageSize,
         long totalElements,
@@ -14,11 +15,13 @@ public record AdminReservationPageResponse(
         boolean last
 ) {
 
-    public static AdminReservationPageResponse from(Page<Reservation> page) {
+    public static AdminReservationPageResponse from(Page<Reservation> page,
+                                                    AdminDashboardTaskSummary taskSummary) {
         return new AdminReservationPageResponse(
                 page.getContent().stream()
                         .map(AdminReservationListItemResponse::from)
                         .toList(),
+                taskSummary,
                 page.getNumber(),
                 page.getSize(),
                 page.getTotalElements(),

@@ -1,5 +1,6 @@
 export type { ApiErrorResponse } from './types/api'
 export type {
+  AdminDashboardTaskSummary,
   AdminAuditLogResponse,
   AdminEmailSendResponse,
   AdminNotificationHistoryResponse,
