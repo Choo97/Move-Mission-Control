@@ -1933,3 +1933,189 @@ dd {
     flex-direction: column;
   }
 }
+
+@media (max-width: 640px) {
+  .top-bar {
+    padding: 18px 16px;
+  }
+
+  .brand-mark {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+
+  .brand-copy h1 {
+    font-size: 26px;
+  }
+
+  .admin-link {
+    min-height: 40px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  .view-tabs {
+    gap: 6px;
+    padding: 12px 16px 0;
+  }
+
+  .view-tabs button {
+    flex: 0 0 auto;
+    min-width: 104px;
+    min-height: 44px;
+    padding: 0 12px;
+    font-size: 14px;
+  }
+
+  .landing-page {
+    padding: 18px 16px 0;
+  }
+
+  .hero-section {
+    gap: 20px;
+    padding: 22px 18px;
+  }
+
+  .hero-copy h2 {
+    font-size: 32px;
+  }
+
+  .hero-copy p:not(.eyebrow) {
+    font-size: 15px;
+  }
+
+  .hero-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .hero-actions .submit-button {
+    width: 100%;
+  }
+
+  .moving-visual {
+    min-height: 220px;
+    padding: 18px;
+  }
+
+  .visual-card {
+    top: 18px;
+    right: 18px;
+    min-width: 124px;
+    padding: 12px;
+  }
+
+  .truck-body {
+    transform: scale(0.82);
+    transform-origin: bottom center;
+  }
+
+  .feature-grid,
+  .notice-section,
+  .process-section {
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .process-section,
+  .feature-grid article,
+  .notice-section article {
+    padding: 16px;
+  }
+
+  .workspace {
+    gap: 16px;
+    padding: 20px 16px 36px;
+  }
+
+  .reservation-form,
+  .status-panel {
+    padding: 18px;
+  }
+
+  .section-heading {
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+  }
+
+  .reservation-stepper {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .reservation-stepper li {
+    grid-template-columns: 28px minmax(0, 1fr);
+    padding: 9px;
+  }
+
+  .reservation-stepper li span {
+    width: 28px;
+    height: 28px;
+  }
+
+  .reservation-stepper small {
+    display: none;
+  }
+
+  input,
+  select,
+  textarea {
+    min-height: 48px;
+    padding: 12px;
+    font-size: 16px;
+  }
+
+  textarea {
+    min-height: 110px;
+  }
+
+  .submit-button {
+    min-height: 48px;
+    font-size: 15px;
+  }
+
+  .switch-row {
+    gap: 8px;
+  }
+
+  .switch-row label {
+    min-height: 40px;
+  }
+
+  .search-guide div {
+    align-items: start;
+  }
+
+  .lookup-result-card strong {
+    font-size: 16px;
+  }
+
+  dl div {
+    align-items: start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  dd {
+    text-align: left;
+  }
+
+  .completion-card {
+    padding: 16px;
+  }
+
+  .reservation-number-box strong {
+    font-size: 32px;
+  }
+
+  .photo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-links {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
