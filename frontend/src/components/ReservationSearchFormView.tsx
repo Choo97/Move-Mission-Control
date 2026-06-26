@@ -1,5 +1,6 @@
 import type { FormEvent } from 'react'
 import type { ReservationSearchForm } from '../types'
+import { StatusNotice } from './StatusNotice'
 
 type Props = {
   form: ReservationSearchForm
@@ -56,7 +57,17 @@ export function ReservationSearchFormView({ form, errorMessage, isSearching, onS
         </label>
       </div>
 
-      {errorMessage && <p className="message error">{errorMessage}</p>}
+      {errorMessage && (
+        <StatusNotice
+          title="예약을 조회하지 못했습니다"
+          description={errorMessage}
+          actions={[
+            '예약 완료 화면에 나온 번호를 다시 확인해 주세요.',
+            '예약 신청 때 입력한 연락처와 같은 형식으로 입력해 주세요.',
+          ]}
+          tone="info"
+        />
+      )}
 
       <button className="submit-button" type="submit" disabled={isSearching}>
         {isSearching ? '예약 조회 중' : '예약 조회'}

@@ -1,6 +1,7 @@
 import type { ChangeEvent, Dispatch, FormEvent, SetStateAction } from 'react'
 import { API_BASE_URL } from '../reservationData'
 import type { CustomerGuideItem, ReservationResponse, ReviewForm, ReviewResponse } from '../types'
+import { StatusNotice } from './StatusNotice'
 
 type Props = {
   activeView: 'create' | 'search'
@@ -99,11 +100,19 @@ export function ReservationDetailPanel({
           />
         </div>
       ) : (
-        <p className="empty-state">
-          {activeView === 'create'
-            ? '예약 신청을 완료하면 접수 결과가 여기에 표시됩니다.'
-            : '예약을 조회하면 상세 정보가 여기에 표시됩니다.'}
-        </p>
+        <StatusNotice
+          title={activeView === 'create' ? '아직 접수된 예약이 없습니다' : '아직 조회된 예약이 없습니다'}
+          description={
+            activeView === 'create'
+              ? '예약 신청을 완료하면 예약번호와 접수 결과가 이곳에 표시됩니다.'
+              : '예약번호와 연락처를 입력하면 예약 상태와 견적 정보를 확인할 수 있습니다.'
+          }
+          actions={
+            activeView === 'create'
+              ? ['필수 정보를 입력한 뒤 예약을 제출해 주세요.', '예약번호는 이후 조회에 필요하니 따로 보관해 주세요.']
+              : ['예약 완료 화면에서 받은 예약번호를 준비해 주세요.', '신청 때 입력한 연락처를 그대로 입력해 주세요.']
+          }
+        />
       )}
     </aside>
   )
@@ -364,7 +373,11 @@ function PhotoSection({
           ))}
         </div>
       ) : (
-        <p className="empty-state">업로드된 짐 사진이 없습니다.</p>
+        <StatusNotice
+          title="업로드된 짐 사진이 없습니다"
+          description="짐 사진을 올리면 관리자가 짐 규모를 더 정확하게 확인할 수 있습니다."
+          actions={reservation.editable ? ['이미지 파일을 선택한 뒤 사진 업로드 버튼을 눌러 주세요.'] : []}
+        />
       )}
       {reservation.editable && (
         <form className="photo-upload-form" onSubmit={onUploadPhotos}>

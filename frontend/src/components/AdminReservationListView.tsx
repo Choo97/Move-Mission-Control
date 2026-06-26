@@ -8,6 +8,7 @@ import { getErrorMessage } from '../api/apiError'
 import { API_BASE_URL } from '../reservationData'
 import { AdminReservationDetailPanel } from './AdminReservationDetailPanel'
 import { AdminAvailabilitySettings } from './AdminAvailabilitySettings'
+import { StatusNotice } from './StatusNotice'
 import type {
   AdminDashboardTaskSummary,
   AdminReservationListQuery,
@@ -316,7 +317,15 @@ export function AdminReservationListView() {
               </tbody>
             </table>
             {!isLoading && reservationPage?.content.length === 0 && (
-              <p className="admin-empty">조건에 맞는 예약이 없습니다.</p>
+              <StatusNotice
+                title="조건에 맞는 예약이 없습니다"
+                description="현재 필터와 검색어에 해당하는 예약이 없습니다."
+                actions={[
+                  '상태 필터를 전체로 바꿔 보세요.',
+                  '검색어를 지우거나 거리 확인 필요 조건을 해제해 보세요.',
+                ]}
+                className="admin-empty-state"
+              />
             )}
           </div>
 
@@ -349,7 +358,11 @@ export function AdminReservationListView() {
         {selectedReservationId === null ? (
           <aside className="admin-detail-panel placeholder">
             <h2>예약 상세</h2>
-            <p>목록에서 예약을 선택하면 상세 정보가 표시됩니다.</p>
+            <StatusNotice
+              title="선택된 예약이 없습니다"
+              description="목록에서 예약을 선택하면 고객 정보, 견적, 알림, 작업 이력을 확인할 수 있습니다."
+              actions={['먼저 처리 우선순위가 높은 예약부터 상세 버튼을 눌러 확인해 주세요.']}
+            />
           </aside>
         ) : (
           <AdminReservationDetailPanel

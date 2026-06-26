@@ -1457,6 +1457,69 @@ h3 {
   font-size: 14px;
 }
 
+.status-notice {
+  margin: 16px 0 0;
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  padding: 16px;
+  background: #f8fbff;
+  color: #172033;
+}
+
+.status-notice strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.status-notice p {
+  margin: 6px 0 0;
+  color: #4f5968;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.status-notice ul {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.status-notice li {
+  position: relative;
+  padding-left: 14px;
+  color: #243244;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.status-notice li::before {
+  position: absolute;
+  top: 0.65em;
+  left: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: #376fb7;
+  content: "";
+}
+
+.status-notice-info {
+  border-color: #cfd8e4;
+  background: #f3f4f6;
+}
+
+.admin-empty-state {
+  margin: 0;
+  border: 0;
+  border-top: 1px solid #e4e8ee;
+  border-radius: 0;
+  background: #ffffff;
+}
+
 .field-grid,
 .address-grid {
   display: grid;
