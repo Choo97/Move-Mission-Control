@@ -869,6 +869,95 @@ h3 {
   gap: 20px;
 }
 
+.admin-workflow-summary {
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  padding: 16px;
+  background: #f8fbff;
+}
+
+.admin-workflow-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.admin-workflow-heading h3 {
+  margin: 0;
+}
+
+.admin-workflow-heading > span {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 6px 10px;
+  color: #30445f;
+  background: #e5f0fb;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-workflow-grid article {
+  min-width: 0;
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.admin-workflow-grid span {
+  display: block;
+  margin-bottom: 6px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-workflow-grid strong {
+  display: block;
+  color: #172033;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.admin-flow-path {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.admin-flow-path span {
+  border: 1px solid #dce6f2;
+  border-radius: 999px;
+  padding: 5px 8px;
+  color: #64748b;
+  background: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-flow-path span.done {
+  border-color: #9fc4ed;
+  color: #1f5ea8;
+  background: #eef6ff;
+}
+
+.admin-latest-action {
+  margin: 12px 0 0;
+  color: #30445f;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
 .admin-detail-title strong {
   color: #1f5ea8;
   font-size: 21px;
@@ -1884,6 +1973,10 @@ dd {
   }
 
   .admin-master-detail {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-workflow-grid {
     grid-template-columns: 1fr;
   }
 

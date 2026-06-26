@@ -31,6 +31,43 @@ const statusOptions: Array<{ value: ReservationStatus; label: string }> = [
   { value: 'CANCELED', label: '취소' },
 ]
 
+const getAdminNextTask = (reservation: AdminReservationDetailResponse) => {
+  if (reservation.status === 'CANCELED') {
+    return '취소된 예약입니다. 추가 상담이 필요한 경우 메모만 남겨 주세요.'
+  }
+
+  if (reservation.status === 'COMPLETED') {
+    return '완료된 예약입니다. 리뷰와 고객 행동 이력을 확인하세요.'
+  }
+
+  if (reservation.distanceKm === null) {
+    return '이동 거리를 확인하고 견적을 점검하세요.'
+  }
+
+  if (reservation.status === 'RECEIVED') {
+    return '고객에게 상담을 시작하고 상태를 상담중으로 변경하세요.'
+  }
+
+  if (reservation.status === 'CONSULTING') {
+    return '상담 내용을 메모하고 견적 안내 상태로 변경하세요.'
+  }
+
+  if (reservation.status === 'ESTIMATE_SENT' && !reservation.estimateAccepted) {
+    return '고객의 견적 동의 여부를 확인하세요.'
+  }
+
+  if (reservation.status === 'CONFIRMED') {
+    return '이사 진행 후 완료 상태로 변경하세요.'
+  }
+
+  return '예약 정보를 확인하고 필요한 운영 작업을 진행하세요.'
+}
+
+const countNotifications = (
+  reservation: AdminReservationDetailResponse,
+  status: 'READY' | 'SENT' | 'FAILED',
+) => reservation.notifications.filter((notification) => notification.status === status).length
+
 export function AdminReservationDetailPanel({ reservationId, onClose, onReservationChanged }: Props) {
   const [reservation, setReservation] = useState<AdminReservationDetailResponse | null>(null)
   const [selectedStatus, setSelectedStatus] = useState<ReservationStatus>('RECEIVED')
@@ -273,6 +310,8 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
 
       {reservation && (
         <div className="admin-detail-content">
+          <AdminWorkflowSummary reservation={reservation} />
+
           <section>
             <div className="admin-detail-title">
               <strong>{reservation.customerName}</strong>
@@ -570,5 +609,73 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
         </div>
       )}
     </aside>
+  )
+}
+
+function AdminWorkflowSummary({ reservation }: { reservation: AdminReservationDetailResponse }) {
+  const readyNotifications = countNotifications(reservation, 'READY')
+  const failedNotifications = countNotifications(reservation, 'FAILED')
+  const latestCustomerAction = reservation.customerActionHistories[0]
+  const taskItems = [
+    {
+      label: '다음 처리',
+      value: getAdminNextTask(reservation),
+    },
+    {
+      label: '고객 입력',
+      value: reservation.photos.length > 0
+        ? `짐 사진 ${reservation.photos.length}장 업로드됨`
+        : reservation.memo
+          ? '요청사항 있음, 사진 없음'
+          : '요청사항과 사진 없음',
+    },
+    {
+      label: '견적 상태',
+      value: reservation.estimateAccepted
+        ? `고객 동의 완료 ${reservation.acceptedEstimatePrice?.toLocaleString() ?? ''}원`
+        : `${reservation.finalEstimatedPrice.toLocaleString()}원, 동의 전`,
+    },
+    {
+      label: '알림 상태',
+      value: failedNotifications > 0
+        ? `실패 ${failedNotifications}건 확인 필요`
+        : readyNotifications > 0
+          ? `발송 준비 ${readyNotifications}건`
+          : '대기 중인 알림 없음',
+    },
+  ]
+
+  return (
+    <section className="admin-workflow-summary" aria-labelledby="admin-workflow-summary-title">
+      <div className="admin-workflow-heading">
+        <div>
+          <p className="eyebrow">Customer Flow</p>
+          <h3 id="admin-workflow-summary-title">고객 흐름 요약</h3>
+        </div>
+        <span>{reservation.statusLabel}</span>
+      </div>
+      <div className="admin-workflow-grid">
+        {taskItems.map((item) => (
+          <article key={item.label}>
+            <span>{item.label}</span>
+            <strong>{item.value}</strong>
+          </article>
+        ))}
+      </div>
+      <div className="admin-flow-path" aria-label="고객 예약 흐름">
+        <span className="done">예약 접수</span>
+        <span className={reservation.photos.length > 0 || reservation.memo ? 'done' : ''}>정보 확인</span>
+        <span className={reservation.distanceKm !== null ? 'done' : ''}>거리/견적 점검</span>
+        <span className={reservation.status === 'ESTIMATE_SENT' || reservation.estimateAccepted ? 'done' : ''}>
+          견적 안내
+        </span>
+        <span className={reservation.estimateAccepted ? 'done' : ''}>고객 동의</span>
+      </div>
+      {latestCustomerAction && (
+        <p className="admin-latest-action">
+          최근 고객 행동: {latestCustomerAction.summary} · {latestCustomerAction.createdAt.replace('T', ' ').slice(0, 16)}
+        </p>
+      )}
+    </section>
   )
 }
