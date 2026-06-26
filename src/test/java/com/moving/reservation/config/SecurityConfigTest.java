@@ -5,6 +5,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -59,6 +60,20 @@ class SecurityConfigTest {
     }
 
     @Test
+    void 관리자권한이_없으면_관리자_화면에_접근할_수_없다() throws Exception {
+        mockMvc.perform(get("/admin/reservations")
+                        .with(user("customer").roles("USER")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void 로그인하지_않으면_관리자_계정관리도_로그인화면으로_이동한다() throws Exception {
+        mockMvc.perform(get("/admin/account/users"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"));
+    }
+
+    @Test
     void 관리자권한이_없으면_관리자_API에_접근할_수_없다() throws Exception {
         mockMvc.perform(get("/api/admin/reservations")
                         .with(user("customer").roles("USER")))
@@ -68,6 +83,12 @@ class SecurityConfigTest {
     @Test
     void 로그인하지_않으면_관리자_API는_401을_응답한다() throws Exception {
         mockMvc.perform(get("/api/admin/reservations"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void 로그인하지_않으면_관리자_API_수정요청도_401을_응답한다() throws Exception {
+        mockMvc.perform(patch("/api/admin/reservations/1/status"))
                 .andExpect(status().isUnauthorized());
     }
 

@@ -26,6 +26,38 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 public class SecurityConfig {
 
+    private static final AntPathRequestMatcher[] CSRF_EXCLUDED_MATCHERS = {
+            new AntPathRequestMatcher("/reservations", "POST"),
+            new AntPathRequestMatcher("/api/reservations", "POST"),
+            new AntPathRequestMatcher("/api/reservations/*", "PATCH"),
+            new AntPathRequestMatcher("/api/reservations/*/cancel", "POST"),
+            new AntPathRequestMatcher("/api/reservations/*/estimate/accept", "POST"),
+            new AntPathRequestMatcher("/api/reservations/*/photos", "POST"),
+            new AntPathRequestMatcher("/api/reservations/search", "POST"),
+            new AntPathRequestMatcher("/api/reviews", "POST"),
+            new AntPathRequestMatcher("/api/admin/reservations/*/status", "PATCH"),
+            new AntPathRequestMatcher("/api/admin/reservations/*/estimate", "PATCH"),
+            new AntPathRequestMatcher("/api/admin/reservations/*/distance", "PATCH"),
+            new AntPathRequestMatcher("/api/admin/reservations/*/memo", "PATCH"),
+            new AntPathRequestMatcher("/api/admin/operating-schedules/*", "PUT"),
+            new AntPathRequestMatcher("/api/admin/holidays", "POST"),
+            new AntPathRequestMatcher("/api/admin/holidays/*", "DELETE"),
+            new AntPathRequestMatcher("/api/admin/reservations/*/notifications/email/send", "POST"),
+            new AntPathRequestMatcher("/api/admin/reservations/*/notifications/email/resend-failed", "POST")
+    };
+
+    private static final String[] PUBLIC_PAGE_PATHS = {
+            "/", "/login", "/faq", "/css/**", "/js/**", "/reservations", "/reservations/**",
+            "/reviews", "/reviews/**", "/uploads/**"
+    };
+
+    private static final String[] PUBLIC_DOCUMENT_PATHS = {
+            "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**"
+    };
+
+    private static final String ADMIN_API_PATH = "/api/admin/**";
+    private static final String ADMIN_PAGE_PATH = "/admin/**";
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    AdminAuthenticationFailureHandler adminAuthenticationFailureHandler,
@@ -34,25 +66,7 @@ public class SecurityConfig {
                 .cors(cors -> {
                 })
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers(
-                                new AntPathRequestMatcher("/reservations", "POST"),
-                                new AntPathRequestMatcher("/api/reservations", "POST"),
-                                new AntPathRequestMatcher("/api/reservations/*", "PATCH"),
-                                new AntPathRequestMatcher("/api/reservations/*/cancel", "POST"),
-                                new AntPathRequestMatcher("/api/reservations/*/estimate/accept", "POST"),
-                                new AntPathRequestMatcher("/api/reservations/*/photos", "POST"),
-                                new AntPathRequestMatcher("/api/reservations/search", "POST"),
-                                new AntPathRequestMatcher("/api/reviews", "POST"),
-                                new AntPathRequestMatcher("/api/admin/reservations/*/status", "PATCH"),
-                                new AntPathRequestMatcher("/api/admin/reservations/*/estimate", "PATCH"),
-                                new AntPathRequestMatcher("/api/admin/reservations/*/distance", "PATCH"),
-                                new AntPathRequestMatcher("/api/admin/reservations/*/memo", "PATCH"),
-                                new AntPathRequestMatcher("/api/admin/operating-schedules/*", "PUT"),
-                                new AntPathRequestMatcher("/api/admin/holidays", "POST"),
-                                new AntPathRequestMatcher("/api/admin/holidays/*", "DELETE"),
-                                new AntPathRequestMatcher("/api/admin/reservations/*/notifications/email/send", "POST"),
-                                new AntPathRequestMatcher("/api/admin/reservations/*/notifications/email/resend-failed", "POST")
-                        )
+                        .ignoringRequestMatchers(CSRF_EXCLUDED_MATCHERS)
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/reservations").permitAll()
@@ -66,21 +80,20 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/customer-guides/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/availability").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/faqs").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/", "/login", "/faq", "/css/**", "/js/**", "/reservations", "/reservations/**",
-                                "/reviews", "/reviews/**", "/uploads/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers(PUBLIC_DOCUMENT_PATHS).permitAll()
+                        .requestMatchers(PUBLIC_PAGE_PATHS).permitAll()
+                        .requestMatchers(ADMIN_API_PATH).hasRole("ADMIN")
+                        .requestMatchers(ADMIN_PAGE_PATH).hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception
                         .defaultAuthenticationEntryPointFor(
                                 new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
-                                new AntPathRequestMatcher("/api/admin/**")
+                                new AntPathRequestMatcher(ADMIN_API_PATH)
                         )
                         .defaultAuthenticationEntryPointFor(
                                 new LoginUrlAuthenticationEntryPoint("/login"),
-                                new AntPathRequestMatcher("/admin/**")
+                                new AntPathRequestMatcher(ADMIN_PAGE_PATH)
                         )
                 )
                 .formLogin(form -> form
