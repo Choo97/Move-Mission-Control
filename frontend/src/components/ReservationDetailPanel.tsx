@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { ChangeEvent, Dispatch, FormEvent, SetStateAction } from 'react'
 import { API_BASE_URL } from '../reservationData'
 import type { CustomerGuideItem, ReservationResponse, ReviewForm, ReviewResponse } from '../types'
@@ -126,6 +127,17 @@ function ReservationCompleteCard({
   reservation: ReservationResponse
   onShowSearchForm: () => void
 }) {
+  const [copyMessage, setCopyMessage] = useState('')
+
+  const copyReservationNumber = async () => {
+    try {
+      await navigator.clipboard.writeText(String(reservation.id))
+      setCopyMessage('예약번호를 복사했습니다.')
+    } catch {
+      setCopyMessage('복사가 어렵다면 예약번호를 직접 저장해 주세요.')
+    }
+  }
+
   return (
     <div className="completion-card" role="status" aria-live="polite">
       <p className="eyebrow">Reservation Complete</p>
@@ -134,17 +146,23 @@ function ReservationCompleteCard({
         <span>예약번호</span>
         <strong>{reservation.id}</strong>
       </div>
+      <div className="completion-actions">
+        <button className="submit-button secondary" type="button" onClick={() => void copyReservationNumber()}>
+          예약번호 복사
+        </button>
+        <button className="submit-button secondary" type="button" onClick={onShowSearchForm}>
+          예약 조회하기
+        </button>
+      </div>
+      {copyMessage && <p className="copy-message">{copyMessage}</p>}
       <p>
-        예약 조회에는 예약번호와 연락처가 필요합니다. 번호를 따로 보관해 주세요.
+        예약 조회에는 예약번호와 연락처가 필요합니다. 이 번호를 저장해 두면 조회, 수정 요청, 취소 요청, 사진 업로드를 계속 진행할 수 있습니다.
       </p>
       <ol>
         <li>관리자가 예약 정보를 확인합니다.</li>
         <li>상담 후 견적 안내가 진행됩니다.</li>
         <li>견적 동의 후 예약이 확정됩니다.</li>
       </ol>
-      <button className="submit-button secondary" type="button" onClick={onShowSearchForm}>
-        예약 조회하기
-      </button>
     </div>
   )
 }
@@ -330,9 +348,17 @@ function CustomerRequestSection({ reservation }: { reservation: ReservationRespo
     return null
   }
 
+  const pendingRequestCount = reservation.customerRequests.filter((request) => request.status === 'PENDING').length
+
   return (
     <div className="customer-request-section">
       <h3>요청 처리 현황</h3>
+      {pendingRequestCount > 0 && (
+        <div className="pending-request-guide">
+          <strong>관리자 확인 중입니다</strong>
+          <p>처리 대기 중에는 같은 예약의 추가 수정 또는 취소 요청이 제한됩니다.</p>
+        </div>
+      )}
       <ul>
         {reservation.customerRequests.map((request) => (
           <li key={request.id} className={request.status.toLowerCase()}>
@@ -521,7 +547,7 @@ function CustomerActions({
   const canRequestEdit = reservation.editable && !hasPendingRequest
   const canRequestCancel = reservation.cancelable && !hasPendingRequest
 
-  if (!actionMessage && !canRequestEdit && !canRequestCancel && !reservation.estimateAcceptable) {
+  if (!actionMessage && !hasPendingRequest && !canRequestEdit && !canRequestCancel && !reservation.estimateAcceptable) {
     return null
   }
 
@@ -529,6 +555,9 @@ function CustomerActions({
     <div className="customer-actions">
       <h3>다음에 할 수 있는 일</h3>
       {actionMessage && <p className="message info">{actionMessage}</p>}
+      {hasPendingRequest && (
+        <p className="message info">처리 대기 중인 고객 요청이 있어 관리자 확인 전까지 추가 수정/취소 요청은 제한됩니다.</p>
+      )}
       <div className="button-row customer-action-grid">
         {reservation.estimateAcceptable && (
           <button

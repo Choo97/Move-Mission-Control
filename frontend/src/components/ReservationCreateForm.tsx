@@ -188,6 +188,7 @@ export function ReservationCreateForm({
                 placeholder="010-1234-5678"
                 required
               />
+              <span className="field-message">숫자만 입력해도 자동으로 하이픈을 맞춥니다.</span>
             </label>
             <label>
               이메일
@@ -270,6 +271,7 @@ export function ReservationCreateForm({
                 onChange={(event) => onChange('fromFloor', Number(event.target.value))}
                 required
               />
+              <span className="field-message">1층부터 50층까지 입력할 수 있습니다.</span>
             </label>
             <div className="switch-row">
               <label>
@@ -312,6 +314,7 @@ export function ReservationCreateForm({
                 onChange={(event) => onChange('toFloor', Number(event.target.value))}
                 required
               />
+              <span className="field-message">1층부터 50층까지 입력할 수 있습니다.</span>
             </label>
             <div className="switch-row">
               <label>

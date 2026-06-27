@@ -43,6 +43,7 @@ export function ReservationSearchFormView({ form, errorMessage, isSearching, onS
             placeholder="1"
             required
           />
+          <span className="field-message">예약 완료 화면에 표시된 숫자 번호를 입력해 주세요.</span>
         </label>
         <label>
           연락처
@@ -54,8 +55,19 @@ export function ReservationSearchFormView({ form, errorMessage, isSearching, onS
             placeholder="010-1234-5678"
             required
           />
+          <span className="field-message">예약 신청 때 입력한 연락처를 사용합니다.</span>
         </label>
       </div>
+
+      <StatusNotice
+        title="예약번호를 모른다면"
+        description="예약 완료 화면, 이메일 안내, 문자 안내를 먼저 확인해 주세요."
+        actions={[
+          '그래도 찾기 어렵다면 관리자에게 예약자명과 연락처를 알려 확인을 요청할 수 있습니다.',
+          '연락처가 다르면 개인정보 보호를 위해 예약 정보가 표시되지 않습니다.',
+        ]}
+        tone="info"
+      />
 
       {errorMessage && (
         <StatusNotice

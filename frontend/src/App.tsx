@@ -52,6 +52,20 @@ const getInitialSearchForm = (): ReservationSearchForm => ({
   reservationId: new URLSearchParams(window.location.search).get('reservationId') ?? '',
 })
 
+const formatPhoneNumber = (value: string) => {
+  const digits = value.replace(/\D/g, '').slice(0, 11)
+
+  if (digits.length <= 3) {
+    return digits
+  }
+
+  if (digits.length <= 7) {
+    return `${digits.slice(0, 3)}-${digits.slice(3)}`
+  }
+
+  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`
+}
+
 function App() {
   const [activeView, setActiveView] = useState<ActiveView>(getViewFromUrl)
   const [form, setForm] = useState<ReservationForm>(loadReservationDraft)
@@ -144,21 +158,24 @@ function App() {
   }
 
   const updateField = useCallback(<K extends keyof ReservationForm>(key: K, value: ReservationForm[K]) => {
-    setForm((current) => ({ ...current, [key]: value }))
+    const nextValue = key === 'phone' ? formatPhoneNumber(String(value)) : value
+    setForm((current) => ({ ...current, [key]: nextValue as ReservationForm[K] }))
   }, [])
 
   const updateSearchField = <K extends keyof ReservationSearchForm>(
     key: K,
     value: ReservationSearchForm[K],
   ) => {
-    setSearchForm((current) => ({ ...current, [key]: value }))
+    const nextValue = key === 'phone' ? formatPhoneNumber(String(value)) : value
+    setSearchForm((current) => ({ ...current, [key]: nextValue as ReservationSearchForm[K] }))
   }
 
   const updateEditField = <K extends keyof ReservationEditForm>(
     key: K,
     value: ReservationEditForm[K],
   ) => {
-    setEditForm((current) => (current ? { ...current, [key]: value } : current))
+    const nextValue = key === 'phone' ? formatPhoneNumber(String(value)) : value
+    setEditForm((current) => (current ? { ...current, [key]: nextValue as ReservationEditForm[K] } : current))
   }
 
   const submitReservation = async (event: FormEvent<HTMLFormElement>) => {

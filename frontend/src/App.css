@@ -610,8 +610,11 @@ h3 {
 }
 
 .field-message {
+  display: block;
   color: #64748b;
   font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
 }
 
 .faq-view {
@@ -1773,6 +1776,27 @@ legend {
   line-height: 1;
 }
 
+.completion-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.completion-actions .submit-button {
+  margin-top: 0;
+}
+
+.copy-message {
+  margin-top: 10px;
+  border-radius: 6px;
+  padding: 9px 10px;
+  color: #172033;
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .completion-card ol {
   display: grid;
   gap: 7px;
@@ -1898,6 +1922,27 @@ legend {
 
 .customer-request-section h3 {
   margin-top: 0;
+}
+
+.pending-request-guide {
+  margin-bottom: 12px;
+  border: 1px solid #9fc4ed;
+  border-radius: 6px;
+  padding: 12px;
+  background: #eef6ff;
+}
+
+.pending-request-guide strong {
+  margin: 0;
+  color: #172033;
+  font-size: 14px;
+}
+
+.pending-request-guide p {
+  margin: 6px 0 0;
+  color: #30445f;
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .customer-request-section ul {
@@ -2453,6 +2498,10 @@ dd {
 
   .completion-card {
     padding: 16px;
+  }
+
+  .completion-actions {
+    grid-template-columns: 1fr;
   }
 
   .reservation-number-box strong {

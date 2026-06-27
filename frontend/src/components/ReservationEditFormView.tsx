@@ -22,6 +22,7 @@ export function ReservationEditFormView({ form, today, isUpdating, onSubmit, onC
         <label>
           연락처
           <input value={form.phone} onChange={(event) => onChange('phone', event.target.value)} required />
+          <span className="field-message">예약 조회에 사용한 연락처와 일치해야 합니다.</span>
         </label>
         <label>
           이메일
@@ -64,6 +65,7 @@ export function ReservationEditFormView({ form, today, isUpdating, onSubmit, onC
             onChange={(event) => onChange('fromFloor', Number(event.target.value))}
             required
           />
+          <span className="field-message">1층부터 50층까지 입력할 수 있습니다.</span>
         </label>
         <label>
           도착지 층수
@@ -75,6 +77,7 @@ export function ReservationEditFormView({ form, today, isUpdating, onSubmit, onC
             onChange={(event) => onChange('toFloor', Number(event.target.value))}
             required
           />
+          <span className="field-message">1층부터 50층까지 입력할 수 있습니다.</span>
         </label>
       </div>
 
@@ -107,7 +110,7 @@ export function ReservationEditFormView({ form, today, isUpdating, onSubmit, onC
           수정 취소
         </button>
         <button className="submit-button" type="submit" disabled={isUpdating}>
-          {isUpdating ? '수정 저장 중' : '수정 저장'}
+          {isUpdating ? '수정 요청 중' : '수정 요청'}
         </button>
       </div>
     </form>
