@@ -14,18 +14,31 @@ public class CustomerNotificationService {
 
     private final CustomerNotificationRepository customerNotificationRepository;
     private final EmailNotificationSender emailNotificationSender;
+    private final SmsNotificationSender smsNotificationSender;
+    private final SmsNotificationProperties smsNotificationProperties;
 
     public CustomerNotificationService(CustomerNotificationRepository customerNotificationRepository,
-                                       EmailNotificationSender emailNotificationSender) {
+                                       EmailNotificationSender emailNotificationSender,
+                                       SmsNotificationSender smsNotificationSender,
+                                       SmsNotificationProperties smsNotificationProperties) {
         this.customerNotificationRepository = customerNotificationRepository;
         this.emailNotificationSender = emailNotificationSender;
+        this.smsNotificationSender = smsNotificationSender;
+        this.smsNotificationProperties = smsNotificationProperties;
     }
 
     @Transactional
     public void prepareReservationCreated(Reservation reservation) {
-        save(reservation, NotificationType.RESERVATION_CREATED,
+        saveSms(reservation, NotificationType.RESERVATION_CREATED, reservation.getPhone(),
                 reservation.getCustomerName() + "님, 이사 예약이 접수되었습니다. 예약 번호는 "
                         + reservation.getId() + "번입니다.");
+
+        if (smsNotificationProperties.hasAdminRecipient()) {
+            saveSms(reservation, NotificationType.RESERVATION_CREATED, smsNotificationProperties.getAdminTo(),
+                    "[24nalpo 관리자] 새 예약 #" + reservation.getId() + " / "
+                            + reservation.getCustomerName() + " / " + reservation.getMoveDate() + " "
+                            + reservation.getMoveTime());
+        }
 
         if (reservation.hasEmail()) {
             saveEmail(reservation, NotificationType.RESERVATION_CREATED,
@@ -37,7 +50,7 @@ public class CustomerNotificationService {
 
     @Transactional
     public void prepareStatusChanged(Reservation reservation, ReservationStatus status) {
-        save(reservation, NotificationType.STATUS_CHANGED,
+        saveSms(reservation, NotificationType.STATUS_CHANGED, reservation.getPhone(),
                 reservation.getCustomerName() + "님, 예약 상태가 '" + status.getLabel() + "'(으)로 변경되었습니다.");
     }
 
@@ -46,7 +59,7 @@ public class CustomerNotificationService {
         String estimateText = reservation.getFinalEstimatedPrice() == null
                 ? "상담 후 안내"
                 : NumberFormat.getNumberInstance(Locale.KOREA).format(reservation.getFinalEstimatedPrice()) + "원";
-        save(reservation, NotificationType.ESTIMATE_UPDATED,
+        saveSms(reservation, NotificationType.ESTIMATE_UPDATED, reservation.getPhone(),
                 reservation.getCustomerName() + "님, 이사 견적이 " + estimateText + "(으)로 안내 준비되었습니다.");
     }
 
@@ -62,6 +75,10 @@ public class CustomerNotificationService {
         return customerNotificationRepository.countByChannelAndStatus(NotificationChannel.EMAIL, NotificationStatus.FAILED);
     }
 
+    public long countFailedSms() {
+        return customerNotificationRepository.countByChannelAndStatus(NotificationChannel.SMS, NotificationStatus.FAILED);
+    }
+
     @Transactional
     public EmailNotificationSendResult sendReadyEmails(Long reservationId) {
         return sendEmailsByStatus(reservationId, NotificationStatus.READY);
@@ -70,6 +87,16 @@ public class CustomerNotificationService {
     @Transactional
     public EmailNotificationSendResult resendFailedEmails(Long reservationId) {
         return sendEmailsByStatus(reservationId, NotificationStatus.FAILED);
+    }
+
+    @Transactional
+    public SmsNotificationSendResult sendReadySms(Long reservationId) {
+        return sendSmsByStatus(reservationId, NotificationStatus.READY);
+    }
+
+    @Transactional
+    public SmsNotificationSendResult resendFailedSms(Long reservationId) {
+        return sendSmsByStatus(reservationId, NotificationStatus.FAILED);
     }
 
     private EmailNotificationSendResult sendEmailsByStatus(Long reservationId, NotificationStatus status) {
@@ -100,12 +127,40 @@ public class CustomerNotificationService {
         return new EmailNotificationSendResult(sentCount, failedCount);
     }
 
-    private void save(Reservation reservation, NotificationType type, String message) {
+    private SmsNotificationSendResult sendSmsByStatus(Long reservationId, NotificationStatus status) {
+        List<CustomerNotification> notifications = customerNotificationRepository
+                .findByReservationIdAndChannelAndStatusOrderByCreatedAtAsc(
+                        reservationId,
+                        NotificationChannel.SMS,
+                        status
+                );
+
+        int sentCount = 0;
+        int failedCount = 0;
+
+        for (CustomerNotification notification : notifications) {
+            try {
+                smsNotificationSender.send(notification);
+                notification.markSent();
+                sentCount++;
+            } catch (IllegalArgumentException | IllegalStateException exception) {
+                notification.markFailed(exception.getMessage());
+                failedCount++;
+            } catch (RuntimeException exception) {
+                notification.markFailed("SMS 발송 중 오류가 발생했습니다.");
+                failedCount++;
+            }
+        }
+
+        return new SmsNotificationSendResult(sentCount, failedCount);
+    }
+
+    private void saveSms(Reservation reservation, NotificationType type, String recipientPhone, String message) {
         customerNotificationRepository.save(new CustomerNotification(
                 reservation,
                 type,
                 NotificationChannel.SMS,
-                reservation.getPhone(),
+                recipientPhone,
                 message
         ));
     }

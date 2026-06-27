@@ -156,6 +156,26 @@ class ReservationServiceTest {
     }
 
     @Test
+    void 예약을_신청하면_SMS_발송준비_이력이_생성된다() {
+        Reservation createdReservation = reservationService.create(reservationCreateRequest());
+
+        List<CustomerNotification> notifications = customerNotificationRepository
+                .findByReservationIdOrderByCreatedAtDesc(createdReservation.getId());
+
+        assertThat(notifications)
+                .filteredOn(notification -> notification.getChannel() == NotificationChannel.SMS)
+                .singleElement()
+                .satisfies(notification -> {
+                    assertThat(notification.getType()).isEqualTo(NotificationType.RESERVATION_CREATED);
+                    assertThat(notification.getStatus()).isEqualTo(NotificationStatus.READY);
+                    assertThat(notification.getRecipientContact()).isEqualTo("010-1234-5678");
+                    assertThat(notification.getMessage()).contains("예약 번호는 " + createdReservation.getId() + "번");
+                    assertThat(notification.getSentAt()).isNull();
+                    assertThat(notification.getFailureReason()).isNull();
+                });
+    }
+
+    @Test
     void 이메일이_없는_예약을_신청하면_이메일_이력은_생성하지_않는다() {
         ReservationCreateRequest request = reservationCreateRequest();
         request.setEmail(null);

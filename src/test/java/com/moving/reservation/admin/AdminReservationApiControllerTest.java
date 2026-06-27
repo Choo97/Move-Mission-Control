@@ -58,6 +58,7 @@ class AdminReservationApiControllerTest {
                 .andExpect(jsonPath("$.taskSummary.receivedCount").value(1))
                 .andExpect(jsonPath("$.taskSummary.distancePendingCount").value(1))
                 .andExpect(jsonPath("$.taskSummary.failedEmailCount").value(0))
+                .andExpect(jsonPath("$.taskSummary.failedSmsCount").value(0))
                 .andExpect(jsonPath("$.pageNumber").value(0))
                 .andExpect(jsonPath("$.pageSize").value(10))
                 .andExpect(jsonPath("$.totalElements").value(1))
@@ -377,6 +378,41 @@ class AdminReservationApiControllerTest {
                 .andExpect(jsonPath("$.reservation.notifications[?(@.channel == 'EMAIL')].status")
                         .value(hasItem("FAILED")))
                 .andExpect(jsonPath("$.reservation.auditLogs[0].action").value("실패 이메일 재발송"));
+    }
+
+    @Test
+    void 관리자_SMS발송_API는_발송결과와_갱신된_이력을_JSON으로_응답한다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("SMS발송고객", "010-9999-0009"));
+
+        mockMvc.perform(post("/api/admin/reservations/{id}/notifications/sms/send", reservation.getId())
+                        .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sentCount").value(0))
+                .andExpect(jsonPath("$.failedCount").value(1))
+                .andExpect(jsonPath("$.reservation.notifications[?(@.channel == 'SMS')].status")
+                        .value(hasItem("FAILED")))
+                .andExpect(jsonPath("$.reservation.notifications[?(@.channel == 'SMS')].failureReason")
+                        .value(hasItem("SMS 발송 설정이 비활성화되어 있습니다.")))
+                .andExpect(jsonPath("$.reservation.auditLogs[0].action").value("준비 SMS 발송"));
+    }
+
+    @Test
+    void 관리자_실패SMS_재발송_API는_실패알림을_다시_처리한다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("SMS재발송고객", "010-9999-0010"));
+
+        mockMvc.perform(post("/api/admin/reservations/{id}/notifications/sms/send", reservation.getId())
+                        .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.failedCount").value(1));
+
+        mockMvc.perform(post("/api/admin/reservations/{id}/notifications/sms/resend-failed", reservation.getId())
+                        .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sentCount").value(0))
+                .andExpect(jsonPath("$.failedCount").value(1))
+                .andExpect(jsonPath("$.reservation.notifications[?(@.channel == 'SMS')].status")
+                        .value(hasItem("FAILED")))
+                .andExpect(jsonPath("$.reservation.auditLogs[0].action").value("실패 SMS 재발송"));
     }
 
     private ReservationCreateRequest reservationCreateRequest(String customerName, String phone) {

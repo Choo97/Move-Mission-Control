@@ -382,7 +382,8 @@ function AdminTaskSummaryCards({ summary }: { summary: AdminDashboardTaskSummary
     summary.consultingCount +
     summary.estimateAcceptancePendingCount +
     summary.distancePendingCount +
-    summary.failedEmailCount
+    summary.failedEmailCount +
+    summary.failedSmsCount
   const taskCards = [
     {
       label: '접수 대기',
@@ -408,6 +409,11 @@ function AdminTaskSummaryCards({ summary }: { summary: AdminDashboardTaskSummary
       label: '이메일 실패',
       value: summary.failedEmailCount,
       description: '발송 실패 이력 확인 필요',
+    },
+    {
+      label: 'SMS 실패',
+      value: summary.failedSmsCount,
+      description: '문자 실패 이력 확인 필요',
     },
   ]
 

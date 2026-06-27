@@ -1,6 +1,6 @@
 # REST API 문서
 
-React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 기능 API를 제공합니다. HTML 화면과 같은 예약 규칙을 사용하며, 예약 번호와 예약 당시 연락처로 고객 요청을 확인합니다.
+React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 기능 API를 제공합니다. HTML 화면과 같은 예약 규칙을 사용하며, 예약 번호와 예약 당시 연락처로 고객 요청을 확인합니다. 관리자 알림 발송 API는 로그인한 관리자만 호출할 수 있습니다.
 
 브라우저에서 `http://localhost:8081/swagger-ui/index.html`에 접속하면 API 목록을 확인하고 직접 요청을 테스트할 수 있습니다.
 요청/응답 DTO에는 Swagger 설명과 예시 값을 추가해 각 필드의 의미를 문서 화면에서 바로 확인할 수 있습니다.
@@ -37,6 +37,10 @@ React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 기능 
 | 고객 FAQ | `GET` | `/api/faqs` | 공개 중인 FAQ 조회 |
 | 파일 업로드 | `POST` | `/api/reservations/{reservationId}/photos` | 짐 사진 업로드 |
 | 고객 리뷰 | `POST` | `/api/reviews` | 완료 예약 리뷰 작성 |
+| 관리자 알림 | `POST` | `/api/admin/reservations/{reservationId}/notifications/email/send` | 준비 이메일 발송 |
+| 관리자 알림 | `POST` | `/api/admin/reservations/{reservationId}/notifications/email/resend-failed` | 실패 이메일 재발송 |
+| 관리자 알림 | `POST` | `/api/admin/reservations/{reservationId}/notifications/sms/send` | 준비 SMS 발송 |
+| 관리자 알림 | `POST` | `/api/admin/reservations/{reservationId}/notifications/sms/resend-failed` | 실패 SMS 재발송 |
 
 ## React 전환 준비 점검
 

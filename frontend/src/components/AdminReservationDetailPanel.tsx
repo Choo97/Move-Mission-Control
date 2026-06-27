@@ -3,7 +3,9 @@ import {
   AdminAuthenticationRequiredError,
   getAdminReservation,
   resendAdminReservationFailedEmails,
+  resendAdminReservationFailedSms,
   sendAdminReservationEmails,
+  sendAdminReservationSms,
   updateAdminReservationDistance,
   updateAdminReservationEstimate,
   updateAdminReservationMemo,
@@ -80,6 +82,8 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
   const [isUpdatingMemo, setIsUpdatingMemo] = useState(false)
   const [isResendingEmail, setIsResendingEmail] = useState(false)
   const [isSendingEmail, setIsSendingEmail] = useState(false)
+  const [isResendingSms, setIsResendingSms] = useState(false)
+  const [isSendingSms, setIsSendingSms] = useState(false)
   const [isAuthenticationRequired, setIsAuthenticationRequired] = useState(false)
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -281,6 +285,46 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
       showAdminError(error, '관리자 예약 실패 이메일 재발송에 실패했습니다.')
     } finally {
       setIsResendingEmail(false)
+    }
+  }
+
+  const sendReadySms = async () => {
+    if (!reservation) {
+      return
+    }
+
+    setIsSendingSms(true)
+    setErrorMessage('')
+    setActionMessage('')
+
+    try {
+      const result = await sendAdminReservationSms(reservation.id)
+      setReservation(result.reservation)
+      setActionMessage(`SMS ${result.sentCount}건 발송, ${result.failedCount}건 실패로 처리했습니다.`)
+    } catch (error) {
+      showAdminError(error, '관리자 예약 SMS 발송에 실패했습니다.')
+    } finally {
+      setIsSendingSms(false)
+    }
+  }
+
+  const resendFailedSms = async () => {
+    if (!reservation) {
+      return
+    }
+
+    setIsResendingSms(true)
+    setErrorMessage('')
+    setActionMessage('')
+
+    try {
+      const result = await resendAdminReservationFailedSms(reservation.id)
+      setReservation(result.reservation)
+      setActionMessage(`실패 SMS ${result.sentCount}건 재발송, ${result.failedCount}건 실패로 처리했습니다.`)
+    } catch (error) {
+      showAdminError(error, '관리자 예약 실패 SMS 재발송에 실패했습니다.')
+    } finally {
+      setIsResendingSms(false)
     }
   }
 
@@ -529,7 +573,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
           <section>
             <div className="admin-section-heading">
               <h3>알림 이력</h3>
-              <div className="admin-email-actions">
+              <div className="admin-notification-actions">
                 <button
                   type="button"
                   disabled={
@@ -553,6 +597,30 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
                   onClick={resendFailedEmails}
                 >
                   {isResendingEmail ? '재발송 중' : '실패 이메일 재발송'}
+                </button>
+                <button
+                  type="button"
+                  disabled={
+                    isSendingSms ||
+                    !reservation.notifications.some(
+                      (notification) => notification.channel === 'SMS' && notification.status === 'READY',
+                    )
+                  }
+                  onClick={sendReadySms}
+                >
+                  {isSendingSms ? '발송 중' : '준비 SMS 발송'}
+                </button>
+                <button
+                  type="button"
+                  disabled={
+                    isResendingSms ||
+                    !reservation.notifications.some(
+                      (notification) => notification.channel === 'SMS' && notification.status === 'FAILED',
+                    )
+                  }
+                  onClick={resendFailedSms}
+                >
+                  {isResendingSms ? '재발송 중' : '실패 SMS 재발송'}
                 </button>
               </div>
             </div>

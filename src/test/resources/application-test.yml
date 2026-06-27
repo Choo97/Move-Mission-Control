@@ -17,6 +17,11 @@ notification:
   email:
     enabled: false
     from:
+  sms:
+    enabled: false
+    provider: disabled
+    from:
+    admin-to:
 
 privacy:
   retention:

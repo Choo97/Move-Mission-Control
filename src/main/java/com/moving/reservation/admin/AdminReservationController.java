@@ -3,6 +3,7 @@ package com.moving.reservation.admin;
 import com.moving.reservation.auth.AdminAccountService;
 import com.moving.reservation.notification.CustomerNotificationService;
 import com.moving.reservation.notification.EmailNotificationSendResult;
+import com.moving.reservation.notification.SmsNotificationSendResult;
 import com.moving.reservation.reservation.Reservation;
 import com.moving.reservation.reservation.ReservationService;
 import com.moving.reservation.reservation.ReservationSort;
@@ -79,6 +80,7 @@ public class AdminReservationController {
                        Model model) {
         LocalDate currentDate = LocalDate.now();
         long failedEmailCount = customerNotificationService.countFailedEmails();
+        long failedSmsCount = customerNotificationService.countFailedSms();
         ReservationSummary summary = reservationService.summary();
 
         ReservationSort selectedSort = sort == null ? ReservationSort.PRIORITY : sort;
@@ -103,12 +105,14 @@ public class AdminReservationController {
         model.addAttribute("recentReservations", reservationService.findRecent());
         model.addAttribute("recentReviews", reviewService.findRecent());
         model.addAttribute("failedEmailCount", failedEmailCount);
+        model.addAttribute("failedSmsCount", failedSmsCount);
         model.addAttribute("taskSummary", new AdminDashboardTaskSummary(
                 summary.received(),
                 summary.consulting(),
                 reservationService.countEstimateAcceptancePending(),
                 reservationService.countDistancePending(),
-                failedEmailCount
+                failedEmailCount,
+                failedSmsCount
         ));
         model.addAttribute("statuses", ReservationStatus.values());
         model.addAttribute("sorts", ReservationSort.values());
@@ -487,6 +491,64 @@ public class AdminReservationController {
 
         if (result.sentCount() == 0 && result.failedCount() == 0) {
             redirectAttributes.addFlashAttribute("emailSendMessage", "재발송할 실패 이메일 알림이 없습니다.");
+        }
+
+        return "redirect:" + detailRedirectUrl(id, returnQuery);
+    }
+
+    @PostMapping("/{id}/notifications/sms/send")
+    public String sendReadySms(@PathVariable Long id,
+                               @RequestParam(required = false) String returnQuery,
+                               Principal principal,
+                               RedirectAttributes redirectAttributes) {
+        Reservation reservation = reservationService.get(id);
+        SmsNotificationSendResult result = customerNotificationService.sendReadySms(id);
+        adminAuditLogService.record(
+                reservation,
+                "준비 SMS 발송",
+                result.sentCount() + "건 발송, " + result.failedCount() + "건 실패로 처리했습니다.",
+                principal.getName()
+        );
+
+        if (result.sentCount() > 0) {
+            redirectAttributes.addFlashAttribute("smsSendMessage", result.sentCount() + "건의 SMS를 발송했습니다.");
+        }
+
+        if (result.failedCount() > 0) {
+            redirectAttributes.addFlashAttribute("smsSendError", result.failedCount() + "건의 SMS 발송에 실패했습니다. 알림 이력을 확인해 주세요.");
+        }
+
+        if (result.sentCount() == 0 && result.failedCount() == 0) {
+            redirectAttributes.addFlashAttribute("smsSendMessage", "발송 준비 상태의 SMS 알림이 없습니다.");
+        }
+
+        return "redirect:" + detailRedirectUrl(id, returnQuery);
+    }
+
+    @PostMapping("/{id}/notifications/sms/resend-failed")
+    public String resendFailedSms(@PathVariable Long id,
+                                  @RequestParam(required = false) String returnQuery,
+                                  Principal principal,
+                                  RedirectAttributes redirectAttributes) {
+        Reservation reservation = reservationService.get(id);
+        SmsNotificationSendResult result = customerNotificationService.resendFailedSms(id);
+        adminAuditLogService.record(
+                reservation,
+                "실패 SMS 재발송",
+                result.sentCount() + "건 재발송, " + result.failedCount() + "건 실패로 처리했습니다.",
+                principal.getName()
+        );
+
+        if (result.sentCount() > 0) {
+            redirectAttributes.addFlashAttribute("smsSendMessage", result.sentCount() + "건의 실패 SMS를 재발송했습니다.");
+        }
+
+        if (result.failedCount() > 0) {
+            redirectAttributes.addFlashAttribute("smsSendError", result.failedCount() + "건의 실패 SMS 재발송에 실패했습니다. 알림 이력을 확인해 주세요.");
+        }
+
+        if (result.sentCount() == 0 && result.failedCount() == 0) {
+            redirectAttributes.addFlashAttribute("smsSendMessage", "재발송할 실패 SMS 알림이 없습니다.");
         }
 
         return "redirect:" + detailRedirectUrl(id, returnQuery);

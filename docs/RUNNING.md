@@ -74,14 +74,14 @@ bash run-backend.sh
 
 `run-backend.sh`는 내부에서 `run-local.sh`를 호출합니다. `run-local.sh`는 `.env.local`을 읽고 `SERVER_PORT` 값으로 Spring Boot 서버를 실행합니다.
 
-로컬 SMTP 설정까지 함께 적용하려면 `.env.example`을 복사해 `.env.local`을 만들고 실제 값을 입력한 뒤 실행합니다.
+로컬 이메일/SMS 설정까지 함께 적용하려면 `.env.example`을 복사해 `.env.local`을 만들고 실제 값을 입력한 뒤 실행합니다.
 
 ```bash
 cp .env.example .env.local
 bash run-backend.sh
 ```
 
-`.env.local`에는 실제 이메일 계정과 앱 비밀번호가 들어가므로 Git에 올리지 않습니다.
+`.env.local`에는 실제 이메일 계정, 앱 비밀번호, SMS API 키가 들어갈 수 있으므로 Git에 올리지 않습니다.
 
 백엔드 서버가 실행되면 브라우저에서 아래 주소로 접속합니다.
 
@@ -153,18 +153,51 @@ GitHub Actions도 같은 테스트 명령어를 실행합니다. GitHub 저장�
 
 예약 접수 시 이메일을 입력하면 이메일 안내 이력이 `발송 준비` 상태로 생성됩니다. 실제 SMTP 발송을 사용하려면 서버 실행 전에 아래 환경변수를 설정합니다.
 
-```bat
-set NOTIFICATION_EMAIL_ENABLED=true
-set NOTIFICATION_EMAIL_FROM=보내는메일@example.com
-set MAIL_HOST=smtp.example.com
-set MAIL_PORT=587
-set MAIL_USERNAME=SMTP_계정
-set MAIL_PASSWORD=SMTP_비밀번호
-set MAIL_SMTP_AUTH=true
-set MAIL_SMTP_STARTTLS_ENABLE=true
+```bash
+NOTIFICATION_EMAIL_ENABLED=true
+NOTIFICATION_EMAIL_FROM=보내는메일@example.com
+MAIL_HOST=smtp.example.com
+MAIL_PORT=587
+MAIL_USERNAME=SMTP_계정
+MAIL_PASSWORD=SMTP_비밀번호
+MAIL_SMTP_AUTH=true
+MAIL_SMTP_STARTTLS_ENABLE=true
 ```
 
 SMTP 설정이 꺼져 있으면 애플리케이션은 정상 실행되지만, 관리자 화면에서 이메일 발송을 시도할 때 실패 이력으로 기록됩니다.
+
+## SMS 발송 설정
+
+예약 접수 시 고객 연락처로 SMS 안내 이력이 `발송 준비` 상태로 생성됩니다. `SMS_ADMIN_TO` 값을 입력하면 새 예약 접수 시 관리자에게 보낼 SMS 안내 이력도 함께 생성됩니다.
+
+현재 코드는 실제 SMS 업체 API를 바로 호출하지 않고, 발송 구조와 이력 관리부터 준비합니다. 개발 중 성공 흐름만 확인하려면 `SMS_PROVIDER=mock`을 사용합니다. 실제 문자 비용이 나가는 업체 연동은 발신번호 등록과 API 키 준비가 끝난 뒤 별도로 연결합니다.
+
+```bash
+NOTIFICATION_SMS_ENABLED=false
+SMS_PROVIDER=disabled
+SMS_FROM=01012345678
+SMS_ADMIN_TO=01012345678
+SMS_ACCESS_KEY=your-sms-access-key
+SMS_SECRET_KEY=your-sms-secret-key
+SMS_SERVICE_ID=your-sms-service-id
+```
+
+개발용으로 발송 성공 처리만 확인하려면 아래처럼 설정합니다.
+
+```bash
+NOTIFICATION_SMS_ENABLED=true
+SMS_PROVIDER=mock
+SMS_FROM=01012345678
+SMS_ADMIN_TO=01012345678
+```
+
+실제 API 키처럼 특수문자가 들어간 값은 `.env.local`에서 따옴표로 감쌉니다.
+
+```bash
+SMS_SECRET_KEY='special#secret=value'
+```
+
+SMS 설정이 꺼져 있으면 애플리케이션은 정상 실행되지만, 관리자 화면에서 SMS 발송을 시도할 때 실패 이력으로 기록됩니다.
 
 ## 개인정보 보관 기간 설정
 

@@ -3,6 +3,7 @@ export type {
   AdminDashboardTaskSummary,
   AdminAuditLogResponse,
   AdminEmailSendResponse,
+  AdminNotificationSendResponse,
   AdminNotificationHistoryResponse,
   AdminReservationCustomerActionHistoryResponse,
   AdminReservationConflictAttemptResponse,
@@ -12,6 +13,7 @@ export type {
   AdminReservationPageResponse,
   AdminReservationSort,
   AdminReservationStatusHistoryResponse,
+  AdminSmsSendResponse,
 } from './types/adminReservation'
 export type { CustomerGuideItem } from './types/customerGuide'
 export type { FaqResponse } from './types/faq'

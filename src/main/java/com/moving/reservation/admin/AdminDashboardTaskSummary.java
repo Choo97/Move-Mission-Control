@@ -5,7 +5,8 @@ public record AdminDashboardTaskSummary(
         long consultingCount,
         long estimateAcceptancePendingCount,
         long distancePendingCount,
-        long failedEmailCount
+        long failedEmailCount,
+        long failedSmsCount
 ) {
 
     public long totalCount() {
@@ -13,6 +14,7 @@ public record AdminDashboardTaskSummary(
                 + consultingCount
                 + estimateAcceptancePendingCount
                 + distancePendingCount
-                + failedEmailCount;
+                + failedEmailCount
+                + failedSmsCount;
     }
 }

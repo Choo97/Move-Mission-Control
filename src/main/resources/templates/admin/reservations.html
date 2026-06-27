@@ -40,6 +40,7 @@
         <div><span th:text="${summary.estimateSent()}">0</span><p>견적안내</p></div>
         <div><span th:text="${summary.confirmed()}">0</span><p>확정 일정</p></div>
         <div><span th:text="${failedEmailCount}">0</span><p>이메일 실패</p></div>
+        <div><span th:text="${failedSmsCount}">0</span><p>SMS 실패</p></div>
         <div><span th:text="${summary.completed()}">0</span><p>완료 예약</p></div>
         <div><span th:text="${#numbers.formatDecimal(summary.averageRating(), 1, 1)}">0.0</span><p>평균 평점</p></div>
         <div><span th:text="${summary.couponUsages()}">0</span><p>쿠폰 사용</p></div>
@@ -77,6 +78,11 @@
                 <span>이메일 실패</span>
                 <strong th:text="${taskSummary.failedEmailCount()}">0</strong>
                 <small>실패한 안내 메일은 재발송합니다.</small>
+            </a>
+            <a class="task-card task-card--warning" th:href="@{/admin/notifications(channel='SMS', status='FAILED')}">
+                <span>SMS 실패</span>
+                <strong th:text="${taskSummary.failedSmsCount()}">0</strong>
+                <small>실패한 문자 알림은 재발송합니다.</small>
             </a>
         </div>
     </section>
@@ -132,6 +138,12 @@
                     <a th:href="@{/admin/notifications(channel='EMAIL', status='FAILED')}">
                         <strong th:text="${failedEmailCount + '건 이메일 실패'}">0건 이메일 실패</strong>
                         <span>실패한 이메일은 재발송할 수 있습니다.</span>
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{/admin/notifications(channel='SMS', status='FAILED')}">
+                        <strong th:text="${failedSmsCount + '건 SMS 실패'}">0건 SMS 실패</strong>
+                        <span>실패한 문자 알림은 재발송할 수 있습니다.</span>
                     </a>
                 </li>
             </ul>

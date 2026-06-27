@@ -6,6 +6,7 @@ import type {
   AdminReservationDetailResponse,
   AdminReservationListQuery,
   AdminReservationPageResponse,
+  AdminSmsSendResponse,
   OperatingHolidayResponse,
   OperatingScheduleResponse,
   ReservationStatus,
@@ -202,6 +203,32 @@ export async function resendAdminReservationFailedEmails(reservationId: number) 
   }
 
   return response.json() as Promise<AdminEmailSendResponse>
+}
+
+export async function sendAdminReservationSms(reservationId: number) {
+  const response = await fetch(`${API_BASE_URL}/api/admin/reservations/${reservationId}/notifications/sms/send`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    await throwApiError(response, '관리자 예약 SMS 발송에 실패했습니다.')
+  }
+
+  return response.json() as Promise<AdminSmsSendResponse>
+}
+
+export async function resendAdminReservationFailedSms(reservationId: number) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/admin/reservations/${reservationId}/notifications/sms/resend-failed`,
+    { method: 'POST', credentials: 'include' },
+  )
+
+  if (!response.ok) {
+    await throwApiError(response, '관리자 예약 실패 SMS 재발송에 실패했습니다.')
+  }
+
+  return response.json() as Promise<AdminSmsSendResponse>
 }
 
 async function throwApiError(response: Response, fallbackMessage: string): Promise<never> {

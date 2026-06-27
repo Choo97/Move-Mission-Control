@@ -43,6 +43,14 @@ notification:
     enabled: ${NOTIFICATION_EMAIL_ENABLED:false}
     from: ${NOTIFICATION_EMAIL_FROM:}
     subject-prefix: ${NOTIFICATION_EMAIL_SUBJECT_PREFIX:[Move Mission Control]}
+  sms:
+    enabled: ${NOTIFICATION_SMS_ENABLED:false}
+    provider: ${SMS_PROVIDER:disabled}
+    from: ${SMS_FROM:}
+    admin-to: ${SMS_ADMIN_TO:}
+    access-key: ${SMS_ACCESS_KEY:}
+    secret-key: ${SMS_SECRET_KEY:}
+    service-id: ${SMS_SERVICE_ID:}
 
 privacy:
   retention:

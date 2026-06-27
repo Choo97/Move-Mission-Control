@@ -7,6 +7,7 @@ import com.moving.reservation.reservation.ReservationStatus;
 import com.moving.reservation.reservation.ReservationSummary;
 import com.moving.reservation.notification.CustomerNotificationService;
 import com.moving.reservation.notification.EmailNotificationSendResult;
+import com.moving.reservation.notification.SmsNotificationSendResult;
 import java.time.LocalDate;
 import java.util.List;
 import java.security.Principal;
@@ -70,7 +71,8 @@ public class AdminReservationApiController {
                 summary.consulting(),
                 reservationService.countEstimateAcceptancePending(),
                 reservationService.countDistancePending(),
-                customerNotificationService.countFailedEmails()
+                customerNotificationService.countFailedEmails(),
+                customerNotificationService.countFailedSms()
         );
 
         return AdminReservationPageResponse.from(reservationPage, taskSummary);
@@ -193,6 +195,42 @@ public class AdminReservationApiController {
         );
 
         return new AdminEmailSendResponse(
+                result.sentCount(),
+                result.failedCount(),
+                detailResponse(reservation)
+        );
+    }
+
+    @PostMapping("/{id}/notifications/sms/send")
+    public AdminSmsSendResponse sendReadySms(@PathVariable Long id, Principal principal) {
+        Reservation reservation = reservationService.get(id);
+        SmsNotificationSendResult result = customerNotificationService.sendReadySms(id);
+        adminAuditLogService.record(
+                reservation,
+                "준비 SMS 발송",
+                result.sentCount() + "건 발송, " + result.failedCount() + "건 실패로 처리했습니다.",
+                principal.getName()
+        );
+
+        return new AdminSmsSendResponse(
+                result.sentCount(),
+                result.failedCount(),
+                detailResponse(reservation)
+        );
+    }
+
+    @PostMapping("/{id}/notifications/sms/resend-failed")
+    public AdminSmsSendResponse resendFailedSms(@PathVariable Long id, Principal principal) {
+        Reservation reservation = reservationService.get(id);
+        SmsNotificationSendResult result = customerNotificationService.resendFailedSms(id);
+        adminAuditLogService.record(
+                reservation,
+                "실패 SMS 재발송",
+                result.sentCount() + "건 재발송, " + result.failedCount() + "건 실패로 처리했습니다.",
+                principal.getName()
+        );
+
+        return new AdminSmsSendResponse(
                 result.sentCount(),
                 result.failedCount(),
                 detailResponse(reservation)

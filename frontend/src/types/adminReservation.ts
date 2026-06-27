@@ -36,6 +36,7 @@ export type AdminDashboardTaskSummary = {
   estimateAcceptancePendingCount: number
   distancePendingCount: number
   failedEmailCount: number
+  failedSmsCount: number
 }
 
 export type AdminReservationStatusHistoryResponse = {
@@ -80,11 +81,15 @@ export type AdminAuditLogResponse = {
   createdAt: string
 }
 
-export type AdminEmailSendResponse = {
+export type AdminNotificationSendResponse = {
   sentCount: number
   failedCount: number
   reservation: AdminReservationDetailResponse
 }
+
+export type AdminEmailSendResponse = AdminNotificationSendResponse
+
+export type AdminSmsSendResponse = AdminNotificationSendResponse
 
 export type AdminReservationDetailResponse = {
   id: number
