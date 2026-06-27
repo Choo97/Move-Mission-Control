@@ -78,14 +78,15 @@ APP_CORS_ALLOWED_ORIGIN_CRA=http://localhost:3000
 
 ## React 전환 전략
 
-React 전환은 고객 화면부터 시작하고, 관리자 화면은 당분간 기존 Thymeleaf 화면을 유지합니다. 이렇게 나누면 사용자 화면 개선은 빠르게 진행하면서도 관리자 기능 전체를 한 번에 다시 만드는 부담을 줄일 수 있습니다.
+React 전환은 고객 화면을 먼저 안정화한 뒤, 관리자 화면은 예약 운영 핵심 흐름부터 단계적으로 전환합니다. 기존 Thymeleaf 관리자 화면은 유지하고, React 관리자 화면을 별도 경로에서 검증합니다.
 
 | 영역 | 전략 | 이유 |
 | --- | --- | --- |
 | Spring Boot | API 서버와 관리자 Thymeleaf 화면 유지 | 예약, 견적, 인증, DB 처리 로직을 그대로 사용하기 위함 |
-| React | 고객 화면 담당 | 고객이 직접 보는 예약 흐름의 UI 개선 효과가 가장 큼 |
+| React | 고객 화면과 관리자 예약 운영 1차 화면 담당 | 고객 흐름을 안정화한 뒤 운영자가 매일 쓰는 예약 목록, 상세, 고객 요청 처리를 먼저 전환하기 위함 |
 | `/api/**` | React가 호출하는 REST API | 화면과 데이터 처리를 분리하기 위함 |
-| `/admin/**` | Thymeleaf 유지 | 관리자 기능은 범위가 넓어 나중에 별도 전환 여부를 결정하는 편이 안전함 |
+| `http://localhost:5173/admin/reservations` | React 관리자 1차 화면 | 예약 목록, 예약 상세, 고객 요청 승인/반려를 먼저 검증하기 위함 |
+| `http://localhost:8081/admin/**` | 기존 Thymeleaf 관리자 화면 유지 | React 전환 중에도 안정적인 운영 화면을 남겨두기 위함 |
 | `/reservations/**` | React 고객 화면으로 연결 | 기존 북마크와 링크를 유지하면서 React 흐름으로 통합 |
 | `frontend/` | React 프로젝트 위치 | 백엔드와 프론트 코드를 같은 저장소 안에서 명확히 분리하기 위함 |
 
@@ -102,7 +103,7 @@ React 고객 화면은 Spring Boot의 `/api/**`를 호출합니다.
 React 고객 화면 -> http://localhost:8081/api/reservations
 ```
 
-관리자 화면은 기존 Spring Boot Thymeleaf 화면을 사용합니다. React 고객 화면의 관리자 링크도 `http://localhost:8081/admin/reservations`로 이동하며, `http://localhost:5173/?view=admin` 방식은 고객 앱의 기본 흐름에서 제외합니다.
+관리자 화면은 1차로 `http://localhost:5173/admin/reservations`에서 React 화면을 사용합니다. 기존 Spring Boot Thymeleaf 관리자 화면은 `http://localhost:8081/admin/reservations`에 그대로 남겨두어 전환 중 백업 화면으로 사용합니다.
 
 React 개발 서버를 실행하려면 아래 명령을 사용합니다.
 
@@ -123,7 +124,8 @@ npm run dev
 4. 예약 수정, 취소, 견적 동의 화면을 React로 구현합니다.
 5. 짐 사진 업로드와 리뷰 작성 화면을 React로 구현합니다.
 6. 기존 `/reservations/**` GET 화면은 React 고객 화면으로 리다이렉트하고 POST·견적서 출력 호환 경로는 유지합니다.
-7. 관리자 화면 React 전환은 고객 화면 안정화 이후 별도 작업으로 판단합니다.
+7. 관리자 예약 목록, 예약 상세, 고객 요청 승인/반려를 React 관리자 1차 화면으로 연결합니다.
+8. 상태 변경, 견적 저장, 관리자 메모, 운영시간/휴무일, 알림, 리뷰/FAQ/쿠폰/감사 로그는 이후 우선순위에 따라 전환합니다.
 
 기존 `/reservations/new`, `/reservations/search`, `/reservations/{id}`, `/reservations/{id}/edit`, `/faq` GET 요청은 React 화면으로 연결됩니다. 현재 React 고객 화면은 예약 신청, 예약 번호/연락처 기반 예약 조회, 예약 진행 단계 확인, 예약 수정 요청, 예약 취소 요청, 견적 동의, 짐 사진 업로드, 고객 리뷰, FAQ 조회를 제공합니다.
 

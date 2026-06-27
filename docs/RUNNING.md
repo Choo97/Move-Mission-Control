@@ -28,8 +28,9 @@ bash run-frontend.sh
 
 ```text
 고객 React 화면  http://localhost:5173/
+React 관리자 화면 http://localhost:5173/admin/reservations
 백엔드 화면      http://localhost:8081/
-관리자 화면      http://localhost:8081/admin/reservations
+기존 관리자 화면 http://localhost:8081/admin/reservations
 ```
 
 프론트엔드는 `.env.local`의 `VITE_API_BASE_URL` 값을 사용해 백엔드 API에 연결합니다. 기본값은 `http://localhost:8081`입니다.

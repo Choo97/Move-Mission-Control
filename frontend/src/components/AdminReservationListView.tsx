@@ -7,7 +7,6 @@ import {
 import { getErrorMessage } from '../api/apiError'
 import { API_BASE_URL } from '../reservationData'
 import { AdminReservationDetailPanel } from './AdminReservationDetailPanel'
-import { AdminAvailabilitySettings } from './AdminAvailabilitySettings'
 import { StatusNotice } from './StatusNotice'
 import type {
   AdminDashboardTaskSummary,
@@ -120,7 +119,6 @@ export function AdminReservationListView() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    params.set('view', 'admin')
 
     const setOrDelete = (key: string, value: string | number | undefined, keep: boolean) => {
       if (keep) {
@@ -157,7 +155,7 @@ export function AdminReservationListView() {
     <section className="admin-reservation-view">
       <div className="admin-heading">
         <div>
-          <p className="eyebrow">Admin Preview</p>
+          <p className="eyebrow">Admin Console</p>
           <h2>관리자 예약 목록</h2>
         </div>
         <a className="admin-text-link" href={`${API_BASE_URL}/admin/reservations`}>
@@ -180,8 +178,6 @@ export function AdminReservationListView() {
         ) : (
           <p className="message error">{errorMessage}</p>
         ))}
-
-      {!isAuthenticationRequired && <AdminAvailabilitySettings />}
 
       {!isAuthenticationRequired && reservationPage?.taskSummary && (
         <AdminTaskSummaryCards summary={reservationPage.taskSummary} />

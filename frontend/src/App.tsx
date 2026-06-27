@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import './App.css'
+import { AdminReservationListView } from './components/AdminReservationListView'
 import { ReservationCreateForm } from './components/ReservationCreateForm'
 import { ReservationDetailPanel } from './components/ReservationDetailPanel'
 import { ReservationEditFormView } from './components/ReservationEditFormView'
@@ -18,7 +19,6 @@ import {
 } from './api/customerApi'
 import { getErrorMessage } from './api/apiError'
 import {
-  API_BASE_URL,
   initialForm,
   initialReviewForm,
   initialSearchForm,
@@ -47,6 +47,15 @@ const getViewFromUrl = (): ActiveView => {
   return view === 'search' || view === 'faq' ? view : 'create'
 }
 
+const isAdminRoute = () => window.location.pathname.startsWith('/admin')
+
+const adminRouteSearch = () => {
+  const params = new URLSearchParams(window.location.search)
+  params.delete('view')
+  const queryString = params.toString()
+  return queryString ? `?${queryString}` : ''
+}
+
 const getInitialSearchForm = (): ReservationSearchForm => ({
   ...initialSearchForm,
   reservationId: new URLSearchParams(window.location.search).get('reservationId') ?? '',
@@ -67,6 +76,7 @@ const formatPhoneNumber = (value: string) => {
 }
 
 function App() {
+  const [adminRoute, setAdminRoute] = useState(isAdminRoute)
   const [activeView, setActiveView] = useState<ActiveView>(getViewFromUrl)
   const [form, setForm] = useState<ReservationForm>(loadReservationDraft)
   const [searchForm, setSearchForm] = useState<ReservationSearchForm>(getInitialSearchForm)
@@ -101,10 +111,11 @@ function App() {
     const syncViewFromUrl = () => {
       const view = new URLSearchParams(window.location.search).get('view')
       if (view === 'admin') {
-        window.location.replace(`${API_BASE_URL}/admin/reservations`)
+        window.location.replace(`/admin/reservations${adminRouteSearch()}`)
         return
       }
 
+      setAdminRoute(isAdminRoute())
       setActiveView(getViewFromUrl())
     }
 
@@ -115,6 +126,7 @@ function App() {
 
   const changeView = (nextView: ActiveView) => {
     setActiveView(nextView)
+    setAdminRoute(false)
 
     const params = new URLSearchParams(window.location.search)
     if (nextView === 'create') {
@@ -366,6 +378,14 @@ function App() {
     }
   }
 
+  if (adminRoute) {
+    return (
+      <main className="app-shell">
+        <AdminReservationListView />
+      </main>
+    )
+  }
+
   return (
     <main className="app-shell">
       <header className="top-bar">
@@ -376,7 +396,7 @@ function App() {
           <p className="eyebrow">Moving Reservation Platform</p>
           <h1>24nalpo</h1>
         </div>
-        <a className="admin-link" href={`${API_BASE_URL}/admin/reservations`}>
+        <a className="admin-link" href="/admin/reservations">
           관리자
         </a>
       </header>

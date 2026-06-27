@@ -49,8 +49,9 @@ bash run-frontend.sh
 
 ```text
 고객 React 화면  http://localhost:5173/
+React 관리자 화면 http://localhost:5173/admin/reservations
 백엔드 화면      http://localhost:8081/
-관리자 화면      http://localhost:8081/admin/reservations
+기존 관리자 화면 http://localhost:8081/admin/reservations
 ```
 
 자세한 실행 방법, 환경변수, 테스트, 관리자 계정 설정은 [docs/RUNNING.md](docs/RUNNING.md)에 정리했습니다.
@@ -59,8 +60,9 @@ bash run-frontend.sh
 
 ```text
 React 고객 화면 http://localhost:5173/
+React 관리자    http://localhost:5173/admin/reservations
 백엔드 홈       http://localhost:8081/
-관리자 화면     http://localhost:8081/admin/reservations
+기존 관리자     http://localhost:8081/admin/reservations
 관리자 달력     http://localhost:8081/admin/calendar
 Swagger UI     http://localhost:8081/swagger-ui/index.html
 OpenAPI JSON   http://localhost:8081/v3/api-docs
