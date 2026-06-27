@@ -34,6 +34,9 @@ class ReservationApiControllerTest {
     @Autowired
     private ReservationService reservationService;
 
+    @Autowired
+    private ReservationCustomerRequestRepository customerRequestRepository;
+
     @Test
     void 예약신청_API로_예약을_JSON으로_생성한다() throws Exception {
         mockMvc.perform(post("/api/reservations")
@@ -167,7 +170,7 @@ class ReservationApiControllerTest {
     }
 
     @Test
-    void 예약수정_API로_예약정보를_JSON으로_수정한다() throws Exception {
+    void 예약수정_API로_예약수정_요청을_JSON으로_접수한다() throws Exception {
         Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
 
         mockMvc.perform(patch("/api/reservations/{id}", reservation.getId())
@@ -189,10 +192,12 @@ class ReservationApiControllerTest {
                                 """.formatted(LocalDate.now().plusDays(10))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(reservation.getId()))
-                .andExpect(jsonPath("$.email").value("updated-api@example.com"))
-                .andExpect(jsonPath("$.moveTime").value("14:00:00"))
-                .andExpect(jsonPath("$.fromAddress").value("서울시 마포구 월드컵북로 1"))
-                .andExpect(jsonPath("$.fromLadderTruck").value(true));
+                .andExpect(jsonPath("$.email").value("api-customer@example.com"))
+                .andExpect(jsonPath("$.moveTime").value("10:30:00"))
+                .andExpect(jsonPath("$.fromAddress").value("서울시 강남구 테헤란로 1"))
+                .andExpect(jsonPath("$.customerRequests[0].requestType").value("UPDATE"))
+                .andExpect(jsonPath("$.customerRequests[0].status").value("PENDING"))
+                .andExpect(jsonPath("$.customerRequests[0].detail").isString());
     }
 
     @Test
@@ -241,7 +246,7 @@ class ReservationApiControllerTest {
     }
 
     @Test
-    void 예약취소_API로_예약을_취소한다() throws Exception {
+    void 예약취소_API로_예약취소_요청을_접수한다() throws Exception {
         Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
 
         mockMvc.perform(post("/api/reservations/{id}/cancel", reservation.getId())
@@ -253,9 +258,10 @@ class ReservationApiControllerTest {
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(reservation.getId()))
-                .andExpect(jsonPath("$.status").value("CANCELED"))
-                .andExpect(jsonPath("$.statusLabel").value("취소"))
-                .andExpect(jsonPath("$.cancelable").value(false));
+                .andExpect(jsonPath("$.status").value("RECEIVED"))
+                .andExpect(jsonPath("$.statusLabel").value("접수"))
+                .andExpect(jsonPath("$.customerRequests[0].requestType").value("CANCEL"))
+                .andExpect(jsonPath("$.customerRequests[0].status").value("PENDING"));
     }
 
     @Test
@@ -311,7 +317,11 @@ class ReservationApiControllerTest {
     @Test
     void 견적동의_API는_취소된_예약이면_400을_응답한다() throws Exception {
         Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
-        reservationService.cancel(reservation.getId(), "010-1234-5678");
+        reservationService.requestCancel(reservation.getId(), "010-1234-5678");
+        ReservationCustomerRequest customerRequest = customerRequestRepository
+                .findByReservationIdOrderByRequestedAtDesc(reservation.getId())
+                .get(0);
+        reservationService.approveCustomerRequest(customerRequest.getId(), "admin");
 
         mockMvc.perform(post("/api/reservations/{id}/estimate/accept", reservation.getId())
                         .contentType(MediaType.APPLICATION_JSON)

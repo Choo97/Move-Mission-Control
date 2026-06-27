@@ -71,7 +71,9 @@ public record ReservationApiResponse(
         @Schema(description = "고객이 업로드한 짐 사진 목록")
         List<ReservationApiPhotoResponse> photos,
         @Schema(description = "견적 산정 내역")
-        List<ReservationApiEstimateLineResponse> estimateLines
+        List<ReservationApiEstimateLineResponse> estimateLines,
+        @Schema(description = "고객 예약 수정/취소 요청 이력")
+        List<ReservationCustomerRequestResponse> customerRequests
 ) {
 
     public static ReservationApiResponse from(Reservation reservation, List<ReservationEstimateLine> estimateLines) {
@@ -81,6 +83,13 @@ public record ReservationApiResponse(
     public static ReservationApiResponse from(Reservation reservation,
                                               List<ReservationEstimateLine> estimateLines,
                                               List<ReservationPhoto> photos) {
+        return from(reservation, estimateLines, photos, List.of());
+    }
+
+    public static ReservationApiResponse from(Reservation reservation,
+                                              List<ReservationEstimateLine> estimateLines,
+                                              List<ReservationPhoto> photos,
+                                              List<ReservationCustomerRequest> customerRequests) {
         return new ReservationApiResponse(
                 reservation.getId(),
                 reservation.getCustomerName(),
@@ -117,6 +126,9 @@ public record ReservationApiResponse(
                         .toList(),
                 estimateLines.stream()
                         .map(ReservationApiEstimateLineResponse::from)
+                        .toList(),
+                customerRequests.stream()
+                        .map(ReservationCustomerRequestResponse::from)
                         .toList()
         );
     }

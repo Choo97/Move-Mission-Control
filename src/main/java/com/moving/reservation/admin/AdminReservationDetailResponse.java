@@ -4,6 +4,8 @@ import com.moving.reservation.reservation.Reservation;
 import com.moving.reservation.reservation.ReservationApiEstimateLineResponse;
 import com.moving.reservation.reservation.ReservationApiPhotoResponse;
 import com.moving.reservation.reservation.ReservationCustomerActionHistory;
+import com.moving.reservation.reservation.ReservationCustomerRequest;
+import com.moving.reservation.reservation.ReservationCustomerRequestResponse;
 import com.moving.reservation.reservation.ReservationEstimateLine;
 import com.moving.reservation.reservation.ReservationPhoto;
 import com.moving.reservation.reservation.ReservationStatusHistory;
@@ -54,6 +56,7 @@ public record AdminReservationDetailResponse(
         List<ReservationApiEstimateLineResponse> estimateLines,
         List<AdminReservationStatusHistoryResponse> statusHistories,
         List<AdminReservationCustomerActionHistoryResponse> customerActionHistories,
+        List<ReservationCustomerRequestResponse> customerRequests,
         List<AdminNotificationHistoryResponse> notifications,
         List<AdminAuditLogResponse> auditLogs
 ) {
@@ -63,6 +66,7 @@ public record AdminReservationDetailResponse(
                                                       List<ReservationPhoto> photos,
                                                       List<ReservationStatusHistory> statusHistories,
                                                       List<ReservationCustomerActionHistory> customerActionHistories,
+                                                      List<ReservationCustomerRequest> customerRequests,
                                                       List<CustomerNotification> notifications,
                                                       List<AdminAuditLog> auditLogs) {
         return new AdminReservationDetailResponse(
@@ -113,6 +117,9 @@ public record AdminReservationDetailResponse(
                         .toList(),
                 customerActionHistories.stream()
                         .map(AdminReservationCustomerActionHistoryResponse::from)
+                        .toList(),
+                customerRequests.stream()
+                        .map(ReservationCustomerRequestResponse::from)
                         .toList(),
                 notifications.stream()
                         .map(AdminNotificationHistoryResponse::from)

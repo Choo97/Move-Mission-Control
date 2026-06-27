@@ -44,6 +44,9 @@ class ReservationServiceTest {
     @Autowired
     private ReservationCustomerActionHistoryRepository customerActionHistoryRepository;
 
+    @Autowired
+    private ReservationCustomerRequestRepository customerRequestRepository;
+
     @Test
     void 예약을_신청하면_예약번호와_연락처로_조회할_수_있다() {
         Reservation createdReservation = reservationService.create(reservationCreateRequest());
@@ -229,26 +232,58 @@ class ReservationServiceTest {
     }
 
     @Test
-    void 고객이_예약을_수정하면_예약정보와_수정이력이_저장된다() {
+    void 고객이_예약을_수정하면_승인대기_요청과_이력이_저장된다() {
         Reservation createdReservation = reservationService.create(reservationCreateRequest());
         ReservationUpdateRequest updateRequest = reservationUpdateRequest();
 
-        reservationService.updateDetails(createdReservation.getId(), updateRequest);
+        reservationService.requestUpdateDetails(createdReservation.getId(), updateRequest);
+
+        Reservation updatedReservation = reservationService.get(createdReservation.getId());
+        assertThat(updatedReservation.getMoveDate()).isEqualTo(createdReservation.getMoveDate());
+        assertThat(updatedReservation.getMoveTime()).isEqualTo(createdReservation.getMoveTime());
+        assertThat(updatedReservation.getFromAddress()).isEqualTo("서울시 강남구 테헤란로 1");
+        assertThat(updatedReservation.getDistanceKm()).isNull();
+        assertThat(customerRequestRepository.findByReservationIdOrderByRequestedAtDesc(createdReservation.getId()))
+                .singleElement()
+                .satisfies(request -> {
+                    assertThat(request.getRequestType()).isEqualTo(CustomerRequestType.UPDATE);
+                    assertThat(request.getStatus()).isEqualTo(CustomerRequestStatus.PENDING);
+                    assertThat(request.getMoveDate()).isEqualTo(updateRequest.getMoveDate());
+                    assertThat(request.getFromAddress()).isEqualTo("서울시 마포구 월드컵북로 1");
+                    assertThat(request.getDetail()).contains("이사일");
+                });
+        assertThat(customerActionHistoryRepository.findByReservationIdOrderByCreatedAtDesc(createdReservation.getId()))
+                .singleElement()
+                .satisfies(history -> {
+                    assertThat(history.getActionType()).isEqualTo(CustomerActionType.UPDATE_REQUEST);
+                    assertThat(history.getSummary()).isEqualTo("고객이 예약 수정 요청을 남겼습니다.");
+                    assertThat(history.getDetail()).contains("이사일");
+                    assertThat(history.getDetail()).contains("출발 주소");
+                    assertThat(history.getRequestedBy()).isEqualTo("customer");
+                });
+    }
+
+    @Test
+    void 관리자가_예약수정_요청을_승인하면_예약정보가_반영된다() {
+        Reservation createdReservation = reservationService.create(reservationCreateRequest());
+        ReservationUpdateRequest updateRequest = reservationUpdateRequest();
+        reservationService.requestUpdateDetails(createdReservation.getId(), updateRequest);
+        ReservationCustomerRequest customerRequest = customerRequestRepository
+                .findByReservationIdOrderByRequestedAtDesc(createdReservation.getId())
+                .get(0);
+
+        reservationService.approveCustomerRequest(customerRequest.getId(), "admin");
 
         Reservation updatedReservation = reservationService.get(createdReservation.getId());
         assertThat(updatedReservation.getMoveDate()).isEqualTo(updateRequest.getMoveDate());
         assertThat(updatedReservation.getMoveTime()).isEqualTo(updateRequest.getMoveTime());
         assertThat(updatedReservation.getFromAddress()).isEqualTo("서울시 마포구 월드컵북로 1");
         assertThat(updatedReservation.getDistanceKm()).isNull();
+        assertThat(customerRequest.getStatus()).isEqualTo(CustomerRequestStatus.APPROVED);
+        assertThat(customerRequest.getProcessedBy()).isEqualTo("admin");
         assertThat(customerActionHistoryRepository.findByReservationIdOrderByCreatedAtDesc(createdReservation.getId()))
-                .singleElement()
-                .satisfies(history -> {
-                    assertThat(history.getActionType()).isEqualTo(CustomerActionType.UPDATE);
-                    assertThat(history.getSummary()).isEqualTo("고객이 예약 정보를 수정했습니다.");
-                    assertThat(history.getDetail()).contains("이사일");
-                    assertThat(history.getDetail()).contains("출발 주소");
-                    assertThat(history.getRequestedBy()).isEqualTo("customer");
-                });
+                .extracting(ReservationCustomerActionHistory::getActionType)
+                .contains(CustomerActionType.UPDATE_REQUEST, CustomerActionType.REQUEST_APPROVED);
     }
 
     @Test
@@ -263,26 +298,49 @@ class ReservationServiceTest {
     }
 
     @Test
-    void 고객이_예약을_취소하면_상태와_취소이력이_저장된다() {
+    void 고객이_예약을_취소하면_승인대기_요청과_이력이_저장된다() {
         Reservation createdReservation = reservationService.create(reservationCreateRequest());
 
-        reservationService.cancel(createdReservation.getId(), "010-1234-5678");
+        reservationService.requestCancel(createdReservation.getId(), "010-1234-5678");
 
-        assertThat(reservationService.get(createdReservation.getId()).getStatus()).isEqualTo(ReservationStatus.CANCELED);
+        assertThat(reservationService.get(createdReservation.getId()).getStatus()).isEqualTo(ReservationStatus.RECEIVED);
+        assertThat(customerRequestRepository.findByReservationIdOrderByRequestedAtDesc(createdReservation.getId()))
+                .singleElement()
+                .satisfies(request -> {
+                    assertThat(request.getRequestType()).isEqualTo(CustomerRequestType.CANCEL);
+                    assertThat(request.getStatus()).isEqualTo(CustomerRequestStatus.PENDING);
+                    assertThat(request.getDetail()).isEqualTo("취소 요청 당시 상태: 접수");
+                });
         assertThat(customerActionHistoryRepository.findByReservationIdOrderByCreatedAtDesc(createdReservation.getId()))
                 .singleElement()
                 .satisfies(history -> {
-                    assertThat(history.getActionType()).isEqualTo(CustomerActionType.CANCEL);
+                    assertThat(history.getActionType()).isEqualTo(CustomerActionType.CANCEL_REQUEST);
                     assertThat(history.getSummary()).isEqualTo("고객이 예약 취소를 요청했습니다.");
                     assertThat(history.getDetail()).isEqualTo("취소 요청 당시 상태: 접수");
                     assertThat(history.getRequestedBy()).isEqualTo("customer");
                 });
         assertThat(statusHistoryRepository.findByReservationIdOrderByChangedAtDesc(createdReservation.getId()))
+                .isEmpty();
+    }
+
+    @Test
+    void 관리자가_예약취소_요청을_승인하면_예약상태가_취소된다() {
+        Reservation createdReservation = reservationService.create(reservationCreateRequest());
+        reservationService.requestCancel(createdReservation.getId(), "010-1234-5678");
+        ReservationCustomerRequest customerRequest = customerRequestRepository
+                .findByReservationIdOrderByRequestedAtDesc(createdReservation.getId())
+                .get(0);
+
+        reservationService.approveCustomerRequest(customerRequest.getId(), "admin");
+
+        assertThat(reservationService.get(createdReservation.getId()).getStatus()).isEqualTo(ReservationStatus.CANCELED);
+        assertThat(customerRequest.getStatus()).isEqualTo(CustomerRequestStatus.APPROVED);
+        assertThat(statusHistoryRepository.findByReservationIdOrderByChangedAtDesc(createdReservation.getId()))
                 .singleElement()
                 .satisfies(history -> {
                     assertThat(history.getPreviousStatus()).isEqualTo(ReservationStatus.RECEIVED);
                     assertThat(history.getChangedStatus()).isEqualTo(ReservationStatus.CANCELED);
-                    assertThat(history.getChangedBy()).isEqualTo("customer");
+                    assertThat(history.getChangedBy()).isEqualTo("admin");
                 });
     }
 

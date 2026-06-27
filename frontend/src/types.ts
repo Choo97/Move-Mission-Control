@@ -28,6 +28,7 @@ export type {
   ReservationApiEstimateLineResponse,
   ReservationApiPhotoResponse,
   ReservationApiResponse,
+  ReservationCustomerRequestResponse,
   ReservationEditForm,
   ReservationForm,
   ReservationPhotoResponse,

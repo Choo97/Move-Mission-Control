@@ -231,7 +231,7 @@ function App() {
         phone: editForm.phone,
       })
       setEditForm(null)
-      setActionMessage('예약 정보가 수정되었습니다.')
+      setActionMessage('예약 수정 요청이 접수되었습니다. 관리자 확인 후 반영됩니다.')
     } catch (error) {
       setActionMessage(getErrorMessage(error, '예약 수정에 실패했습니다.'))
     } finally {
@@ -245,7 +245,7 @@ function App() {
       return
     }
 
-    if (!window.confirm('예약을 취소하시겠습니까?')) {
+    if (!window.confirm('예약 취소 요청을 접수하시겠습니까? 관리자 확인 후 처리됩니다.')) {
       return
     }
 
@@ -255,7 +255,7 @@ function App() {
     try {
       await showReservation(await cancelReservationApi(reservation.id, searchForm.phone))
       setEditForm(null)
-      setActionMessage('예약이 취소되었습니다.')
+      setActionMessage('예약 취소 요청이 접수되었습니다. 관리자 확인 후 처리됩니다.')
     } catch (error) {
       setActionMessage(getErrorMessage(error, '예약 취소에 실패했습니다.'))
     } finally {

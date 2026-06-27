@@ -112,7 +112,8 @@ public class AdminReservationController {
                 reservationService.countEstimateAcceptancePending(),
                 reservationService.countDistancePending(),
                 failedEmailCount,
-                failedSmsCount
+                failedSmsCount,
+                reservationService.countPendingCustomerRequests()
         ));
         model.addAttribute("statuses", ReservationStatus.values());
         model.addAttribute("sorts", ReservationSort.values());
@@ -212,6 +213,7 @@ public class AdminReservationController {
         model.addAttribute("photos", reservationService.findPhotos(id));
         model.addAttribute("statusHistories", reservationService.findStatusHistories(id));
         model.addAttribute("customerActionHistories", reservationService.findCustomerActionHistories(id));
+        model.addAttribute("customerRequests", reservationService.findCustomerRequests(id));
         model.addAttribute("notifications", customerNotificationService.findByReservationId(id));
         model.addAttribute("auditLogs", adminAuditLogService.findByReservationId(id));
         model.addAttribute("statuses", ReservationStatus.values());
@@ -552,5 +554,50 @@ public class AdminReservationController {
         }
 
         return "redirect:" + detailRedirectUrl(id, returnQuery);
+    }
+
+    @PostMapping("/customer-requests/{requestId}/approve")
+    public String approveCustomerRequest(@PathVariable Long requestId,
+                                         @RequestParam(required = false) String returnQuery,
+                                         Principal principal,
+                                         RedirectAttributes redirectAttributes) {
+        try {
+            var customerRequest = reservationService.approveCustomerRequest(requestId, principal.getName());
+            Reservation reservation = customerRequest.getReservation();
+            adminAuditLogService.record(
+                    reservation,
+                    "고객 요청 승인",
+                    customerRequest.getRequestType().getLabel() + "을 승인했습니다.",
+                    principal.getName()
+            );
+            redirectAttributes.addFlashAttribute("customerRequestMessage", "고객 요청을 승인했습니다.");
+            return "redirect:" + detailRedirectUrl(reservation.getId(), returnQuery);
+        } catch (IllegalArgumentException exception) {
+            redirectAttributes.addFlashAttribute("customerRequestError", exception.getMessage());
+            return "redirect:" + listRedirectUrl(returnQuery);
+        }
+    }
+
+    @PostMapping("/customer-requests/{requestId}/reject")
+    public String rejectCustomerRequest(@PathVariable Long requestId,
+                                        @RequestParam String rejectionReason,
+                                        @RequestParam(required = false) String returnQuery,
+                                        Principal principal,
+                                        RedirectAttributes redirectAttributes) {
+        try {
+            var customerRequest = reservationService.rejectCustomerRequest(requestId, principal.getName(), rejectionReason);
+            Reservation reservation = customerRequest.getReservation();
+            adminAuditLogService.record(
+                    reservation,
+                    "고객 요청 반려",
+                    customerRequest.getRequestType().getLabel() + "을 반려했습니다. 사유: " + rejectionReason,
+                    principal.getName()
+            );
+            redirectAttributes.addFlashAttribute("customerRequestMessage", "고객 요청을 반려했습니다.");
+            return "redirect:" + detailRedirectUrl(reservation.getId(), returnQuery);
+        } catch (IllegalArgumentException exception) {
+            redirectAttributes.addFlashAttribute("customerRequestError", exception.getMessage());
+            return "redirect:" + listRedirectUrl(returnQuery);
+        }
     }
 }

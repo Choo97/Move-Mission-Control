@@ -58,6 +58,20 @@ export type ReservationApiEstimateLineResponse = {
   amount: number
 }
 
+export type ReservationCustomerRequestResponse = {
+  id: number
+  requestType: 'UPDATE' | 'CANCEL'
+  requestTypeLabel: string
+  status: 'PENDING' | 'APPROVED' | 'REJECTED'
+  statusLabel: string
+  detail: string
+  rejectionReason: string | null
+  requestedBy: string
+  requestedAt: string
+  processedBy: string | null
+  processedAt: string | null
+}
+
 export type ReservationApiResponse = {
   id: number
   customerName: string
@@ -91,6 +105,7 @@ export type ReservationApiResponse = {
   estimateAcceptedAt: string | null
   photos: ReservationApiPhotoResponse[]
   estimateLines: ReservationApiEstimateLineResponse[]
+  customerRequests: ReservationCustomerRequestResponse[]
 }
 
 export type ReservationPhotoResponse = ReservationApiPhotoResponse

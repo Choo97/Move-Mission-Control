@@ -209,8 +209,8 @@ public class ReservationController {
         }
 
         try {
-            reservationService.updateDetails(id, request);
-            redirectAttributes.addFlashAttribute("updateMessage", "예약 정보가 수정되었습니다.");
+            reservationService.requestUpdateDetails(id, request);
+            redirectAttributes.addFlashAttribute("updateMessage", "예약 수정 요청이 접수되었습니다. 관리자 확인 후 반영됩니다.");
             return "redirect:/reservations/" + id;
         } catch (IllegalArgumentException exception) {
             model.addAttribute("reservation", reservation);
@@ -231,8 +231,8 @@ public class ReservationController {
         }
 
         try {
-            reservationService.cancel(id, phone);
-            redirectAttributes.addFlashAttribute("cancelMessage", "예약이 취소되었습니다.");
+            reservationService.requestCancel(id, phone);
+            redirectAttributes.addFlashAttribute("cancelMessage", "예약 취소 요청이 접수되었습니다. 관리자 확인 후 처리됩니다.");
         } catch (IllegalArgumentException exception) {
             redirectAttributes.addFlashAttribute("cancelError", exception.getMessage());
         }

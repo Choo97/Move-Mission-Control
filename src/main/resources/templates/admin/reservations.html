@@ -74,6 +74,11 @@
                 <strong th:text="${taskSummary.distancePendingCount()}">0</strong>
                 <small>실제 거리 확인 후 견적 정확도를 높입니다.</small>
             </a>
+            <a class="task-card" th:href="@{/admin/reservations}">
+                <span>고객 요청 대기</span>
+                <strong th:text="${taskSummary.pendingCustomerRequestCount()}">0</strong>
+                <small>수정 또는 취소 요청을 승인/반려합니다.</small>
+            </a>
             <a class="task-card task-card--warning" th:href="@{/admin/notifications(channel='EMAIL', status='FAILED')}">
                 <span>이메일 실패</span>
                 <strong th:text="${taskSummary.failedEmailCount()}">0</strong>

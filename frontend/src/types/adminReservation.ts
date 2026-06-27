@@ -1,4 +1,4 @@
-import type { MoveType, ReservationStatus } from './reservation'
+import type { MoveType, ReservationCustomerRequestResponse, ReservationStatus } from './reservation'
 
 export type AdminReservationSort = 'PRIORITY' | 'MOVE_DATE' | 'CREATED_DESC'
 
@@ -37,6 +37,7 @@ export type AdminDashboardTaskSummary = {
   distancePendingCount: number
   failedEmailCount: number
   failedSmsCount: number
+  pendingCustomerRequestCount: number
 }
 
 export type AdminReservationStatusHistoryResponse = {
@@ -140,6 +141,7 @@ export type AdminReservationDetailResponse = {
   }>
   statusHistories: AdminReservationStatusHistoryResponse[]
   customerActionHistories: AdminReservationCustomerActionHistoryResponse[]
+  customerRequests: ReservationCustomerRequestResponse[]
   notifications: AdminNotificationHistoryResponse[]
   auditLogs: AdminAuditLogResponse[]
 }

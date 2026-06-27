@@ -231,6 +231,34 @@ export async function resendAdminReservationFailedSms(reservationId: number) {
   return response.json() as Promise<AdminSmsSendResponse>
 }
 
+export async function approveAdminCustomerRequest(requestId: number) {
+  const response = await fetch(`${API_BASE_URL}/api/admin/reservations/customer-requests/${requestId}/approve`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    await throwApiError(response, '고객 요청 승인에 실패했습니다.')
+  }
+
+  return response.json() as Promise<AdminReservationDetailResponse>
+}
+
+export async function rejectAdminCustomerRequest(requestId: number, rejectionReason: string) {
+  const response = await fetch(`${API_BASE_URL}/api/admin/reservations/customer-requests/${requestId}/reject`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ rejectionReason }),
+  })
+
+  if (!response.ok) {
+    await throwApiError(response, '고객 요청 반려에 실패했습니다.')
+  }
+
+  return response.json() as Promise<AdminReservationDetailResponse>
+}
+
 async function throwApiError(response: Response, fallbackMessage: string): Promise<never> {
   if (response.status === 401) {
     throw new AdminAuthenticationRequiredError()

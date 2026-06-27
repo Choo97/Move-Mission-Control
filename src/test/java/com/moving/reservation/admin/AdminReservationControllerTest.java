@@ -71,6 +71,7 @@ class AdminReservationControllerTest {
                         "photos",
                         "statusHistories",
                         "customerActionHistories",
+                        "customerRequests",
                         "notifications",
                         "auditLogs",
                         "statuses"

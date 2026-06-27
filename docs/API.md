@@ -30,13 +30,15 @@ React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 기능 
 | 예약 일정 | `GET` | `/api/availability?date={yyyy-MM-dd}` | 날짜별 예약 가능 시간 조회 |
 | 고객 예약 | `POST` | `/api/reservations` | 예약 신청 |
 | 고객 예약 | `POST` | `/api/reservations/search` | 예약 번호와 연락처로 예약 조회 |
-| 고객 예약 | `PATCH` | `/api/reservations/{reservationId}` | 예약 정보 수정 |
-| 고객 예약 | `POST` | `/api/reservations/{reservationId}/cancel` | 예약 취소 |
+| 고객 예약 | `PATCH` | `/api/reservations/{reservationId}` | 예약 정보 수정 요청 접수 |
+| 고객 예약 | `POST` | `/api/reservations/{reservationId}/cancel` | 예약 취소 요청 접수 |
 | 고객 예약 | `POST` | `/api/reservations/{reservationId}/estimate/accept` | 최종 견적 동의 및 예약 확정 |
 | 고객 안내 | `GET` | `/api/customer-guides/{status}` | 예약 상태별 고객 안내 문구 조회 |
 | 고객 FAQ | `GET` | `/api/faqs` | 공개 중인 FAQ 조회 |
 | 파일 업로드 | `POST` | `/api/reservations/{reservationId}/photos` | 짐 사진 업로드 |
 | 고객 리뷰 | `POST` | `/api/reviews` | 완료 예약 리뷰 작성 |
+| 관리자 고객 요청 | `POST` | `/api/admin/reservations/customer-requests/{requestId}/approve` | 고객 수정/취소 요청 승인 |
+| 관리자 고객 요청 | `POST` | `/api/admin/reservations/customer-requests/{requestId}/reject` | 고객 수정/취소 요청 반려 |
 | 관리자 알림 | `POST` | `/api/admin/reservations/{reservationId}/notifications/email/send` | 준비 이메일 발송 |
 | 관리자 알림 | `POST` | `/api/admin/reservations/{reservationId}/notifications/email/resend-failed` | 실패 이메일 재발송 |
 | 관리자 알림 | `POST` | `/api/admin/reservations/{reservationId}/notifications/sms/send` | 준비 SMS 발송 |
@@ -44,13 +46,13 @@ React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 기능 
 
 ## React 전환 준비 점검
 
-현재 REST API는 고객 화면을 React로 전환하는 데 필요한 핵심 흐름을 먼저 제공합니다. 고객은 예약 신청, 예약 조회, 예약 수정, 예약 취소, 견적 동의, 짐 사진 업로드, 리뷰 작성을 API로 처리할 수 있습니다.
+현재 REST API는 고객 화면을 React로 전환하는 데 필요한 핵심 흐름을 먼저 제공합니다. 고객은 예약 신청, 예약 조회, 예약 수정 요청, 예약 취소 요청, 견적 동의, 짐 사진 업로드, 리뷰 작성을 API로 처리할 수 있습니다.
 
 | 구분 | 현재 상태 | 판단 |
 | --- | --- | --- |
 | 고객 예약 신청 | `/api/reservations` 제공 | React 예약 신청 화면에서 바로 사용 가능 |
 | 고객 예약 조회 | `/api/reservations/search` 제공 | 예약 번호와 연락처 인증 흐름 유지 가능 |
-| 고객 예약 수정/취소 | 수정, 취소 API 제공 | 고객 셀프 관리 화면 구현 가능 |
+| 고객 예약 수정/취소 | 수정, 취소 요청 API 제공 | 관리자 승인 전까지 원본 예약을 보호 가능 |
 | 견적 동의 | 견적 동의 API 제공 | 견적 안내 후 확정 흐름 구현 가능 |
 | 짐 사진 업로드 | multipart API 제공 | React에서 `FormData`로 업로드 가능 |
 | 고객 리뷰 | `/api/reviews` 제공 | 완료 예약 리뷰 작성 화면 구현 가능 |
@@ -121,7 +123,7 @@ npm run dev
 6. 기존 `/reservations/**` GET 화면은 React 고객 화면으로 리다이렉트하고 POST·견적서 출력 호환 경로는 유지합니다.
 7. 관리자 화면 React 전환은 고객 화면 전환 이후 별도 작업으로 판단합니다.
 
-기존 `/reservations/new`, `/reservations/search`, `/reservations/{id}`, `/reservations/{id}/edit`, `/faq` GET 요청은 React 화면으로 연결됩니다. 현재 React 고객 화면은 예약 신청, 예약 번호/연락처 기반 예약 조회, 예약 진행 단계 확인, 예약 수정, 예약 취소, 견적 동의, 짐 사진 업로드, 고객 리뷰, FAQ 조회를 제공합니다.
+기존 `/reservations/new`, `/reservations/search`, `/reservations/{id}`, `/reservations/{id}/edit`, `/faq` GET 요청은 React 화면으로 연결됩니다. 현재 React 고객 화면은 예약 신청, 예약 번호/연락처 기반 예약 조회, 예약 진행 단계 확인, 예약 수정 요청, 예약 취소 요청, 견적 동의, 짐 사진 업로드, 고객 리뷰, FAQ 조회를 제공합니다.
 
 ## 예약 가능 시간 API
 
@@ -176,7 +178,7 @@ Content-Type: application/json
 }
 ```
 
-예약 번호와 예약 당시 연락처가 일치하면 예약 상태, 이사 일정, 주소, 견적 금액, 견적 산정 내역을 JSON으로 응답합니다. 일치하지 않으면 `404 Not Found`와 오류 메시지를 응답합니다.
+예약 번호와 예약 당시 연락처가 일치하면 예약 상태, 이사 일정, 주소, 견적 금액, 견적 산정 내역, 고객 수정/취소 요청 이력을 JSON으로 응답합니다. 일치하지 않으면 `404 Not Found`와 오류 메시지를 응답합니다.
 
 ### 예약 수정
 
@@ -201,7 +203,9 @@ Content-Type: application/json
 }
 ```
 
-예약 당시 연락처가 일치하고 현재 상태가 `접수` 또는 `상담중`이면 예약 정보를 수정합니다. 수정이 완료되면 변경된 예약 정보를 JSON으로 응답합니다.
+예약 당시 연락처가 일치하고 현재 상태가 `접수` 또는 `상담중`이면 예약 수정 요청을 생성합니다. 실제 예약 정보는 관리자 승인 후 반영되며, 응답의 `customerRequests`에서 `PENDING` 상태 요청을 확인할 수 있습니다.
+
+이미 처리 대기 중인 고객 요청이 있으면 새 수정 또는 취소 요청은 제한됩니다. 이렇게 한 이유는 동시에 여러 요청이 쌓이면 관리자가 어떤 요청을 먼저 반영해야 하는지 판단하기 어려워지기 때문입니다.
 
 ### 예약 취소
 
@@ -216,7 +220,9 @@ Content-Type: application/json
 }
 ```
 
-예약 당시 연락처가 일치하고 현재 상태가 `접수` 또는 `상담중`이면 예약 상태를 `취소`로 변경합니다. 취소가 완료되면 변경된 예약 정보를 JSON으로 응답합니다.
+예약 당시 연락처가 일치하고 현재 상태가 `접수` 또는 `상담중`이면 예약 취소 요청을 생성합니다. 실제 예약 상태가 `취소`로 바뀌는 시점은 관리자가 요청을 승인한 뒤입니다.
+
+고객에게는 요청 접수 상태를 보여주고, 관리자는 예약 상세 화면에서 승인 또는 반려할 수 있습니다.
 
 ### 견적 동의
 
@@ -232,6 +238,33 @@ Content-Type: application/json
 ```
 
 예약 당시 연락처가 일치하고 최종 견적이 있는 예약이면 견적 동의 처리 후 예약 상태를 `확정`으로 변경합니다. 동의가 완료되면 확정된 예약 정보와 동의 금액을 JSON으로 응답합니다.
+
+## 관리자 고객 요청 API
+
+고객이 예약 수정 또는 취소를 요청하면 관리자 예약 상세 화면과 관리자 API에서 처리할 수 있습니다. 이 API는 로그인한 관리자만 호출할 수 있습니다.
+
+### 고객 요청 승인
+
+```http
+POST /api/admin/reservations/customer-requests/{requestId}/approve
+```
+
+수정 요청을 승인하면 요청에 담긴 일정, 주소, 층수, 메모가 실제 예약에 반영됩니다. 취소 요청을 승인하면 예약 상태가 `CANCELED`로 변경됩니다.
+
+### 고객 요청 반려
+
+```http
+POST /api/admin/reservations/customer-requests/{requestId}/reject
+Content-Type: application/json
+```
+
+```json
+{
+  "rejectionReason": "해당 시간에는 배차가 어려워 반려합니다."
+}
+```
+
+반려 사유는 필수입니다. 고객 요청 이력에는 `REJECTED` 상태와 반려 사유가 남습니다.
 
 ## 고객 안내 API
 

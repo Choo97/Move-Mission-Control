@@ -82,7 +82,7 @@ public class ReservationApiController {
 
     @Operation(
             summary = "예약 수정",
-            description = "예약 번호와 연락처를 확인한 뒤 고객이 수정 가능한 예약 정보를 변경합니다."
+            description = "예약 번호와 연락처를 확인한 뒤 고객의 예약 수정 요청을 접수합니다. 실제 예약 정보는 관리자가 승인한 뒤 반영됩니다."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "예약 수정 성공"),
@@ -97,7 +97,7 @@ public class ReservationApiController {
         }
 
         try {
-            reservationService.updateDetails(id, request);
+            reservationService.requestUpdateDetails(id, request);
             Reservation reservation = reservationService.get(id);
             return ResponseEntity.ok(toResponse(reservation));
         } catch (IllegalArgumentException exception) {
@@ -107,7 +107,7 @@ public class ReservationApiController {
 
     @Operation(
             summary = "예약 취소",
-            description = "예약 번호와 연락처를 확인한 뒤 고객 예약을 취소 상태로 변경합니다."
+            description = "예약 번호와 연락처를 확인한 뒤 고객의 예약 취소 요청을 접수합니다. 실제 취소 상태는 관리자가 승인한 뒤 반영됩니다."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "예약 취소 성공"),
@@ -122,7 +122,7 @@ public class ReservationApiController {
         }
 
         try {
-            reservationService.cancel(id, request.getPhone());
+            reservationService.requestCancel(id, request.getPhone());
             Reservation reservation = reservationService.get(id);
             return ResponseEntity.ok(toResponse(reservation));
         } catch (IllegalArgumentException exception) {
@@ -188,7 +188,8 @@ public class ReservationApiController {
         return ReservationApiResponse.from(
                 reservation,
                 reservationService.estimateLines(reservation),
-                reservationService.findPhotos(reservation.getId())
+                reservationService.findPhotos(reservation.getId()),
+                reservationService.findCustomerRequests(reservation.getId())
         );
     }
 }

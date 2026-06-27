@@ -45,7 +45,9 @@ public class SecurityConfig {
             new AntPathRequestMatcher("/api/admin/reservations/*/notifications/email/send", "POST"),
             new AntPathRequestMatcher("/api/admin/reservations/*/notifications/email/resend-failed", "POST"),
             new AntPathRequestMatcher("/api/admin/reservations/*/notifications/sms/send", "POST"),
-            new AntPathRequestMatcher("/api/admin/reservations/*/notifications/sms/resend-failed", "POST")
+            new AntPathRequestMatcher("/api/admin/reservations/*/notifications/sms/resend-failed", "POST"),
+            new AntPathRequestMatcher("/api/admin/reservations/customer-requests/*/approve", "POST"),
+            new AntPathRequestMatcher("/api/admin/reservations/customer-requests/*/reject", "POST")
     };
 
     private static final String[] PUBLIC_PAGE_PATHS = {

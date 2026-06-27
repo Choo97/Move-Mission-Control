@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
   AdminAuthenticationRequiredError,
+  approveAdminCustomerRequest,
   getAdminReservation,
+  rejectAdminCustomerRequest,
   resendAdminReservationFailedEmails,
   resendAdminReservationFailedSms,
   sendAdminReservationEmails,
@@ -34,6 +36,10 @@ const statusOptions: Array<{ value: ReservationStatus; label: string }> = [
 ]
 
 const getAdminNextTask = (reservation: AdminReservationDetailResponse) => {
+  if (reservation.customerRequests.some((request) => request.status === 'PENDING')) {
+    return '고객 수정/취소 요청을 승인 또는 반려하세요.'
+  }
+
   if (reservation.status === 'CANCELED') {
     return '취소된 예약입니다. 추가 상담이 필요한 경우 메모만 남겨 주세요.'
   }
@@ -84,6 +90,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
   const [isSendingEmail, setIsSendingEmail] = useState(false)
   const [isResendingSms, setIsResendingSms] = useState(false)
   const [isSendingSms, setIsSendingSms] = useState(false)
+  const [processingCustomerRequestId, setProcessingCustomerRequestId] = useState<number | null>(null)
   const [isAuthenticationRequired, setIsAuthenticationRequired] = useState(false)
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -328,6 +335,56 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
     }
   }
 
+  const approveCustomerRequest = async (requestId: number) => {
+    setProcessingCustomerRequestId(requestId)
+    setErrorMessage('')
+    setActionMessage('')
+
+    try {
+      const updatedReservation = await approveAdminCustomerRequest(requestId)
+      setReservation(updatedReservation)
+      setSelectedStatus(updatedReservation.status)
+      setEstimateAmount(String(updatedReservation.estimatedPrice))
+      setDistanceAmount(updatedReservation.distanceKm === null ? '' : String(updatedReservation.distanceKm))
+      setAdminMemo(updatedReservation.adminMemo ?? '')
+      setActionMessage('고객 요청을 승인했습니다.')
+      onReservationChanged()
+    } catch (error) {
+      showAdminError(error, '고객 요청 승인에 실패했습니다.')
+    } finally {
+      setProcessingCustomerRequestId(null)
+    }
+  }
+
+  const rejectCustomerRequest = async (requestId: number) => {
+    const rejectionReason = window.prompt('반려 사유를 입력해 주세요.')
+
+    if (rejectionReason === null) {
+      return
+    }
+
+    if (rejectionReason.trim() === '') {
+      setErrorMessage('반려 사유를 입력해 주세요.')
+      setActionMessage('')
+      return
+    }
+
+    setProcessingCustomerRequestId(requestId)
+    setErrorMessage('')
+    setActionMessage('')
+
+    try {
+      const updatedReservation = await rejectAdminCustomerRequest(requestId, rejectionReason.trim())
+      setReservation(updatedReservation)
+      setActionMessage('고객 요청을 반려했습니다.')
+      onReservationChanged()
+    } catch (error) {
+      showAdminError(error, '고객 요청 반려에 실패했습니다.')
+    } finally {
+      setProcessingCustomerRequestId(null)
+    }
+  }
+
   return (
     <aside className="admin-detail-panel">
       <div className="admin-detail-heading">
@@ -534,6 +591,49 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
           </section>
 
           <section>
+            <h3>고객 요청 처리</h3>
+            {reservation.customerRequests.length > 0 ? (
+              <ul className="admin-history-list customer-request-review-list">
+                {reservation.customerRequests.map((request) => (
+                  <li key={request.id} className={request.status.toLowerCase()}>
+                    <div className="admin-history-heading">
+                      <strong>{request.requestTypeLabel}</strong>
+                      <div>
+                        <span className={`history-badge ${request.status.toLowerCase()}`}>
+                          {request.statusLabel}
+                        </span>
+                      </div>
+                    </div>
+                    <span>{request.requestedAt.replace('T', ' ').slice(0, 16)}</span>
+                    <p>{request.detail}</p>
+                    {request.rejectionReason && <p>반려 사유: {request.rejectionReason}</p>}
+                    {request.status === 'PENDING' && (
+                      <div className="admin-request-actions">
+                        <button
+                          type="button"
+                          disabled={processingCustomerRequestId === request.id}
+                          onClick={() => void approveCustomerRequest(request.id)}
+                        >
+                          승인
+                        </button>
+                        <button
+                          type="button"
+                          disabled={processingCustomerRequestId === request.id}
+                          onClick={() => void rejectCustomerRequest(request.id)}
+                        >
+                          반려
+                        </button>
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="admin-empty inline">처리할 고객 요청이 없습니다.</p>
+            )}
+          </section>
+
+          <section>
             <h3>상태 이력</h3>
             {reservation.statusHistories.length > 0 ? (
               <ul className="admin-history-list">
@@ -683,6 +783,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
 function AdminWorkflowSummary({ reservation }: { reservation: AdminReservationDetailResponse }) {
   const readyNotifications = countNotifications(reservation, 'READY')
   const failedNotifications = countNotifications(reservation, 'FAILED')
+  const pendingCustomerRequestCount = reservation.customerRequests.filter((request) => request.status === 'PENDING').length
   const latestCustomerAction = reservation.customerActionHistories[0]
   const taskItems = [
     {
@@ -696,6 +797,12 @@ function AdminWorkflowSummary({ reservation }: { reservation: AdminReservationDe
         : reservation.memo
           ? '요청사항 있음, 사진 없음'
           : '요청사항과 사진 없음',
+    },
+    {
+      label: '고객 요청',
+      value: pendingCustomerRequestCount > 0
+        ? `승인/반려 필요 ${pendingCustomerRequestCount}건`
+        : '처리 대기 요청 없음',
     },
     {
       label: '견적 상태',

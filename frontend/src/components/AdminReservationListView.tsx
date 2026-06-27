@@ -383,7 +383,8 @@ function AdminTaskSummaryCards({ summary }: { summary: AdminDashboardTaskSummary
     summary.estimateAcceptancePendingCount +
     summary.distancePendingCount +
     summary.failedEmailCount +
-    summary.failedSmsCount
+    summary.failedSmsCount +
+    summary.pendingCustomerRequestCount
   const taskCards = [
     {
       label: '접수 대기',
@@ -404,6 +405,11 @@ function AdminTaskSummaryCards({ summary }: { summary: AdminDashboardTaskSummary
       label: '거리 확인 필요',
       value: summary.distancePendingCount,
       description: '거리 입력 후 견적 점검 필요',
+    },
+    {
+      label: '고객 요청 대기',
+      value: summary.pendingCustomerRequestCount,
+      description: '수정/취소 요청 승인 필요',
     },
     {
       label: '이메일 실패',

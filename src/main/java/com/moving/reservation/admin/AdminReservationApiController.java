@@ -72,7 +72,8 @@ public class AdminReservationApiController {
                 reservationService.countEstimateAcceptancePending(),
                 reservationService.countDistancePending(),
                 customerNotificationService.countFailedEmails(),
-                customerNotificationService.countFailedSms()
+                customerNotificationService.countFailedSms(),
+                reservationService.countPendingCustomerRequests()
         );
 
         return AdminReservationPageResponse.from(reservationPage, taskSummary);
@@ -237,6 +238,40 @@ public class AdminReservationApiController {
         );
     }
 
+    @PostMapping("/customer-requests/{requestId}/approve")
+    public AdminReservationDetailResponse approveCustomerRequest(@PathVariable Long requestId, Principal principal) {
+        var customerRequest = reservationService.approveCustomerRequest(requestId, principal.getName());
+        Reservation reservation = customerRequest.getReservation();
+        adminAuditLogService.record(
+                reservation,
+                "고객 요청 승인",
+                customerRequest.getRequestType().getLabel() + "을 승인했습니다.",
+                principal.getName()
+        );
+
+        return detailResponse(reservation);
+    }
+
+    @PostMapping("/customer-requests/{requestId}/reject")
+    public AdminReservationDetailResponse rejectCustomerRequest(@PathVariable Long requestId,
+                                                               @RequestBody AdminCustomerRequestRejectRequest request,
+                                                               Principal principal) {
+        var customerRequest = reservationService.rejectCustomerRequest(
+                requestId,
+                principal.getName(),
+                request.getRejectionReason()
+        );
+        Reservation reservation = customerRequest.getReservation();
+        adminAuditLogService.record(
+                reservation,
+                "고객 요청 반려",
+                customerRequest.getRequestType().getLabel() + "을 반려했습니다. 사유: " + request.getRejectionReason(),
+                principal.getName()
+        );
+
+        return detailResponse(reservation);
+    }
+
     private int selectedPageSize(int size) {
         return ALLOWED_PAGE_SIZES.contains(size) ? size : DEFAULT_PAGE_SIZE;
     }
@@ -248,6 +283,7 @@ public class AdminReservationApiController {
                 reservationService.findPhotos(reservation.getId()),
                 reservationService.findStatusHistories(reservation.getId()),
                 reservationService.findCustomerActionHistories(reservation.getId()),
+                reservationService.findCustomerRequests(reservation.getId()),
                 customerNotificationService.findByReservationId(reservation.getId()),
                 adminAuditLogService.findByReservationId(reservation.getId())
         );

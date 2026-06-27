@@ -29,6 +29,7 @@ class ReservationScheduleConflictUnitTest {
                 mock(ReservationStatusHistoryRepository.class),
                 mock(ReservationPhotoRepository.class),
                 mock(ReservationCustomerActionHistoryRepository.class),
+                mock(ReservationCustomerRequestRepository.class),
                 mock(ReservationPhotoStorage.class),
                 mock(CouponService.class),
                 mock(ReviewService.class),

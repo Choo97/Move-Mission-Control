@@ -26,6 +26,7 @@ public class ReservationService {
     private final ReservationStatusHistoryRepository statusHistoryRepository;
     private final ReservationPhotoRepository reservationPhotoRepository;
     private final ReservationCustomerActionHistoryRepository customerActionHistoryRepository;
+    private final ReservationCustomerRequestRepository customerRequestRepository;
     private final ReservationPhotoStorage reservationPhotoStorage;
     private final CouponService couponService;
     private final ReviewService reviewService;
@@ -39,6 +40,7 @@ public class ReservationService {
                               ReservationStatusHistoryRepository statusHistoryRepository,
                               ReservationPhotoRepository reservationPhotoRepository,
                               ReservationCustomerActionHistoryRepository customerActionHistoryRepository,
+                              ReservationCustomerRequestRepository customerRequestRepository,
                               ReservationPhotoStorage reservationPhotoStorage,
                               CouponService couponService,
                               ReviewService reviewService,
@@ -51,6 +53,7 @@ public class ReservationService {
         this.statusHistoryRepository = statusHistoryRepository;
         this.reservationPhotoRepository = reservationPhotoRepository;
         this.customerActionHistoryRepository = customerActionHistoryRepository;
+        this.customerRequestRepository = customerRequestRepository;
         this.reservationPhotoStorage = reservationPhotoStorage;
         this.couponService = couponService;
         this.reviewService = reviewService;
@@ -209,6 +212,10 @@ public class ReservationService {
         return customerActionHistoryRepository.findByReservationIdOrderByCreatedAtDesc(reservationId);
     }
 
+    public List<ReservationCustomerRequest> findCustomerRequests(Long reservationId) {
+        return customerRequestRepository.findByReservationIdOrderByRequestedAtDesc(reservationId);
+    }
+
     public List<ReservationEstimateLine> estimateLines(Reservation reservation) {
         return estimateCalculator.calculateLines(
                 reservation.getMoveType(),
@@ -270,6 +277,11 @@ public class ReservationService {
 
     @Transactional
     public void cancel(Long id, String phone) {
+        requestCancel(id, phone);
+    }
+
+    @Transactional
+    public void requestCancel(Long id, String phone) {
         Reservation reservation = reservationRepository.findByIdAndPhone(id, phone)
                 .orElseThrow(() -> new IllegalArgumentException("예약 번호와 연락처가 일치하지 않습니다."));
 
@@ -277,14 +289,17 @@ public class ReservationService {
             throw new IllegalArgumentException("현재 상태에서는 예약을 취소할 수 없습니다.");
         }
 
+        ensureNoPendingCustomerRequest(reservation);
+
+        String detail = "취소 요청 당시 상태: " + reservation.getStatus().getLabel();
+        customerRequestRepository.save(ReservationCustomerRequest.cancel(reservation, detail));
         customerActionHistoryRepository.save(new ReservationCustomerActionHistory(
                 reservation,
-                CustomerActionType.CANCEL,
+                CustomerActionType.CANCEL_REQUEST,
                 "고객이 예약 취소를 요청했습니다.",
-                "취소 요청 당시 상태: " + reservation.getStatus().getLabel(),
+                detail,
                 "customer"
         ));
-        changeStatus(reservation, ReservationStatus.CANCELED, "customer");
     }
 
     @Transactional
@@ -316,6 +331,11 @@ public class ReservationService {
 
     @Transactional
     public void updateDetails(Long id, ReservationUpdateRequest request) {
+        requestUpdateDetails(id, request);
+    }
+
+    @Transactional
+    public void requestUpdateDetails(Long id, ReservationUpdateRequest request) {
         Reservation reservation = reservationRepository.findByIdAndPhone(id, request.getPhone())
                 .orElseThrow(() -> new IllegalArgumentException("예약 번호와 연락처가 일치하지 않습니다."));
 
@@ -323,11 +343,82 @@ public class ReservationService {
             throw new IllegalArgumentException("현재 상태에서는 예약을 수정할 수 없습니다.");
         }
 
+        ensureNoPendingCustomerRequest(reservation);
+
         if (scheduleConflictEnabled) {
             availabilityService.ensureAvailable(request.getMoveDate(), request.getMoveTime(), reservation.getId());
         }
 
         String changeDetail = customerUpdateChangeDetail(reservation, request);
+        customerRequestRepository.save(ReservationCustomerRequest.update(reservation, request, changeDetail));
+        customerActionHistoryRepository.save(new ReservationCustomerActionHistory(
+                reservation,
+                CustomerActionType.UPDATE_REQUEST,
+                "고객이 예약 수정 요청을 남겼습니다.",
+                changeDetail,
+                "customer"
+        ));
+    }
+
+    @Transactional
+    public ReservationCustomerRequest approveCustomerRequest(Long requestId, String processedBy) {
+        ReservationCustomerRequest request = getCustomerRequest(requestId);
+        Reservation reservation = request.getReservation();
+
+        request.approve(processedBy);
+
+        if (request.getRequestType() == CustomerRequestType.UPDATE) {
+            approveUpdateRequest(request);
+        } else if (request.getRequestType() == CustomerRequestType.CANCEL) {
+            approveCancelRequest(request, processedBy);
+        }
+
+        customerActionHistoryRepository.save(new ReservationCustomerActionHistory(
+                reservation,
+                CustomerActionType.REQUEST_APPROVED,
+                "관리자가 고객 요청을 승인했습니다.",
+                request.getRequestType().getLabel() + "\n" + request.getDetail(),
+                processedBy
+        ));
+
+        return request;
+    }
+
+    @Transactional
+    public ReservationCustomerRequest rejectCustomerRequest(Long requestId, String processedBy, String rejectionReason) {
+        if (rejectionReason == null || rejectionReason.isBlank()) {
+            throw new IllegalArgumentException("반려 사유를 입력해 주세요.");
+        }
+
+        ReservationCustomerRequest request = getCustomerRequest(requestId);
+        request.reject(processedBy, rejectionReason.trim());
+        customerActionHistoryRepository.save(new ReservationCustomerActionHistory(
+                request.getReservation(),
+                CustomerActionType.REQUEST_REJECTED,
+                "관리자가 고객 요청을 반려했습니다.",
+                request.getRequestType().getLabel() + "\n반려 사유: " + rejectionReason.trim(),
+                processedBy
+        ));
+
+        return request;
+    }
+
+    private ReservationCustomerRequest getCustomerRequest(Long requestId) {
+        return customerRequestRepository.findById(requestId)
+                .orElseThrow(() -> new IllegalArgumentException("고객 요청을 찾을 수 없습니다."));
+    }
+
+    private void approveUpdateRequest(ReservationCustomerRequest request) {
+        Reservation reservation = request.getReservation();
+
+        if (!reservation.isEditable()) {
+            throw new IllegalArgumentException("현재 상태에서는 예약 수정 요청을 승인할 수 없습니다.");
+        }
+
+        if (scheduleConflictEnabled) {
+            availabilityService.ensureAvailable(request.getMoveDate(), request.getMoveTime(), reservation.getId());
+        }
+
         reservation.updateDetails(
                 request.getMoveDate(),
                 request.getMoveTime(),
@@ -340,23 +431,23 @@ public class ReservationService {
                 request.getEmail(),
                 request.getMemo()
         );
-        reservation.applyBaseEstimate(estimateCalculator.calculate(
-                reservation.getMoveType(),
-                reservation.isFromElevator(),
-                reservation.isToElevator(),
-                reservation.getFromFloor(),
-                reservation.getToFloor(),
-                reservation.isFromLadderTruck(),
-                reservation.isToLadderTruck(),
-                reservation.getDistanceKm()
-        ));
-        customerActionHistoryRepository.save(new ReservationCustomerActionHistory(
-                reservation,
-                CustomerActionType.UPDATE,
-                "고객이 예약 정보를 수정했습니다.",
-                changeDetail,
-                "customer"
-        ));
+        recalculateBaseEstimate(reservation);
+    }
+
+    private void approveCancelRequest(ReservationCustomerRequest request, String processedBy) {
+        Reservation reservation = request.getReservation();
+
+        if (!reservation.isCancelable()) {
+            throw new IllegalArgumentException("현재 상태에서는 예약 취소 요청을 승인할 수 없습니다.");
+        }
+
+        changeStatus(reservation, ReservationStatus.CANCELED, processedBy);
+    }
+
+    private void ensureNoPendingCustomerRequest(Reservation reservation) {
+        if (customerRequestRepository.existsByReservationIdAndStatus(reservation.getId(), CustomerRequestStatus.PENDING)) {
+            throw new IllegalArgumentException("이미 처리 대기 중인 고객 요청이 있습니다.");
+        }
     }
 
     @Transactional
@@ -467,6 +558,10 @@ public class ReservationService {
                 ReservationStatus.ESTIMATE_SENT,
                 ReservationStatus.CONFIRMED
         ));
+    }
+
+    public long countPendingCustomerRequests() {
+        return customerRequestRepository.countByStatus(CustomerRequestStatus.PENDING);
     }
 
     private String normalizeKeyword(String keyword) {

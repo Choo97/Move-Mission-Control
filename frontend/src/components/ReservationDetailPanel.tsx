@@ -73,6 +73,7 @@ export function ReservationDetailPanel({
             errorMessage={customerGuideErrorMessage}
           />
           <ReservationStateBadges reservation={reservation} />
+          <CustomerRequestSection reservation={reservation} />
           <EstimateLines reservation={reservation} />
           <PhotoSection
             reservation={reservation}
@@ -311,12 +312,39 @@ function CustomerStatusGuide({
 }
 
 function ReservationStateBadges({ reservation }: { reservation: ReservationResponse }) {
+  const hasPendingRequest = reservation.customerRequests.some((request) => request.status === 'PENDING')
+
   return (
     <div className="action-state">
+      {hasPendingRequest && <span>요청 처리 대기</span>}
       {reservation.editable && <span>수정 가능</span>}
       {reservation.cancelable && <span>취소 가능</span>}
       {reservation.estimateAcceptable && <span>견적 동의 가능</span>}
       {reservation.estimateAccepted && <span>견적 동의 완료</span>}
+    </div>
+  )
+}
+
+function CustomerRequestSection({ reservation }: { reservation: ReservationResponse }) {
+  if (reservation.customerRequests.length === 0) {
+    return null
+  }
+
+  return (
+    <div className="customer-request-section">
+      <h3>요청 처리 현황</h3>
+      <ul>
+        {reservation.customerRequests.map((request) => (
+          <li key={request.id} className={request.status.toLowerCase()}>
+            <strong>
+              {request.requestTypeLabel} · {request.statusLabel}
+            </strong>
+            <span>{request.requestedAt.replace('T', ' ').slice(0, 16)}</span>
+            <p>{request.detail}</p>
+            {request.rejectionReason && <p>반려 사유: {request.rejectionReason}</p>}
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
@@ -489,7 +517,11 @@ function CustomerActions({
   onCancelReservation: () => void
   onAcceptEstimate: () => void
 }) {
-  if (!actionMessage && !reservation.editable && !reservation.cancelable && !reservation.estimateAcceptable) {
+  const hasPendingRequest = reservation.customerRequests.some((request) => request.status === 'PENDING')
+  const canRequestEdit = reservation.editable && !hasPendingRequest
+  const canRequestCancel = reservation.cancelable && !hasPendingRequest
+
+  if (!actionMessage && !canRequestEdit && !canRequestCancel && !reservation.estimateAcceptable) {
     return null
   }
 
@@ -508,14 +540,14 @@ function CustomerActions({
             {isAcceptingEstimate ? '견적 동의 처리 중' : '견적 동의'}
           </button>
         )}
-        {reservation.editable && (
+        {canRequestEdit && (
           <button className="submit-button secondary" type="button" onClick={onStartEdit}>
-            예약 수정
+            예약 수정 요청
           </button>
         )}
-        {reservation.cancelable && (
+        {canRequestCancel && (
           <button className="submit-button danger" type="button" disabled={isCanceling} onClick={onCancelReservation}>
-            {isCanceling ? '취소 처리 중' : '예약 취소'}
+            {isCanceling ? '취소 요청 중' : '예약 취소 요청'}
           </button>
         )}
       </div>

@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.moving.reservation.reservation.MoveType;
 import com.moving.reservation.reservation.ReservationCreateRequest;
+import com.moving.reservation.reservation.ReservationUpdateRequest;
 import com.moving.reservation.reservation.ReservationService;
 import com.moving.reservation.reservation.ReservationStatus;
 import java.time.LocalDate;
@@ -59,6 +60,7 @@ class AdminReservationApiControllerTest {
                 .andExpect(jsonPath("$.taskSummary.distancePendingCount").value(1))
                 .andExpect(jsonPath("$.taskSummary.failedEmailCount").value(0))
                 .andExpect(jsonPath("$.taskSummary.failedSmsCount").value(0))
+                .andExpect(jsonPath("$.taskSummary.pendingCustomerRequestCount").value(0))
                 .andExpect(jsonPath("$.pageNumber").value(0))
                 .andExpect(jsonPath("$.pageSize").value(10))
                 .andExpect(jsonPath("$.totalElements").value(1))
@@ -101,6 +103,7 @@ class AdminReservationApiControllerTest {
                 .andExpect(jsonPath("$.photos").isArray())
                 .andExpect(jsonPath("$.statusHistories[0].changedStatus").value(ReservationStatus.CONSULTING.name()))
                 .andExpect(jsonPath("$.customerActionHistories").isArray())
+                .andExpect(jsonPath("$.customerRequests").isArray())
                 .andExpect(jsonPath("$.notifications.length()").value(3))
                 .andExpect(jsonPath("$.notifications[0].type").value("STATUS_CHANGED"))
                 .andExpect(jsonPath("$.notifications[0].status").value("READY"))
@@ -415,6 +418,42 @@ class AdminReservationApiControllerTest {
                 .andExpect(jsonPath("$.reservation.auditLogs[0].action").value("실패 SMS 재발송"));
     }
 
+    @Test
+    void 관리자_고객수정요청_승인_API는_예약정보를_반영한다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("수정요청고객", "010-9999-0011"));
+        reservationService.requestUpdateDetails(reservation.getId(), reservationUpdateRequest("010-9999-0011"));
+        var customerRequest = reservationService.findCustomerRequests(reservation.getId()).get(0);
+
+        mockMvc.perform(post("/api/admin/reservations/customer-requests/{requestId}/approve", customerRequest.getId())
+                        .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.fromAddress").value("서울시 마포구 월드컵북로 1"))
+                .andExpect(jsonPath("$.moveTime").value("14:00:00"))
+                .andExpect(jsonPath("$.customerRequests[0].status").value("APPROVED"))
+                .andExpect(jsonPath("$.auditLogs[0].action").value("고객 요청 승인"));
+    }
+
+    @Test
+    void 관리자_고객요청_반려_API는_반려사유를_저장한다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("반려요청고객", "010-9999-0012"));
+        reservationService.requestCancel(reservation.getId(), "010-9999-0012");
+        var customerRequest = reservationService.findCustomerRequests(reservation.getId()).get(0);
+
+        mockMvc.perform(post("/api/admin/reservations/customer-requests/{requestId}/reject", customerRequest.getId())
+                        .with(user("admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "rejectionReason": "상담 후 다시 접수해 주세요."
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(ReservationStatus.RECEIVED.name()))
+                .andExpect(jsonPath("$.customerRequests[0].status").value("REJECTED"))
+                .andExpect(jsonPath("$.customerRequests[0].rejectionReason").value("상담 후 다시 접수해 주세요."))
+                .andExpect(jsonPath("$.auditLogs[0].action").value("고객 요청 반려"));
+    }
+
     private ReservationCreateRequest reservationCreateRequest(String customerName, String phone) {
         ReservationCreateRequest request = new ReservationCreateRequest();
         request.setCustomerName(customerName);
@@ -430,6 +469,22 @@ class AdminReservationApiControllerTest {
         request.setFromFloor(3);
         request.setToFloor(5);
         request.setMemo("관리자 API 테스트 예약입니다.");
+        return request;
+    }
+
+    private ReservationUpdateRequest reservationUpdateRequest(String phone) {
+        ReservationUpdateRequest request = new ReservationUpdateRequest();
+        request.setPhone(phone);
+        request.setEmail("updated-admin-api@example.com");
+        request.setMoveDate(LocalDate.now().plusDays(10));
+        request.setMoveTime(LocalTime.of(14, 0));
+        request.setFromAddress("서울시 마포구 월드컵북로 1");
+        request.setToAddress("서울시 용산구 한강대로 1");
+        request.setFromFloor(2);
+        request.setToFloor(4);
+        request.setFromLadderTruck(false);
+        request.setToLadderTruck(true);
+        request.setMemo("관리자 API 승인 테스트 수정 요청입니다.");
         return request;
     }
 }
