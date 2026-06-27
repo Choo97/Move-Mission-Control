@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import './App.css'
-import { AdminReservationListView } from './components/AdminReservationListView'
 import { ReservationCreateForm } from './components/ReservationCreateForm'
 import { ReservationDetailPanel } from './components/ReservationDetailPanel'
 import { ReservationEditFormView } from './components/ReservationEditFormView'
@@ -35,7 +34,7 @@ import type {
   ReviewResponse,
 } from './types'
 
-type ActiveView = 'create' | 'search' | 'faq' | 'admin'
+type ActiveView = 'create' | 'search' | 'faq'
 
 type LandingProps = {
   onReserveClick: () => void
@@ -43,19 +42,9 @@ type LandingProps = {
   onFaqClick: () => void
 }
 
-const adminQueryKeys = [
-  'status',
-  'keyword',
-  'sort',
-  'page',
-  'size',
-  'needsDistance',
-  'reservationId',
-]
-
 const getViewFromUrl = (): ActiveView => {
   const view = new URLSearchParams(window.location.search).get('view')
-  return view === 'search' || view === 'faq' || view === 'admin' ? view : 'create'
+  return view === 'search' || view === 'faq' ? view : 'create'
 }
 
 const getInitialSearchForm = (): ReservationSearchForm => ({
@@ -95,7 +84,17 @@ function App() {
   }, [form])
 
   useEffect(() => {
-    const syncViewFromUrl = () => setActiveView(getViewFromUrl())
+    const syncViewFromUrl = () => {
+      const view = new URLSearchParams(window.location.search).get('view')
+      if (view === 'admin') {
+        window.location.replace(`${API_BASE_URL}/admin/reservations`)
+        return
+      }
+
+      setActiveView(getViewFromUrl())
+    }
+
+    syncViewFromUrl()
     window.addEventListener('popstate', syncViewFromUrl)
     return () => window.removeEventListener('popstate', syncViewFromUrl)
   }, [])
@@ -108,10 +107,6 @@ function App() {
       params.delete('view')
     } else {
       params.set('view', nextView)
-    }
-
-    if (nextView !== 'admin') {
-      adminQueryKeys.forEach((key) => params.delete(key))
     }
 
     const queryString = params.toString()
@@ -405,22 +400,9 @@ function App() {
         >
           예약 조회
         </button>
-        <button
-          type="button"
-          className={activeView === 'admin' ? 'active' : ''}
-          onClick={() => {
-            changeView('admin')
-            setActionMessage('')
-            setCompletedReservationId(null)
-          }}
-        >
-          관리자
-        </button>
       </nav>
 
-      {activeView === 'admin' ? (
-        <AdminReservationListView />
-      ) : activeView === 'faq' ? (
+      {activeView === 'faq' ? (
         <section className="workspace"><FaqView /></section>
       ) : (
         <>
@@ -501,7 +483,7 @@ function App() {
         </section>
         </>
       )}
-      {activeView !== 'admin' && <SiteFooter />}
+      <SiteFooter />
     </main>
   )
 }

@@ -102,6 +102,8 @@ React 고객 화면은 Spring Boot의 `/api/**`를 호출합니다.
 React 고객 화면 -> http://localhost:8081/api/reservations
 ```
 
+관리자 화면은 기존 Spring Boot Thymeleaf 화면을 사용합니다. React 고객 화면의 관리자 링크도 `http://localhost:8081/admin/reservations`로 이동하며, `http://localhost:5173/?view=admin` 방식은 고객 앱의 기본 흐름에서 제외합니다.
+
 React 개발 서버를 실행하려면 아래 명령을 사용합니다.
 
 ```bash
@@ -121,7 +123,7 @@ npm run dev
 4. 예약 수정, 취소, 견적 동의 화면을 React로 구현합니다.
 5. 짐 사진 업로드와 리뷰 작성 화면을 React로 구현합니다.
 6. 기존 `/reservations/**` GET 화면은 React 고객 화면으로 리다이렉트하고 POST·견적서 출력 호환 경로는 유지합니다.
-7. 관리자 화면 React 전환은 고객 화면 전환 이후 별도 작업으로 판단합니다.
+7. 관리자 화면 React 전환은 고객 화면 안정화 이후 별도 작업으로 판단합니다.
 
 기존 `/reservations/new`, `/reservations/search`, `/reservations/{id}`, `/reservations/{id}/edit`, `/faq` GET 요청은 React 화면으로 연결됩니다. 현재 React 고객 화면은 예약 신청, 예약 번호/연락처 기반 예약 조회, 예약 진행 단계 확인, 예약 수정 요청, 예약 취소 요청, 견적 동의, 짐 사진 업로드, 고객 리뷰, FAQ 조회를 제공합니다.
 
