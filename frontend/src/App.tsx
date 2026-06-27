@@ -53,7 +53,7 @@ const adminQueryKeys = [
   'reservationId',
 ]
 
-const getInitialView = (): ActiveView => {
+const getViewFromUrl = (): ActiveView => {
   const view = new URLSearchParams(window.location.search).get('view')
   return view === 'search' || view === 'faq' || view === 'admin' ? view : 'create'
 }
@@ -64,7 +64,7 @@ const getInitialSearchForm = (): ReservationSearchForm => ({
 })
 
 function App() {
-  const [activeView, setActiveView] = useState<ActiveView>(getInitialView)
+  const [activeView, setActiveView] = useState<ActiveView>(getViewFromUrl)
   const [form, setForm] = useState<ReservationForm>(loadReservationDraft)
   const [searchForm, setSearchForm] = useState<ReservationSearchForm>(getInitialSearchForm)
   const [editForm, setEditForm] = useState<ReservationEditForm | null>(null)
@@ -93,6 +93,12 @@ function App() {
     const saveTimer = window.setTimeout(() => saveReservationDraft(form), 300)
     return () => window.clearTimeout(saveTimer)
   }, [form])
+
+  useEffect(() => {
+    const syncViewFromUrl = () => setActiveView(getViewFromUrl())
+    window.addEventListener('popstate', syncViewFromUrl)
+    return () => window.removeEventListener('popstate', syncViewFromUrl)
+  }, [])
 
   const changeView = (nextView: ActiveView) => {
     setActiveView(nextView)

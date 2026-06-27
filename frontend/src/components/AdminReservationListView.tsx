@@ -65,15 +65,13 @@ const readInitialAdminState = () => {
   }
 }
 
-const initialAdminState = readInitialAdminState()
-
 export function AdminReservationListView() {
-  const [query, setQuery] = useState<AdminReservationListQuery>(initialAdminState.query)
-  const [keywordInput, setKeywordInput] = useState(initialAdminState.query.keyword ?? '')
+  const [query, setQuery] = useState<AdminReservationListQuery>(() => readInitialAdminState().query)
+  const [keywordInput, setKeywordInput] = useState(() => readInitialAdminState().query.keyword ?? '')
   const [reservationPage, setReservationPage] = useState<AdminReservationPageResponse | null>(null)
   const [conflictAttempts, setConflictAttempts] = useState<AdminReservationConflictAttemptResponse[]>([])
   const [selectedReservationId, setSelectedReservationId] = useState<number | null>(
-    initialAdminState.selectedReservationId,
+    () => readInitialAdminState().selectedReservationId,
   )
   const [refreshVersion, setRefreshVersion] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
@@ -167,11 +165,29 @@ export function AdminReservationListView() {
         </a>
       </div>
 
-      <AdminAvailabilitySettings />
+      {errorMessage &&
+        (isAuthenticationRequired ? (
+          <div className="admin-auth-notice">
+            <div>
+              <strong>{errorMessage}</strong>
+              <p>React 관리자 화면은 백엔드 관리자 로그인 세션을 사용합니다. 먼저 로그인한 뒤 이 화면을 새로고침해 주세요.</p>
+            </div>
+            <div className="admin-auth-actions">
+              <a href={`${API_BASE_URL}/login`}>관리자 로그인</a>
+              <a className="secondary" href={`${API_BASE_URL}/admin/reservations`}>기존 관리자 화면</a>
+            </div>
+          </div>
+        ) : (
+          <p className="message error">{errorMessage}</p>
+        ))}
 
-      {reservationPage?.taskSummary && <AdminTaskSummaryCards summary={reservationPage.taskSummary} />}
+      {!isAuthenticationRequired && <AdminAvailabilitySettings />}
 
-      {conflictAttempts.length > 0 && (
+      {!isAuthenticationRequired && reservationPage?.taskSummary && (
+        <AdminTaskSummaryCards summary={reservationPage.taskSummary} />
+      )}
+
+      {!isAuthenticationRequired && conflictAttempts.length > 0 && (
         <section className="admin-conflict-attempts" aria-labelledby="conflict-attempts-title">
           <div>
             <p className="eyebrow">Schedule Conflict</p>
@@ -195,7 +211,7 @@ export function AdminReservationListView() {
         </section>
       )}
 
-      <div className="admin-filters" aria-label="관리자 예약 목록 필터">
+      {!isAuthenticationRequired && <div className="admin-filters" aria-label="관리자 예약 목록 필터">
         <label>
           상태
           <select
@@ -251,20 +267,11 @@ export function AdminReservationListView() {
           />
           거리 확인 필요
         </label>
-      </div>
+      </div>}
 
-      {errorMessage &&
-        (isAuthenticationRequired ? (
-          <div className="admin-auth-notice">
-            <strong>{errorMessage}</strong>
-            <a href={`${API_BASE_URL}/login`}>관리자 로그인</a>
-          </div>
-        ) : (
-          <p className="message error">{errorMessage}</p>
-        ))}
-      {isLoading && <p className="admin-loading">예약 목록을 불러오는 중입니다.</p>}
+      {!isAuthenticationRequired && isLoading && <p className="admin-loading">예약 목록을 불러오는 중입니다.</p>}
 
-      <div className="admin-master-detail">
+      {!isAuthenticationRequired && <div className="admin-master-detail">
         <div>
           <div className="admin-table-wrap">
             <table className="admin-reservation-table">
@@ -371,7 +378,7 @@ export function AdminReservationListView() {
             onReservationChanged={() => setRefreshVersion((current) => current + 1)}
           />
         )}
-      </div>
+      </div>}
     </section>
   )
 }
