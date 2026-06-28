@@ -13,6 +13,7 @@ export type {
   AdminReservationListQuery,
   AdminReservationPageResponse,
   AdminReservationSort,
+  AdminReservationStatusOptionResponse,
   AdminReservationStatusHistoryResponse,
   AdminSmsSendResponse,
 } from './types/adminReservation'

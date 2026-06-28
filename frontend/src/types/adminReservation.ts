@@ -50,6 +50,14 @@ export type AdminReservationStatusHistoryResponse = {
   changedBy: string | null
 }
 
+export type AdminReservationStatusOptionResponse = {
+  status: ReservationStatus
+  statusLabel: string
+  description: string
+  nextAction: string
+  current: boolean
+}
+
 export type AdminReservationCustomerActionHistoryResponse = {
   id: number
   actionType: string
@@ -105,6 +113,7 @@ export type AdminReservationDetailResponse = {
   moveTypeLabel: string
   status: ReservationStatus
   statusLabel: string
+  selectableStatuses: AdminReservationStatusOptionResponse[]
   fromElevator: boolean
   toElevator: boolean
   fromFloor: number

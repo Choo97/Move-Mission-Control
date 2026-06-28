@@ -28,6 +28,7 @@ public record AdminReservationDetailResponse(
         String moveTypeLabel,
         String status,
         String statusLabel,
+        List<AdminReservationStatusOptionResponse> selectableStatuses,
         boolean fromElevator,
         boolean toElevator,
         Integer fromFloor,
@@ -82,6 +83,9 @@ public record AdminReservationDetailResponse(
                 reservation.getMoveType().getLabel(),
                 reservation.getStatus().name(),
                 reservation.getStatus().getLabel(),
+                reservation.getStatus().getSelectableStatuses().stream()
+                        .map(status -> AdminReservationStatusOptionResponse.from(status, reservation.getStatus()))
+                        .toList(),
                 reservation.isFromElevator(),
                 reservation.isToElevator(),
                 reservation.getFromFloor(),

@@ -97,6 +97,10 @@ class AdminReservationApiControllerTest {
                 .andExpect(jsonPath("$.email").value("admin-api@example.com"))
                 .andExpect(jsonPath("$.status").value(ReservationStatus.CONSULTING.name()))
                 .andExpect(jsonPath("$.statusLabel").value("상담중"))
+                .andExpect(jsonPath("$.selectableStatuses[0].status").value(ReservationStatus.CONSULTING.name()))
+                .andExpect(jsonPath("$.selectableStatuses[0].current").value(true))
+                .andExpect(jsonPath("$.selectableStatuses[1].status").value(ReservationStatus.ESTIMATE_SENT.name()))
+                .andExpect(jsonPath("$.selectableStatuses[2].status").value(ReservationStatus.CANCELED.name()))
                 .andExpect(jsonPath("$.memo").value("관리자 API 테스트 예약입니다."))
                 .andExpect(jsonPath("$.adminMemo").value("관리자 확인 메모"))
                 .andExpect(jsonPath("$.estimateLines").isArray())
@@ -134,6 +138,10 @@ class AdminReservationApiControllerTest {
                 .andExpect(jsonPath("$.id").value(reservation.getId()))
                 .andExpect(jsonPath("$.status").value(ReservationStatus.CONSULTING.name()))
                 .andExpect(jsonPath("$.statusLabel").value("상담중"))
+                .andExpect(jsonPath("$.selectableStatuses[0].status").value(ReservationStatus.CONSULTING.name()))
+                .andExpect(jsonPath("$.selectableStatuses[0].current").value(true))
+                .andExpect(jsonPath("$.selectableStatuses[1].status").value(ReservationStatus.ESTIMATE_SENT.name()))
+                .andExpect(jsonPath("$.selectableStatuses[2].status").value(ReservationStatus.CANCELED.name()))
                 .andExpect(jsonPath("$.statusHistories[0].changedStatus").value(ReservationStatus.CONSULTING.name()))
                 .andExpect(jsonPath("$.statusHistories[0].changedBy").value("admin"));
     }

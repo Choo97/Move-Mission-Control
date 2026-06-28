@@ -1578,6 +1578,43 @@ h3 {
   align-items: end;
 }
 
+.admin-status-update {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+
+.admin-status-current {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid #e8edf5;
+  border-radius: 6px;
+  background: #fbfcff;
+}
+
+.admin-status-current span,
+.admin-status-help {
+  color: #667085;
+  font-size: 13px;
+}
+
+.admin-status-current strong {
+  color: #172033;
+  font-size: 17px;
+}
+
+.admin-status-current p,
+.admin-status-help {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.admin-status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .admin-estimate-update {
   margin-bottom: 14px;
 }
@@ -1596,6 +1633,11 @@ h3 {
   background: #1f5ea8;
   font-weight: 800;
   cursor: pointer;
+}
+
+.admin-status-update button {
+  flex: 1 1 120px;
+  padding: 0 14px;
 }
 
 .admin-status-update button:disabled,

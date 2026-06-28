@@ -16,7 +16,7 @@ import {
 import { getErrorMessage } from '../api/apiError'
 import { adminLoginHref, redirectToAdminExpiredLogin } from '../adminAuthNavigation'
 import { API_BASE_URL } from '../reservationData'
-import type { AdminReservationDetailResponse, ReservationStatus } from '../types'
+import type { AdminReservationDetailResponse, AdminReservationStatusOptionResponse, ReservationStatus } from '../types'
 
 type Props = {
   reservationId: number
@@ -30,14 +30,21 @@ const formatDateTime = (dateTime: string) => dateTime.replace('T', ' ').slice(0,
 const formatBoolean = (value: boolean) => (value ? '예' : '아니오')
 const adminPhotoUrl = (fileUrl: string) => (fileUrl.startsWith('http') ? fileUrl : `${API_BASE_URL}${fileUrl}`)
 
-const statusOptions: Array<{ value: ReservationStatus; label: string }> = [
-  { value: 'RECEIVED', label: '접수' },
-  { value: 'CONSULTING', label: '상담중' },
-  { value: 'ESTIMATE_SENT', label: '견적안내' },
-  { value: 'CONFIRMED', label: '확정' },
-  { value: 'COMPLETED', label: '완료' },
-  { value: 'CANCELED', label: '취소' },
-]
+const statusButtonLabel = (option: AdminReservationStatusOptionResponse) => {
+  if (option.status === 'CANCELED') {
+    return '취소 처리'
+  }
+
+  if (option.status === 'COMPLETED') {
+    return '완료 처리'
+  }
+
+  if (option.status === 'CONFIRMED') {
+    return '확정 처리'
+  }
+
+  return `${option.statusLabel}로 변경`
+}
 
 const getAdminNextTask = (reservation: AdminReservationDetailResponse) => {
   if (reservation.customerRequests.some((request) => request.status === 'PENDING')) {
@@ -87,7 +94,6 @@ const countCustomerRequests = (
 
 export function AdminReservationDetailPanel({ reservationId, onClose, onReservationChanged }: Props) {
   const [reservation, setReservation] = useState<AdminReservationDetailResponse | null>(null)
-  const [selectedStatus, setSelectedStatus] = useState<ReservationStatus>('RECEIVED')
   const [estimateAmount, setEstimateAmount] = useState('')
   const [distanceAmount, setDistanceAmount] = useState('')
   const [adminMemo, setAdminMemo] = useState('')
@@ -101,7 +107,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
   const [isSendingSms, setIsSendingSms] = useState(false)
   const [processingCustomerRequestId, setProcessingCustomerRequestId] = useState<number | null>(null)
   const [isAuthenticationRequired, setIsAuthenticationRequired] = useState(false)
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
+  const [updatingStatus, setUpdatingStatus] = useState<ReservationStatus | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
   const [actionMessage, setActionMessage] = useState('')
 
@@ -126,7 +132,6 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
       try {
         const loadedReservation = await getAdminReservation(reservationId)
         setReservation(loadedReservation)
-        setSelectedStatus(loadedReservation.status)
         setEstimateAmount(String(loadedReservation.estimatedPrice))
         setDistanceAmount(loadedReservation.distanceKm === null ? '' : String(loadedReservation.distanceKm))
         setAdminMemo(loadedReservation.adminMemo ?? '')
@@ -140,19 +145,18 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
     void loadReservation()
   }, [reservationId, showAdminError])
 
-  const submitStatusUpdate = async () => {
-    if (!reservation || selectedStatus === reservation.status) {
+  const submitStatusUpdate = async (nextStatus: ReservationStatus) => {
+    if (!reservation || nextStatus === reservation.status) {
       return
     }
 
-    setIsUpdatingStatus(true)
+    setUpdatingStatus(nextStatus)
     setErrorMessage('')
     setActionMessage('')
 
     try {
-      const updatedReservation = await updateAdminReservationStatus(reservation.id, selectedStatus)
+      const updatedReservation = await updateAdminReservationStatus(reservation.id, nextStatus)
       setReservation(updatedReservation)
-      setSelectedStatus(updatedReservation.status)
       setEstimateAmount(String(updatedReservation.estimatedPrice))
       setDistanceAmount(updatedReservation.distanceKm === null ? '' : String(updatedReservation.distanceKm))
       setActionMessage(`예약 상태가 '${updatedReservation.statusLabel}'(으)로 변경되었습니다.`)
@@ -160,7 +164,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
     } catch (error) {
       showAdminError(error, '관리자 예약 상태 변경에 실패했습니다.')
     } finally {
-      setIsUpdatingStatus(false)
+      setUpdatingStatus(null)
     }
   }
 
@@ -190,7 +194,6 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
     try {
       const updatedReservation = await updateAdminReservationEstimate(reservation.id, nextEstimateAmount)
       setReservation(updatedReservation)
-      setSelectedStatus(updatedReservation.status)
       setEstimateAmount(String(updatedReservation.estimatedPrice))
       setDistanceAmount(updatedReservation.distanceKm === null ? '' : String(updatedReservation.distanceKm))
       setActionMessage(`견적 금액이 ${formatPrice(updatedReservation.estimatedPrice)}으로 저장되었습니다.`)
@@ -228,7 +231,6 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
     try {
       const updatedReservation = await updateAdminReservationDistance(reservation.id, nextDistance)
       setReservation(updatedReservation)
-      setSelectedStatus(updatedReservation.status)
       setEstimateAmount(String(updatedReservation.estimatedPrice))
       setDistanceAmount(updatedReservation.distanceKm === null ? '' : String(updatedReservation.distanceKm))
       setActionMessage(
@@ -359,7 +361,6 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
     try {
       const updatedReservation = await approveAdminCustomerRequest(requestId)
       setReservation(updatedReservation)
-      setSelectedStatus(updatedReservation.status)
       setEstimateAmount(String(updatedReservation.estimatedPrice))
       setDistanceAmount(updatedReservation.distanceKm === null ? '' : String(updatedReservation.distanceKm))
       setAdminMemo(updatedReservation.adminMemo ?? '')
@@ -400,6 +401,8 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
       setProcessingCustomerRequestId(null)
     }
   }
+
+  const nextStatusOptions = reservation?.selectableStatuses.filter((option) => !option.current) ?? []
 
   return (
     <aside className="admin-detail-panel">
@@ -584,26 +587,28 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
                   <p>상담 진행, 견적 안내, 확정, 완료 같은 예약 흐름을 관리자 기준으로 기록합니다.</p>
                 </div>
                 <div className="admin-status-update">
-                  <label>
-                    예약 상태
-                    <select
-                      value={selectedStatus}
-                      onChange={(event) => setSelectedStatus(event.target.value as ReservationStatus)}
-                    >
-                      {statusOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
+                  <div className="admin-status-current">
+                    <span>현재 상태</span>
+                    <strong>{reservation.statusLabel}</strong>
+                    <p>{reservation.selectableStatuses.find((option) => option.current)?.description}</p>
+                  </div>
+                  {nextStatusOptions.length > 0 ? (
+                    <div className="admin-status-actions" aria-label="변경 가능한 예약 상태">
+                      {nextStatusOptions.map((option) => (
+                        <button
+                          key={option.status}
+                          type="button"
+                          disabled={updatingStatus !== null}
+                          onClick={() => submitStatusUpdate(option.status)}
+                          title={option.nextAction}
+                        >
+                          {updatingStatus === option.status ? '변경 중' : statusButtonLabel(option)}
+                        </button>
                       ))}
-                    </select>
-                  </label>
-                  <button
-                    type="button"
-                    disabled={isUpdatingStatus || selectedStatus === reservation.status}
-                    onClick={submitStatusUpdate}
-                  >
-                    {isUpdatingStatus ? '변경 중' : '상태 저장'}
-                  </button>
+                    </div>
+                  ) : (
+                    <p className="admin-status-help">완료 또는 취소된 예약은 추가 상태 변경이 없습니다.</p>
+                  )}
                 </div>
               </article>
 
