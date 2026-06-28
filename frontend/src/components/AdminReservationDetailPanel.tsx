@@ -24,8 +24,9 @@ type Props = {
   onReservationChanged: () => void
 }
 
-const formatPrice = (price: number) => `${price.toLocaleString()}원`
+const formatPrice = (price: number | null | undefined) => (price == null ? '견적 확인 전' : `${price.toLocaleString()}원`)
 const formatAdjustment = (price: number) => `${price > 0 ? '+' : ''}${price.toLocaleString()}원`
+const formatEstimateInput = (price: number | null) => (price === null ? '' : String(price))
 const formatDateTime = (dateTime: string) => dateTime.replace('T', ' ').slice(0, 16)
 const formatBoolean = (value: boolean) => (value ? '예' : '아니오')
 const adminPhotoUrl = (fileUrl: string) => (fileUrl.startsWith('http') ? fileUrl : `${API_BASE_URL}${fileUrl}`)
@@ -133,7 +134,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
       try {
         const loadedReservation = await getAdminReservation(reservationId)
         setReservation(loadedReservation)
-        setEstimateAmount(String(loadedReservation.estimatedPrice))
+        setEstimateAmount(formatEstimateInput(loadedReservation.estimatedPrice))
         setDistanceAmount(loadedReservation.distanceKm === null ? '' : String(loadedReservation.distanceKm))
         setAdminMemo(loadedReservation.adminMemo ?? '')
         setPendingStatusOption(null)
@@ -159,7 +160,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
     try {
       const updatedReservation = await updateAdminReservationStatus(reservation.id, nextStatus)
       setReservation(updatedReservation)
-      setEstimateAmount(String(updatedReservation.estimatedPrice))
+      setEstimateAmount(formatEstimateInput(updatedReservation.estimatedPrice))
       setDistanceAmount(updatedReservation.distanceKm === null ? '' : String(updatedReservation.distanceKm))
       setPendingStatusOption(null)
       setActionMessage(`예약 상태가 '${updatedReservation.statusLabel}'(으)로 변경되었습니다.`)
@@ -197,7 +198,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
     try {
       const updatedReservation = await updateAdminReservationEstimate(reservation.id, nextEstimateAmount)
       setReservation(updatedReservation)
-      setEstimateAmount(String(updatedReservation.estimatedPrice))
+      setEstimateAmount(formatEstimateInput(updatedReservation.estimatedPrice))
       setDistanceAmount(updatedReservation.distanceKm === null ? '' : String(updatedReservation.distanceKm))
       setActionMessage(`견적 금액이 ${formatPrice(updatedReservation.estimatedPrice)}으로 저장되었습니다.`)
       onReservationChanged()
@@ -234,7 +235,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
     try {
       const updatedReservation = await updateAdminReservationDistance(reservation.id, nextDistance)
       setReservation(updatedReservation)
-      setEstimateAmount(String(updatedReservation.estimatedPrice))
+      setEstimateAmount(formatEstimateInput(updatedReservation.estimatedPrice))
       setDistanceAmount(updatedReservation.distanceKm === null ? '' : String(updatedReservation.distanceKm))
       setActionMessage(
         updatedReservation.distanceKm === null
@@ -364,7 +365,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
     try {
       const updatedReservation = await approveAdminCustomerRequest(requestId)
       setReservation(updatedReservation)
-      setEstimateAmount(String(updatedReservation.estimatedPrice))
+      setEstimateAmount(formatEstimateInput(updatedReservation.estimatedPrice))
       setDistanceAmount(updatedReservation.distanceKm === null ? '' : String(updatedReservation.distanceKm))
       setAdminMemo(updatedReservation.adminMemo ?? '')
       setActionMessage('고객 요청을 승인했습니다.')
@@ -695,7 +696,12 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
                   </label>
                   <button
                     type="button"
-                    disabled={isUpdatingEstimate || Number(estimateAmount) === reservation.estimatedPrice}
+                    disabled={
+                      isUpdatingEstimate ||
+                      (estimateAmount.trim() === ''
+                        ? reservation.estimatedPrice === null
+                        : Number(estimateAmount) === reservation.estimatedPrice)
+                    }
                     onClick={submitEstimateUpdate}
                   >
                     {isUpdatingEstimate ? '저장 중' : '견적 저장'}
@@ -712,7 +718,9 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
                     <dt>기본 계산 합계</dt>
                     <dd>{formatPrice(reservation.baseEstimatedPrice)}</dd>
                   </div>
-                  {reservation.estimatedPrice !== reservation.baseEstimatedPrice && (
+                  {reservation.estimatedPrice !== null &&
+                    reservation.baseEstimatedPrice !== null &&
+                    reservation.estimatedPrice !== reservation.baseEstimatedPrice && (
                     <div>
                       <dt>관리자 조정</dt>
                       <dd>{formatAdjustment(reservation.estimatedPrice - reservation.baseEstimatedPrice)}</dd>
@@ -1010,7 +1018,7 @@ function AdminWorkflowSummary({ reservation }: { reservation: AdminReservationDe
       label: '견적 상태',
       value: reservation.estimateAccepted
         ? `고객 동의 완료 ${reservation.acceptedEstimatePrice?.toLocaleString() ?? ''}원`
-        : `${reservation.finalEstimatedPrice.toLocaleString()}원, 동의 전`,
+        : `${formatPrice(reservation.finalEstimatedPrice)}, 동의 전`,
     },
     {
       label: '알림 상태',

@@ -37,6 +37,7 @@ const sortOptions: Array<{ value: AdminReservationSort; label: string }> = [
 
 const pageSizeOptions = [10, 20, 50]
 const adminReservationListPath = '/admin/reservations'
+const formatNullablePrice = (price: number | null) => (price === null ? '견적 확인 전' : `${price.toLocaleString()}원`)
 
 const readReservationIdFromPath = () => {
   const match = window.location.pathname.match(/^\/admin\/reservations\/(\d+)\/?$/)
@@ -402,7 +403,7 @@ export function AdminReservationListView() {
                       <span>{reservation.nextActionDescription}</span>
                     </td>
                     <td>
-                      <strong>{reservation.finalEstimatedPrice.toLocaleString()}원</strong>
+                      <strong>{formatNullablePrice(reservation.finalEstimatedPrice)}</strong>
                       <span>{reservation.distanceKm === null ? '거리 확인 전' : `${reservation.distanceKm}km`}</span>
                     </td>
                     <td>

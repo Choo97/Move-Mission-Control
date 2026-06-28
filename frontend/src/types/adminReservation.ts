@@ -18,7 +18,7 @@ export type AdminReservationListItemResponse = {
   nextActionDescription: string
   attentionRequired: boolean
   distanceKm: number | null
-  finalEstimatedPrice: number
+  finalEstimatedPrice: number | null
   createdAt: string
 }
 
@@ -124,10 +124,10 @@ export type AdminReservationDetailResponse = {
   fromLadderTruck: boolean
   toLadderTruck: boolean
   distanceKm: number | null
-  estimatedPrice: number
-  baseEstimatedPrice: number
+  estimatedPrice: number | null
+  baseEstimatedPrice: number | null
   discountAmount: number
-  finalEstimatedPrice: number
+  finalEstimatedPrice: number | null
   couponCode: string | null
   couponName: string | null
   memo: string | null
