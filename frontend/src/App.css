@@ -1048,6 +1048,7 @@ h3 {
   line-height: 1.5;
 }
 
+.admin-site-panel,
 .admin-operation-panel,
 .admin-followup-panel,
 .admin-history-panel,
@@ -1058,6 +1059,7 @@ h3 {
   background: #ffffff;
 }
 
+.admin-site-panel .admin-section-heading,
 .admin-operation-panel .admin-section-heading,
 .admin-followup-panel .admin-section-heading,
 .admin-history-panel .admin-section-heading,
@@ -1127,6 +1129,94 @@ h3 {
   color: #5e6f84;
   font-size: 13px;
   line-height: 1.5;
+}
+
+.admin-site-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-site-card {
+  min-width: 0;
+  border: 1px solid #e0eaf4;
+  border-radius: 8px;
+  padding: 14px;
+  background: #f8fbff;
+}
+
+.admin-site-card h4 {
+  margin: 0 0 10px;
+  color: #172033;
+  font-size: 15px;
+}
+
+.admin-site-card dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.admin-site-card dl div {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+
+.admin-site-card dt {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-site-card dd {
+  min-width: 0;
+  margin: 0;
+  color: #172033;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.admin-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.admin-photo-card {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  color: #534941;
+  text-decoration: none;
+}
+
+.admin-photo-card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #fffdfb;
+}
+
+.admin-photo-card span,
+.admin-photo-card small {
+  overflow: hidden;
+  color: #5e6f84;
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-photo-card small {
+  color: #64748b;
+  font-weight: 700;
 }
 
 .admin-history-columns {
@@ -2382,6 +2472,11 @@ dd {
   }
 
   .admin-master-detail {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-site-grid,
+  .admin-photo-grid {
     grid-template-columns: 1fr;
   }
 

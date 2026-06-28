@@ -26,6 +26,8 @@ type Props = {
 const formatPrice = (price: number) => `${price.toLocaleString()}원`
 const formatAdjustment = (price: number) => `${price > 0 ? '+' : ''}${price.toLocaleString()}원`
 const formatDateTime = (dateTime: string) => dateTime.replace('T', ' ').slice(0, 16)
+const formatBoolean = (value: boolean) => (value ? '예' : '아니오')
+const adminPhotoUrl = (fileUrl: string) => (fileUrl.startsWith('http') ? fileUrl : `${API_BASE_URL}${fileUrl}`)
 
 const statusOptions: Array<{ value: ReservationStatus; label: string }> = [
   { value: 'RECEIVED', label: '접수' },
@@ -460,6 +462,102 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
                 <dd>{formatPrice(reservation.finalEstimatedPrice)}</dd>
               </div>
             </dl>
+          </section>
+
+          <section className="admin-site-panel" aria-labelledby="admin-site-title">
+            <div className="admin-section-heading">
+              <div>
+                <p className="eyebrow">Site Check</p>
+                <h3 id="admin-site-title">현장 정보와 짐 사진</h3>
+              </div>
+              <span className="admin-section-count">짐 사진 {reservation.photos.length}장</span>
+            </div>
+
+            <div className="admin-site-grid">
+              <article className="admin-site-card">
+                <h4>출발지 현장</h4>
+                <dl>
+                  <div>
+                    <dt>주소</dt>
+                    <dd>{reservation.fromAddress}</dd>
+                  </div>
+                  <div>
+                    <dt>층수</dt>
+                    <dd>{reservation.fromFloor}층</dd>
+                  </div>
+                  <div>
+                    <dt>엘리베이터</dt>
+                    <dd>{formatBoolean(reservation.fromElevator)}</dd>
+                  </div>
+                  <div>
+                    <dt>사다리차</dt>
+                    <dd>{formatBoolean(reservation.fromLadderTruck)}</dd>
+                  </div>
+                </dl>
+              </article>
+
+              <article className="admin-site-card">
+                <h4>도착지 현장</h4>
+                <dl>
+                  <div>
+                    <dt>주소</dt>
+                    <dd>{reservation.toAddress}</dd>
+                  </div>
+                  <div>
+                    <dt>층수</dt>
+                    <dd>{reservation.toFloor}층</dd>
+                  </div>
+                  <div>
+                    <dt>엘리베이터</dt>
+                    <dd>{formatBoolean(reservation.toElevator)}</dd>
+                  </div>
+                  <div>
+                    <dt>사다리차</dt>
+                    <dd>{formatBoolean(reservation.toLadderTruck)}</dd>
+                  </div>
+                </dl>
+              </article>
+
+              <article className="admin-site-card">
+                <h4>짐 규모 기준</h4>
+                <dl>
+                  <div>
+                    <dt>이사 유형</dt>
+                    <dd>{reservation.moveTypeLabel}</dd>
+                  </div>
+                  <div>
+                    <dt>고객 요청사항</dt>
+                    <dd>{reservation.memo ? '입력됨' : '없음'}</dd>
+                  </div>
+                  <div>
+                    <dt>사진 확인</dt>
+                    <dd>{reservation.photos.length > 0 ? '업로드됨' : '없음'}</dd>
+                  </div>
+                </dl>
+              </article>
+            </div>
+
+            {reservation.photos.length > 0 ? (
+              <div className="admin-photo-grid">
+                {reservation.photos.map((photo) => (
+                  <a
+                    key={photo.id}
+                    className="admin-photo-card"
+                    href={adminPhotoUrl(photo.fileUrl)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <img src={adminPhotoUrl(photo.fileUrl)} alt={photo.originalFilename} />
+                    <span>{photo.originalFilename}</span>
+                    <small>{formatDateTime(photo.uploadedAt)}</small>
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <p className="admin-empty inline">
+                업로드된 짐 사진이 없습니다. 사진이 있으면 관리자가 짐 규모를 더 빠르게 판단할 수 있습니다.
+              </p>
+            )}
           </section>
 
           <section className="admin-operation-panel" aria-labelledby="admin-operation-title">
