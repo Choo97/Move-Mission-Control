@@ -484,6 +484,8 @@ function App() {
           <ReservationEditFormView
             form={editForm}
             today={today}
+            currentMoveDate={reservation.moveDate}
+            currentMoveTime={reservation.moveTime}
             isUpdating={isUpdating}
             onSubmit={submitReservationUpdate}
             onChange={updateEditField}

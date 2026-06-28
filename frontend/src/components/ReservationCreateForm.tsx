@@ -35,6 +35,7 @@ export function ReservationCreateForm({
     }
 
     let active = true
+
     void getAvailability(form.moveDate)
       .then((availability) => {
         if (!active) return
@@ -47,15 +48,11 @@ export function ReservationCreateForm({
               ? '선택한 날짜의 예약이 마감되었습니다.'
               : '',
         )
-        if (!times.includes(form.moveTime)) {
-          onChange('moveTime', times[0] ?? '')
-        }
       })
       .catch(() => {
         if (!active) return
         setAvailableTimes([])
         setAvailabilityMessage('예약 가능 시간을 불러오지 못했습니다.')
-        onChange('moveTime', '')
       })
       .finally(() => {
         if (active) setIsLoadingAvailability(false)
@@ -64,10 +61,29 @@ export function ReservationCreateForm({
     return () => {
       active = false
     }
-  }, [form.moveDate, form.moveTime, onChange])
+  }, [form.moveDate])
 
-  const displayedTimes = form.moveDate ? availableTimes : []
-  const displayedMessage = form.moveDate ? availabilityMessage : '날짜를 선택해 주세요.'
+  useEffect(() => {
+    if (!form.moveDate || isLoadingAvailability) {
+      return
+    }
+
+    if (availableTimes.length === 0 && form.moveTime) {
+      onChange('moveTime', '')
+      return
+    }
+
+    if (form.moveTime && !availableTimes.includes(form.moveTime)) {
+      onChange('moveTime', '')
+    }
+  }, [availableTimes, form.moveDate, form.moveTime, isLoadingAvailability, onChange])
+
+  const displayedTimes = form.moveDate && !isLoadingAvailability ? availableTimes : []
+  const displayedMessage = !form.moveDate
+    ? '날짜를 선택해 주세요.'
+    : isLoadingAvailability
+      ? '예약 가능 시간을 확인하고 있습니다.'
+      : availabilityMessage
   const steps: { key: FormStep; label: string; description: string }[] = [
     { key: 'customer', label: '고객 정보', description: '이름과 연락처를 입력합니다.' },
     { key: 'schedule', label: '이사 일정', description: '날짜와 가능한 시간을 선택합니다.' },
@@ -86,8 +102,24 @@ export function ReservationCreateForm({
     }
 
     if (currentStep === 'schedule') {
-      if (!form.moveDate || !form.moveTime) {
-        return '이사 날짜와 희망 시간을 선택해 주세요.'
+      if (!form.moveDate) {
+        return '이사 날짜를 선택해 주세요.'
+      }
+
+      if (isLoadingAvailability) {
+        return '예약 가능 시간을 확인하고 있습니다.'
+      }
+
+      if (displayedTimes.length === 0) {
+        return displayedMessage || '선택 가능한 시간이 없습니다.'
+      }
+
+      if (!form.moveTime) {
+        return '예약 가능한 시간 중에서 희망 시간을 선택해 주세요.'
+      }
+
+      if (!displayedTimes.includes(form.moveTime)) {
+        return '예약 가능한 시간 중에서 다시 선택해 주세요.'
       }
     }
 
@@ -223,25 +255,40 @@ export function ReservationCreateForm({
                 min={today}
                 value={form.moveDate}
                 onChange={(event) => {
-                  setIsLoadingAvailability(Boolean(event.target.value))
-                  onChange('moveDate', event.target.value)
+                  const nextDate = event.target.value
+                  setIsLoadingAvailability(Boolean(nextDate))
+                  onChange('moveDate', nextDate)
+                  onChange('moveTime', '')
                 }}
                 required
               />
             </label>
             <label>
               희망 시간
-              <select
-                value={form.moveTime}
-                onChange={(event) => onChange('moveTime', event.target.value)}
-                disabled={!form.moveDate || isLoadingAvailability || displayedTimes.length === 0}
-                required
+              <div
+                className="time-slot-grid"
+                role="group"
+                aria-label="예약 가능한 희망 시간"
               >
-                <option value="">{isLoadingAvailability ? '확인 중' : '시간 선택'}</option>
+                {!form.moveDate && <span className="time-slot-placeholder">날짜를 먼저 선택해 주세요.</span>}
+                {form.moveDate && isLoadingAvailability && (
+                  <span className="time-slot-placeholder">가능 시간을 확인하고 있습니다.</span>
+                )}
+                {form.moveDate && !isLoadingAvailability && displayedTimes.length === 0 && (
+                  <span className="time-slot-placeholder">선택 가능한 시간이 없습니다.</span>
+                )}
                 {displayedTimes.map((time) => (
-                  <option key={time} value={time}>{time}</option>
+                  <button
+                    key={time}
+                    type="button"
+                    className={`time-slot-button${form.moveTime === time ? ' selected' : ''}`}
+                    aria-pressed={form.moveTime === time}
+                    onClick={() => onChange('moveTime', time)}
+                  >
+                    {time}
+                  </button>
                 ))}
-              </select>
+              </div>
               {displayedMessage && <span className="field-message">{displayedMessage}</span>}
             </label>
           </div>

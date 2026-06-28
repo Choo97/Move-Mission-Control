@@ -1835,6 +1835,64 @@ textarea:focus {
   border-color: #1f5ea8;
 }
 
+.time-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(82px, 1fr));
+  gap: 8px;
+  min-height: 44px;
+}
+
+.time-slot-button {
+  min-height: 42px;
+  border: 1px solid #cad8e8;
+  border-radius: 6px;
+  color: #30445f;
+  background: #ffffff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.time-slot-button:hover {
+  border-color: #1f5ea8;
+  color: #1f5ea8;
+  background: #eef6ff;
+  box-shadow: 0 8px 16px rgba(30, 64, 114, 0.12);
+  transform: translateY(-1px);
+}
+
+.time-slot-button.selected {
+  border-color: #1f5ea8;
+  color: #ffffff;
+  background: #1f5ea8;
+}
+
+.time-slot-button.current:not(.selected) {
+  border-color: #9fc4ed;
+  background: #f8fbff;
+}
+
+.time-slot-placeholder {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  border: 1px dashed #cad8e8;
+  border-radius: 6px;
+  padding: 0 12px;
+  color: #64748b;
+  background: #f8fbff;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
 fieldset {
   display: grid;
   gap: 14px;

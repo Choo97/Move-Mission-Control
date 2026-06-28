@@ -15,7 +15,7 @@ export const initialForm: ReservationForm = {
   phone: '',
   email: '',
   moveDate: '',
-  moveTime: '10:00',
+  moveTime: '',
   fromAddress: '',
   toAddress: '',
   moveType: 'STUDIO',
