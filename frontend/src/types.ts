@@ -1,4 +1,5 @@
 export type { ApiErrorResponse } from './types/api'
+export type { AdminSessionResponse } from './types/adminSession'
 export type {
   AdminDashboardTaskSummary,
   AdminAuditLogResponse,

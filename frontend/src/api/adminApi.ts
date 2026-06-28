@@ -6,6 +6,7 @@ import type {
   AdminReservationDetailResponse,
   AdminReservationListQuery,
   AdminReservationPageResponse,
+  AdminSessionResponse,
   AdminSmsSendResponse,
   OperatingHolidayResponse,
   OperatingScheduleResponse,
@@ -36,6 +37,18 @@ export async function loginAdmin(username: string, password: string) {
   }
 
   return response.json() as Promise<{ username: string }>
+}
+
+export async function getAdminSession() {
+  const response = await fetch(`${API_BASE_URL}/api/admin/session/me`, {
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    await throwApiError(response, '관리자 로그인 상태를 확인하지 못했습니다.')
+  }
+
+  return response.json() as Promise<AdminSessionResponse>
 }
 
 export async function getOperatingSchedules() {

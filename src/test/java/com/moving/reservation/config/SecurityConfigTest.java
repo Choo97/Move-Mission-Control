@@ -86,6 +86,21 @@ class SecurityConfigTest {
     }
 
     @Test
+    void React_관리자_세션확인_API는_로그인한_관리자정보를_응답한다() throws Exception {
+        mockMvc.perform(get("/api/admin/session/me")
+                        .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value("admin"))
+                .andExpect(jsonPath("$.roles[0]").value("ROLE_ADMIN"));
+    }
+
+    @Test
+    void 로그인하지_않으면_React_관리자_세션확인_API는_401을_응답한다() throws Exception {
+        mockMvc.perform(get("/api/admin/session/me"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void React_관리자_로그인_API는_인증실패시_401을_응답한다() throws Exception {
         mockMvc.perform(post("/api/admin/session/login")
                         .contentType(MediaType.APPLICATION_JSON)

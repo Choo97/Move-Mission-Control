@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
   AdminAuthenticationRequiredError,
+  getAdminSession,
   getAdminReservationConflictAttempts,
   getAdminReservations,
 } from '../api/adminApi'
@@ -14,6 +15,7 @@ import type {
   AdminReservationPageResponse,
   AdminReservationConflictAttemptResponse,
   AdminReservationSort,
+  AdminSessionResponse,
   ReservationStatus,
 } from '../types'
 
@@ -71,6 +73,7 @@ export function AdminReservationListView() {
   const [keywordInput, setKeywordInput] = useState(() => readInitialAdminState().query.keyword ?? '')
   const [reservationPage, setReservationPage] = useState<AdminReservationPageResponse | null>(null)
   const [conflictAttempts, setConflictAttempts] = useState<AdminReservationConflictAttemptResponse[]>([])
+  const [adminSession, setAdminSession] = useState<AdminSessionResponse | null>(null)
   const [selectedReservationId, setSelectedReservationId] = useState<number | null>(
     () => readInitialAdminState().selectedReservationId,
   )
@@ -86,13 +89,16 @@ export function AdminReservationListView() {
       setErrorMessage('')
 
       try {
+        const nextAdminSession = await getAdminSession()
         const [nextReservationPage, nextConflictAttempts] = await Promise.all([
           getAdminReservations(query),
           getAdminReservationConflictAttempts(),
         ])
+        setAdminSession(nextAdminSession)
         setReservationPage(nextReservationPage)
         setConflictAttempts(nextConflictAttempts)
       } catch (error) {
+        setAdminSession(null)
         setReservationPage(null)
         setConflictAttempts([])
         setIsAuthenticationRequired(error instanceof AdminAuthenticationRequiredError)
@@ -164,6 +170,13 @@ export function AdminReservationListView() {
           기존 관리자 화면
         </a>
       </div>
+
+      {!isAuthenticationRequired && adminSession && (
+        <div className="admin-session-status">
+          <span>로그인 관리자</span>
+          <strong>{adminSession.username}</strong>
+        </div>
+      )}
 
       {errorMessage &&
         (isAuthenticationRequired ? (

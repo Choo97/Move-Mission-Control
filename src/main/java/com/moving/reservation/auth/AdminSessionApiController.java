@@ -3,16 +3,19 @@ package com.moving.reservation.auth;
 import com.moving.reservation.api.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,6 +33,14 @@ public class AdminSessionApiController {
                                      AdminLoginAttemptService adminLoginAttemptService) {
         this.authenticationManager = authenticationManager;
         this.adminLoginAttemptService = adminLoginAttemptService;
+    }
+
+    @GetMapping("/me")
+    public AdminSessionApiResponse me(Authentication authentication) {
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+        return new AdminSessionApiResponse(authentication.getName(), roles);
     }
 
     @PostMapping("/login")

@@ -568,6 +568,28 @@ h3 {
   cursor: pointer;
 }
 
+.admin-session-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: -6px 0 16px;
+  border: 1px solid #dce6f2;
+  border-radius: 999px;
+  padding: 8px 12px;
+  color: #172033;
+  background: #f8fbff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.admin-session-status span {
+  color: #64748b;
+}
+
+.admin-session-status strong {
+  color: #1f5ea8;
+}
+
 .admin-filters {
   display: grid;
   grid-template-columns: 150px minmax(220px, 1fr) 170px 130px 150px;
