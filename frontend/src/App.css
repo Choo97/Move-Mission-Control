@@ -1643,6 +1643,44 @@ h3 {
   gap: 8px;
 }
 
+.admin-status-confirm {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #c9d8ea;
+  border-left: 4px solid #1f5ea8;
+  border-radius: 6px;
+  background: #f7fbff;
+}
+
+.admin-status-confirm div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-status-confirm span {
+  color: #667085;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.admin-status-confirm strong {
+  color: #172033;
+  font-size: 16px;
+}
+
+.admin-status-confirm p {
+  margin: 0;
+  color: #475467;
+  line-height: 1.5;
+}
+
+.admin-status-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .admin-estimate-update {
   margin-bottom: 14px;
 }
@@ -1666,6 +1704,12 @@ h3 {
 .admin-status-update button {
   flex: 1 1 120px;
   padding: 0 14px;
+}
+
+.admin-status-confirm-actions button:first-child {
+  border: 1px solid #cfd8e3;
+  color: #344054;
+  background: #ffffff;
 }
 
 .admin-status-update button:disabled,

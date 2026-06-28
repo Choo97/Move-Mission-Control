@@ -107,6 +107,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
   const [isSendingSms, setIsSendingSms] = useState(false)
   const [processingCustomerRequestId, setProcessingCustomerRequestId] = useState<number | null>(null)
   const [isAuthenticationRequired, setIsAuthenticationRequired] = useState(false)
+  const [pendingStatusOption, setPendingStatusOption] = useState<AdminReservationStatusOptionResponse | null>(null)
   const [updatingStatus, setUpdatingStatus] = useState<ReservationStatus | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
   const [actionMessage, setActionMessage] = useState('')
@@ -135,6 +136,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
         setEstimateAmount(String(loadedReservation.estimatedPrice))
         setDistanceAmount(loadedReservation.distanceKm === null ? '' : String(loadedReservation.distanceKm))
         setAdminMemo(loadedReservation.adminMemo ?? '')
+        setPendingStatusOption(null)
       } catch (error) {
         showAdminError(error, '관리자 예약 상세를 불러오지 못했습니다.')
       } finally {
@@ -159,6 +161,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
       setReservation(updatedReservation)
       setEstimateAmount(String(updatedReservation.estimatedPrice))
       setDistanceAmount(updatedReservation.distanceKm === null ? '' : String(updatedReservation.distanceKm))
+      setPendingStatusOption(null)
       setActionMessage(`예약 상태가 '${updatedReservation.statusLabel}'(으)로 변경되었습니다.`)
       onReservationChanged()
     } catch (error) {
@@ -403,6 +406,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
   }
 
   const nextStatusOptions = reservation?.selectableStatuses.filter((option) => !option.current) ?? []
+  const currentStatusDescription = reservation?.selectableStatuses.find((option) => option.current)?.description
 
   return (
     <aside className="admin-detail-panel">
@@ -590,7 +594,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
                   <div className="admin-status-current">
                     <span>현재 상태</span>
                     <strong>{reservation.statusLabel}</strong>
-                    <p>{reservation.selectableStatuses.find((option) => option.current)?.description}</p>
+                    <p>{currentStatusDescription}</p>
                   </div>
                   {nextStatusOptions.length > 0 ? (
                     <div className="admin-status-actions" aria-label="변경 가능한 예약 상태">
@@ -599,7 +603,11 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
                           key={option.status}
                           type="button"
                           disabled={updatingStatus !== null}
-                          onClick={() => submitStatusUpdate(option.status)}
+                          onClick={() => {
+                            setErrorMessage('')
+                            setActionMessage('')
+                            setPendingStatusOption(option)
+                          }}
                           title={option.nextAction}
                         >
                           {updatingStatus === option.status ? '변경 중' : statusButtonLabel(option)}
@@ -608,6 +616,33 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
                     </div>
                   ) : (
                     <p className="admin-status-help">완료 또는 취소된 예약은 추가 상태 변경이 없습니다.</p>
+                  )}
+                  {pendingStatusOption && (
+                    <div className="admin-status-confirm" role="status">
+                      <div>
+                        <span>상태 변경 확인</span>
+                        <strong>
+                          {reservation.statusLabel} → {pendingStatusOption.statusLabel}
+                        </strong>
+                        <p>{pendingStatusOption.nextAction}</p>
+                      </div>
+                      <div className="admin-status-confirm-actions">
+                        <button
+                          type="button"
+                          disabled={updatingStatus !== null}
+                          onClick={() => setPendingStatusOption(null)}
+                        >
+                          취소
+                        </button>
+                        <button
+                          type="button"
+                          disabled={updatingStatus !== null}
+                          onClick={() => submitStatusUpdate(pendingStatusOption.status)}
+                        >
+                          {updatingStatus === pendingStatusOption.status ? '변경 중' : '변경 확정'}
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </div>
               </article>
