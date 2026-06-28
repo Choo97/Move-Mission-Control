@@ -19,6 +19,25 @@ export class AdminAuthenticationRequiredError extends Error {
   }
 }
 
+export async function loginAdmin(username: string, password: string) {
+  const response = await fetch(`${API_BASE_URL}/api/admin/session/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ username, password }),
+  })
+
+  if (!response.ok) {
+    const message = await response
+      .json()
+      .then((data: ApiErrorResponse) => data.message || '관리자 로그인에 실패했습니다.')
+      .catch(() => '관리자 로그인에 실패했습니다.')
+    throw new Error(message)
+  }
+
+  return response.json() as Promise<{ username: string }>
+}
+
 export async function getOperatingSchedules() {
   const response = await fetch(`${API_BASE_URL}/api/admin/operating-schedules`, { credentials: 'include' })
   if (!response.ok) await throwApiError(response, '요일별 운영시간을 불러오지 못했습니다.')

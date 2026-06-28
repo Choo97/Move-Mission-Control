@@ -28,6 +28,7 @@ const formatAdjustment = (price: number) => `${price > 0 ? '+' : ''}${price.toLo
 const formatDateTime = (dateTime: string) => dateTime.replace('T', ' ').slice(0, 16)
 const formatBoolean = (value: boolean) => (value ? '예' : '아니오')
 const adminPhotoUrl = (fileUrl: string) => (fileUrl.startsWith('http') ? fileUrl : `${API_BASE_URL}${fileUrl}`)
+const loginHref = () => `/login?next=${encodeURIComponent(`${window.location.pathname}${window.location.search}`)}`
 
 const statusOptions: Array<{ value: ReservationStatus; label: string }> = [
   { value: 'RECEIVED', label: '접수' },
@@ -410,7 +411,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
         (isAuthenticationRequired ? (
           <div className="admin-auth-notice">
             <strong>{errorMessage}</strong>
-            <a href={`${API_BASE_URL}/login`}>관리자 로그인</a>
+            <a href={loginHref()}>관리자 로그인</a>
           </div>
         ) : (
           <p className="message error">{errorMessage}</p>

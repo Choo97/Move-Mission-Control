@@ -21,4 +21,8 @@ public record ApiErrorResponse(
     public static ApiErrorResponse conflict(String message) {
         return new ApiErrorResponse("RESERVATION_SCHEDULE_CONFLICT", message);
     }
+
+    public static ApiErrorResponse unauthorized(String message) {
+        return new ApiErrorResponse("UNAUTHORIZED", message);
+    }
 }

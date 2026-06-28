@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import './App.css'
+import { AdminLoginView } from './components/AdminLoginView'
 import { AdminReservationListView } from './components/AdminReservationListView'
 import { ReservationCreateForm } from './components/ReservationCreateForm'
 import { ReservationDetailPanel } from './components/ReservationDetailPanel'
@@ -48,6 +49,7 @@ const getViewFromUrl = (): ActiveView => {
 }
 
 const isAdminRoute = () => window.location.pathname.startsWith('/admin')
+const isLoginRoute = () => window.location.pathname === '/login'
 
 const adminRouteSearch = () => {
   const params = new URLSearchParams(window.location.search)
@@ -77,6 +79,7 @@ const formatPhoneNumber = (value: string) => {
 
 function App() {
   const [adminRoute, setAdminRoute] = useState(isAdminRoute)
+  const [loginRoute, setLoginRoute] = useState(isLoginRoute)
   const [activeView, setActiveView] = useState<ActiveView>(getViewFromUrl)
   const [form, setForm] = useState<ReservationForm>(loadReservationDraft)
   const [searchForm, setSearchForm] = useState<ReservationSearchForm>(getInitialSearchForm)
@@ -116,6 +119,7 @@ function App() {
       }
 
       setAdminRoute(isAdminRoute())
+      setLoginRoute(isLoginRoute())
       setActiveView(getViewFromUrl())
     }
 
@@ -127,6 +131,7 @@ function App() {
   const changeView = (nextView: ActiveView) => {
     setActiveView(nextView)
     setAdminRoute(false)
+    setLoginRoute(false)
 
     const params = new URLSearchParams(window.location.search)
     if (nextView === 'create') {
@@ -152,6 +157,13 @@ function App() {
     setCustomerGuides([])
     setIsLoadingCustomerGuides(false)
     setCustomerGuideErrorMessage('')
+  }
+
+  const backToCustomerHome = () => {
+    setAdminRoute(false)
+    setLoginRoute(false)
+    setActiveView('create')
+    window.history.replaceState(null, '', '/')
   }
 
   const showReservation = async (nextReservation: ReservationResponse) => {
@@ -382,6 +394,23 @@ function App() {
     return (
       <main className="app-shell">
         <AdminReservationListView />
+      </main>
+    )
+  }
+
+  if (loginRoute) {
+    return (
+      <main className="app-shell">
+        <header className="top-bar">
+          <div className="brand-mark" aria-label="24nalpo">
+            <span>24</span>
+          </div>
+          <div className="brand-copy">
+            <p className="eyebrow">Moving Reservation Platform</p>
+            <h1>24nalpo</h1>
+          </div>
+        </header>
+        <AdminLoginView onBackHome={backToCustomerHome} />
       </main>
     )
   }

@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -46,6 +48,7 @@ public class SecurityConfig {
             new AntPathRequestMatcher("/api/admin/reservations/*/notifications/email/resend-failed", "POST"),
             new AntPathRequestMatcher("/api/admin/reservations/*/notifications/sms/send", "POST"),
             new AntPathRequestMatcher("/api/admin/reservations/*/notifications/sms/resend-failed", "POST"),
+            new AntPathRequestMatcher("/api/admin/session/login", "POST"),
             new AntPathRequestMatcher("/api/admin/reservations/customer-requests/*/approve", "POST"),
             new AntPathRequestMatcher("/api/admin/reservations/customer-requests/*/reject", "POST")
     };
@@ -84,6 +87,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/customer-guides/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/availability").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/faqs").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/admin/session/login").permitAll()
                         .requestMatchers(PUBLIC_DOCUMENT_PATHS).permitAll()
                         .requestMatchers(PUBLIC_PAGE_PATHS).permitAll()
                         .requestMatchers(ADMIN_API_PATH).hasRole("ADMIN")
@@ -153,6 +157,12 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean

@@ -1,22 +1,31 @@
 package com.moving.reservation.auth;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Controller
 public class LoginController {
 
-    private final AdminLoginAttemptService adminLoginAttemptService;
+    private final String frontendBaseUrl;
 
-    public LoginController(AdminLoginAttemptService adminLoginAttemptService) {
-        this.adminLoginAttemptService = adminLoginAttemptService;
+    public LoginController(@Value("${app.frontend.base-url}") String frontendBaseUrl) {
+        this.frontendBaseUrl = frontendBaseUrl;
     }
 
     @GetMapping("/login")
-    public String login(Model model) {
-        model.addAttribute("maxFailureCount", adminLoginAttemptService.getMaxFailureCount());
-        model.addAttribute("lockMinutes", adminLoginAttemptService.getLockMinutes());
-        return "auth/login";
+    public String login(@RequestParam MultiValueMap<String, String> queryParams) {
+        String baseUrl = frontendBaseUrl.endsWith("/")
+                ? frontendBaseUrl.substring(0, frontendBaseUrl.length() - 1)
+                : frontendBaseUrl;
+        String loginUrl = UriComponentsBuilder.fromUriString(baseUrl)
+                .path("/login")
+                .queryParams(queryParams)
+                .build()
+                .toUriString();
+        return "redirect:" + loginUrl;
     }
 }

@@ -17,6 +17,8 @@ import type {
   ReservationStatus,
 } from '../types'
 
+const loginHref = () => `/login?next=${encodeURIComponent(`${window.location.pathname}${window.location.search}`)}`
+
 const statusOptions: Array<{ value: ReservationStatus; label: string }> = [
   { value: 'RECEIVED', label: '접수' },
   { value: 'CONSULTING', label: '상담중' },
@@ -171,7 +173,7 @@ export function AdminReservationListView() {
               <p>React 관리자 화면은 백엔드 관리자 로그인 세션을 사용합니다. 먼저 로그인한 뒤 이 화면을 새로고침해 주세요.</p>
             </div>
             <div className="admin-auth-actions">
-              <a href={`${API_BASE_URL}/login`}>관리자 로그인</a>
+              <a href={loginHref()}>관리자 로그인</a>
               <a className="secondary" href={`${API_BASE_URL}/admin/reservations`}>기존 관리자 화면</a>
             </div>
           </div>
