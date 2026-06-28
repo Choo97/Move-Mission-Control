@@ -108,8 +108,8 @@ public class AdminReservationApiController {
             throw new IllegalArgumentException("견적 금액은 0원 이상이어야 합니다.");
         }
 
-        Reservation reservation = reservationService.get(id);
         reservationService.updateEstimate(id, request.getEstimatedPrice());
+        Reservation reservation = reservationService.get(id);
         adminAuditLogService.record(
                 reservation,
                 "견적 금액 저장",
@@ -128,8 +128,8 @@ public class AdminReservationApiController {
             throw new IllegalArgumentException("이동 거리는 0km 이상이어야 합니다.");
         }
 
-        Reservation reservation = reservationService.get(id);
         reservationService.updateDistance(id, request.getDistanceKm());
+        Reservation reservation = reservationService.get(id);
         adminAuditLogService.record(
                 reservation,
                 "이동 거리 저장",
@@ -152,8 +152,8 @@ public class AdminReservationApiController {
             throw new IllegalArgumentException("관리자 메모는 1,000자 이내로 입력해 주세요.");
         }
 
-        Reservation reservation = reservationService.get(id);
         reservationService.updateAdminMemo(id, adminMemo, principal.getName());
+        Reservation reservation = reservationService.get(id);
         adminAuditLogService.record(
                 reservation,
                 "관리자 메모 저장",
