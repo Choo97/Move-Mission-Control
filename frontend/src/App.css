@@ -2010,6 +2010,16 @@ legend {
   line-height: 1.6;
 }
 
+.completion-card .completion-lead {
+  margin: 12px 0;
+}
+
+.lookup-credential-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 10px;
+}
+
 .reservation-number-box {
   display: grid;
   gap: 4px;
@@ -2030,6 +2040,13 @@ legend {
   color: #1f5ea8;
   font-size: 36px;
   line-height: 1;
+}
+
+.reservation-number-box .phone-value {
+  overflow-wrap: anywhere;
+  color: #172033;
+  font-size: 22px;
+  line-height: 1.2;
 }
 
 .completion-actions {
@@ -2774,6 +2791,10 @@ dd {
   }
 
   .completion-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .lookup-credential-grid {
     grid-template-columns: 1fr;
   }
 

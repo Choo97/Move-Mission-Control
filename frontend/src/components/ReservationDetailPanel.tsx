@@ -7,6 +7,7 @@ import { StatusNotice } from './StatusNotice'
 type Props = {
   activeView: 'create' | 'search'
   reservation: ReservationResponse | null
+  lookupPhone: string
   customerGuides: CustomerGuideItem[]
   isLoadingCustomerGuides: boolean
   customerGuideErrorMessage: string
@@ -35,6 +36,7 @@ const photoUrl = (fileUrl: string) =>
 export function ReservationDetailPanel({
   activeView,
   reservation,
+  lookupPhone,
   customerGuides,
   isLoadingCustomerGuides,
   customerGuideErrorMessage,
@@ -62,7 +64,11 @@ export function ReservationDetailPanel({
       {reservation ? (
         <div className="result">
           {isNewlyCreated && (
-            <ReservationCompleteCard reservation={reservation} onShowSearchForm={onShowSearchForm} />
+            <ReservationCompleteCard
+              reservation={reservation}
+              lookupPhone={lookupPhone}
+              onShowSearchForm={onShowSearchForm}
+            />
           )}
           {activeView === 'search' && <ReservationLookupHeader reservation={reservation} />}
           <strong>예약 #{reservation.id}</strong>
@@ -122,19 +128,21 @@ export function ReservationDetailPanel({
 
 function ReservationCompleteCard({
   reservation,
+  lookupPhone,
   onShowSearchForm,
 }: {
   reservation: ReservationResponse
+  lookupPhone: string
   onShowSearchForm: () => void
 }) {
   const [copyMessage, setCopyMessage] = useState('')
 
-  const copyReservationNumber = async () => {
+  const copyLookupCredentials = async () => {
     try {
-      await navigator.clipboard.writeText(String(reservation.id))
-      setCopyMessage('예약번호를 복사했습니다.')
+      await navigator.clipboard.writeText(`예약번호: ${reservation.id}\n연락처: ${lookupPhone}`)
+      setCopyMessage('예약 조회 정보를 복사했습니다.')
     } catch {
-      setCopyMessage('복사가 어렵다면 예약번호를 직접 저장해 주세요.')
+      setCopyMessage('복사가 어렵다면 예약번호와 연락처를 직접 저장해 주세요.')
     }
   }
 
@@ -142,22 +150,26 @@ function ReservationCompleteCard({
     <div className="completion-card" role="status" aria-live="polite">
       <p className="eyebrow">Reservation Complete</p>
       <h3>예약 접수가 완료되었습니다</h3>
-      <div className="reservation-number-box">
-        <span>예약번호</span>
-        <strong>{reservation.id}</strong>
+      <p className="completion-lead">아래 두 정보는 예약 조회, 수정 요청, 취소 요청에 필요합니다.</p>
+      <div className="lookup-credential-grid" aria-label="예약 조회 정보">
+        <div className="reservation-number-box">
+          <span>예약번호</span>
+          <strong>{reservation.id}</strong>
+        </div>
+        <div className="reservation-number-box">
+          <span>조회 연락처</span>
+          <strong className="phone-value">{lookupPhone || '미입력'}</strong>
+        </div>
       </div>
       <div className="completion-actions">
-        <button className="submit-button secondary" type="button" onClick={() => void copyReservationNumber()}>
-          예약번호 복사
+        <button className="submit-button secondary" type="button" onClick={() => void copyLookupCredentials()}>
+          조회 정보 복사
         </button>
         <button className="submit-button secondary" type="button" onClick={onShowSearchForm}>
-          예약 조회하기
+          조회 화면으로 이동
         </button>
       </div>
       {copyMessage && <p className="copy-message">{copyMessage}</p>}
-      <p>
-        예약 조회에는 예약번호와 연락처가 필요합니다. 이 번호를 저장해 두면 조회, 수정 요청, 취소 요청, 사진 업로드를 계속 진행할 수 있습니다.
-      </p>
       <ol>
         <li>관리자가 예약 정보를 확인합니다.</li>
         <li>상담 후 견적 안내가 진행됩니다.</li>

@@ -496,6 +496,7 @@ function App() {
         <ReservationDetailPanel
           activeView={activeView}
           reservation={reservation}
+          lookupPhone={searchForm.phone}
           customerGuides={customerGuides}
           isLoadingCustomerGuides={isLoadingCustomerGuides}
           customerGuideErrorMessage={customerGuideErrorMessage}
@@ -516,7 +517,12 @@ function App() {
           onReviewFormChange={setReviewForm}
           onSubmitReview={submitReview}
           onShowSearchForm={() => {
-            document.getElementById('reservation-form')?.scrollIntoView({ behavior: 'smooth' })
+            changeView('search')
+            setSearchErrorMessage('')
+            setActionMessage('')
+            window.setTimeout(() => {
+              document.getElementById('reservation-form')?.scrollIntoView({ behavior: 'smooth' })
+            }, 0)
           }}
         />
         </section>
