@@ -164,6 +164,7 @@ export type AdminReservationListQuery = {
   startDate?: string
   endDate?: string
   needsDistance?: boolean
+  attentionRequired?: boolean
   sort?: AdminReservationSort
   page?: number
   size?: number

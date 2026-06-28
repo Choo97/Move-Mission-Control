@@ -121,6 +121,7 @@ export async function getAdminReservations(query: AdminReservationListQuery = {}
   appendQueryParam(params, 'startDate', query.startDate)
   appendQueryParam(params, 'endDate', query.endDate)
   appendQueryParam(params, 'needsDistance', query.needsDistance)
+  appendQueryParam(params, 'attentionRequired', query.attentionRequired)
   appendQueryParam(params, 'sort', query.sort)
   appendQueryParam(params, 'page', query.page)
   appendQueryParam(params, 'size', query.size)

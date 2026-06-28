@@ -86,6 +86,25 @@ class AdminReservationApiControllerTest {
     }
 
     @Test
+    void 관리자_예약목록_API는_처리필요_예약만_조회한다() throws Exception {
+        reservationService.create(reservationCreateRequest("처리필요고객", "010-1111-3333"));
+        var completedReservation = reservationService.create(reservationCreateRequest("완료고객", "010-2222-3333"));
+        reservationService.updateStatus(completedReservation.getId(), ReservationStatus.CONSULTING, "admin");
+        reservationService.updateStatus(completedReservation.getId(), ReservationStatus.ESTIMATE_SENT, "admin");
+        reservationService.updateStatus(completedReservation.getId(), ReservationStatus.CONFIRMED, "admin");
+        reservationService.updateStatus(completedReservation.getId(), ReservationStatus.COMPLETED, "admin");
+
+        mockMvc.perform(get("/api/admin/reservations")
+                        .param("attentionRequired", "true")
+                        .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].customerName").value("처리필요고객"))
+                .andExpect(jsonPath("$.content[0].attentionRequired").value(true))
+                .andExpect(jsonPath("$.totalElements").value(1));
+    }
+
+    @Test
     void 관리자_예약상세_API는_예약상세를_JSON으로_조회한다() throws Exception {
         var reservation = reservationService.create(reservationCreateRequest("상세조회고객", "010-5555-6666"));
         reservationService.updateStatus(reservation.getId(), ReservationStatus.CONSULTING, "admin");

@@ -51,6 +51,7 @@ public class AdminReservationApiController {
                                              @RequestParam(required = false)
                                              @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
                                              @RequestParam(required = false) Boolean needsDistance,
+                                             @RequestParam(required = false) Boolean attentionRequired,
                                              @RequestParam(required = false) ReservationSort sort,
                                              @RequestParam(defaultValue = "0") int page,
                                              @RequestParam(defaultValue = "10") int size) {
@@ -61,6 +62,7 @@ public class AdminReservationApiController {
                 startDate,
                 endDate,
                 needsDistance,
+                attentionRequired,
                 selectedSort,
                 PageRequest.of(Math.max(page, 0), selectedPageSize(size))
         );

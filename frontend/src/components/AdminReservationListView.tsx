@@ -65,6 +65,7 @@ const readInitialAdminState = () => {
       : undefined,
     keyword: params.get('keyword') ?? '',
     needsDistance: params.get('needsDistance') === 'true',
+    attentionRequired: params.get('attentionRequired') === 'true',
     sort: sortOptions.some(({ value }) => value === sortValue)
       ? (sortValue as AdminReservationSort)
       : 'PRIORITY',
@@ -175,6 +176,7 @@ export function AdminReservationListView() {
     setOrDelete('page', query.page, query.page !== 0)
     setOrDelete('size', query.size, query.size !== 10)
     setOrDelete('needsDistance', 'true', Boolean(query.needsDistance))
+    setOrDelete('attentionRequired', 'true', Boolean(query.attentionRequired))
     params.delete('reservationId')
 
     const queryString = params.toString()
@@ -331,6 +333,14 @@ export function AdminReservationListView() {
             onChange={(event) => updateQuery('needsDistance', event.target.checked)}
           />
           거리 확인 필요
+        </label>
+        <label className="inline-check">
+          <input
+            type="checkbox"
+            checked={Boolean(query.attentionRequired)}
+            onChange={(event) => updateQuery('attentionRequired', event.target.checked)}
+          />
+          처리 필요만
         </label>
       </div>}
 

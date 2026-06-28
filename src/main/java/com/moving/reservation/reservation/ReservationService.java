@@ -22,6 +22,13 @@ import org.springframework.web.multipart.MultipartFile;
 @Transactional(readOnly = true)
 public class ReservationService {
 
+    private static final List<ReservationStatus> ATTENTION_REQUIRED_STATUSES = List.of(
+            ReservationStatus.RECEIVED,
+            ReservationStatus.CONSULTING,
+            ReservationStatus.ESTIMATE_SENT,
+            ReservationStatus.CONFIRMED
+    );
+
     private final ReservationRepository reservationRepository;
     private final ReservationStatusHistoryRepository statusHistoryRepository;
     private final ReservationPhotoRepository reservationPhotoRepository;
@@ -146,7 +153,25 @@ public class ReservationService {
                                     LocalDate endDate,
                                     Boolean needsDistance,
                                     ReservationSort sort) {
-        return reservationRepository.search(status, normalizeKeyword(keyword), startDate, endDate, needsDistance).stream()
+        return search(status, keyword, startDate, endDate, needsDistance, false, sort);
+    }
+
+    public List<Reservation> search(ReservationStatus status,
+                                    String keyword,
+                                    LocalDate startDate,
+                                    LocalDate endDate,
+                                    Boolean needsDistance,
+                                    Boolean attentionRequired,
+                                    ReservationSort sort) {
+        return reservationRepository.search(
+                        status,
+                        normalizeKeyword(keyword),
+                        startDate,
+                        endDate,
+                        needsDistance,
+                        attentionRequired,
+                        ATTENTION_REQUIRED_STATUSES
+                ).stream()
                 .sorted(comparator(sort))
                 .toList();
     }
@@ -158,7 +183,18 @@ public class ReservationService {
                                         Boolean needsDistance,
                                         ReservationSort sort,
                                         Pageable pageable) {
-        List<Reservation> reservations = search(status, keyword, startDate, endDate, needsDistance, sort);
+        return searchPage(status, keyword, startDate, endDate, needsDistance, false, sort, pageable);
+    }
+
+    public Page<Reservation> searchPage(ReservationStatus status,
+                                        String keyword,
+                                        LocalDate startDate,
+                                        LocalDate endDate,
+                                        Boolean needsDistance,
+                                        Boolean attentionRequired,
+                                        ReservationSort sort,
+                                        Pageable pageable) {
+        List<Reservation> reservations = search(status, keyword, startDate, endDate, needsDistance, attentionRequired, sort);
         int pageSize = pageable.getPageSize();
         int pageNumber = Math.max(pageable.getPageNumber(), 0);
         int start = Math.min(pageNumber * pageSize, reservations.size());
