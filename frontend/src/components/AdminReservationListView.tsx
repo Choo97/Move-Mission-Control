@@ -37,6 +37,20 @@ const sortOptions: Array<{ value: AdminReservationSort; label: string }> = [
 ]
 
 const pageSizeOptions = [10, 20, 50]
+const adminReservationListPath = '/admin/reservations'
+
+const readReservationIdFromPath = () => {
+  const match = window.location.pathname.match(/^\/admin\/reservations\/(\d+)\/?$/)
+  const reservationId = match ? Number(match[1]) : Number.NaN
+
+  return Number.isInteger(reservationId) && reservationId > 0 ? reservationId : null
+}
+
+const readReservationIdFromQuery = (params: URLSearchParams) => {
+  const reservationId = Number(params.get('reservationId'))
+
+  return Number.isInteger(reservationId) && reservationId > 0 ? reservationId : null
+}
 
 const readInitialAdminState = () => {
   const params = new URLSearchParams(window.location.search)
@@ -44,7 +58,7 @@ const readInitialAdminState = () => {
   const sortValue = params.get('sort')
   const pageValue = Number(params.get('page'))
   const sizeValue = Number(params.get('size'))
-  const reservationIdValue = Number(params.get('reservationId'))
+  const selectedReservationId = readReservationIdFromPath() ?? readReservationIdFromQuery(params)
 
   const query: AdminReservationListQuery = {
     status: statusOptions.some(({ value }) => value === statusValue)
@@ -61,12 +75,12 @@ const readInitialAdminState = () => {
 
   return {
     query,
-    selectedReservationId:
-      Number.isInteger(reservationIdValue) && reservationIdValue > 0
-        ? reservationIdValue
-        : null,
+    selectedReservationId,
   }
 }
+
+const adminReservationPath = (reservationId: number | null) =>
+  reservationId === null ? adminReservationListPath : `${adminReservationListPath}/${reservationId}`
 
 export function AdminReservationListView() {
   const [query, setQuery] = useState<AdminReservationListQuery>(() => readInitialAdminState().query)
@@ -134,6 +148,18 @@ export function AdminReservationListView() {
   }, [keywordInput])
 
   useEffect(() => {
+    const syncAdminStateFromUrl = () => {
+      const nextState = readInitialAdminState()
+      setQuery(nextState.query)
+      setKeywordInput(nextState.query.keyword ?? '')
+      setSelectedReservationId(nextState.selectedReservationId)
+    }
+
+    window.addEventListener('popstate', syncAdminStateFromUrl)
+    return () => window.removeEventListener('popstate', syncAdminStateFromUrl)
+  }, [])
+
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search)
 
     const setOrDelete = (key: string, value: string | number | undefined, keep: boolean) => {
@@ -150,10 +176,14 @@ export function AdminReservationListView() {
     setOrDelete('page', query.page, query.page !== 0)
     setOrDelete('size', query.size, query.size !== 10)
     setOrDelete('needsDistance', 'true', Boolean(query.needsDistance))
-    setOrDelete('reservationId', selectedReservationId ?? undefined, selectedReservationId !== null)
+    params.delete('reservationId')
 
     const queryString = params.toString()
-    window.history.replaceState(null, '', `${window.location.pathname}?${queryString}`)
+    window.history.replaceState(
+      null,
+      '',
+      `${adminReservationPath(selectedReservationId)}${queryString ? `?${queryString}` : ''}`,
+    )
   }, [query, selectedReservationId])
 
   const updateQuery = <K extends keyof AdminReservationListQuery>(
@@ -351,13 +381,16 @@ export function AdminReservationListView() {
                       <span>{reservation.distanceKm === null ? '거리 확인 전' : `${reservation.distanceKm}km`}</span>
                     </td>
                     <td>
-                      <button
-                        className="admin-row-button"
-                        type="button"
-                        onClick={() => setSelectedReservationId(reservation.id)}
+                      <a
+                        className="admin-row-link"
+                        href={adminReservationPath(reservation.id)}
+                        onClick={(event) => {
+                          event.preventDefault()
+                          setSelectedReservationId(reservation.id)
+                        }}
                       >
                         상세
-                      </button>
+                      </a>
                     </td>
                   </tr>
                 ))}
