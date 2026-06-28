@@ -13,6 +13,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.CookieClearingLogoutHandler;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +30,8 @@ public class AdminSessionApiController {
     private final AuthenticationManager authenticationManager;
     private final AdminLoginAttemptService adminLoginAttemptService;
     private final SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
+    private final SecurityContextLogoutHandler securityContextLogoutHandler = new SecurityContextLogoutHandler();
+    private final CookieClearingLogoutHandler cookieClearingLogoutHandler = new CookieClearingLogoutHandler("JSESSIONID");
 
     public AdminSessionApiController(AuthenticationManager authenticationManager,
                                      AdminLoginAttemptService adminLoginAttemptService) {
@@ -41,6 +45,15 @@ public class AdminSessionApiController {
                 .map(GrantedAuthority::getAuthority)
                 .toList();
         return new AdminSessionApiResponse(authentication.getName(), roles);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(Authentication authentication,
+                                       HttpServletRequest httpServletRequest,
+                                       HttpServletResponse httpServletResponse) {
+        securityContextLogoutHandler.logout(httpServletRequest, httpServletResponse, authentication);
+        cookieClearingLogoutHandler.logout(httpServletRequest, httpServletResponse, authentication);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/login")

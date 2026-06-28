@@ -49,6 +49,7 @@ public class SecurityConfig {
             new AntPathRequestMatcher("/api/admin/reservations/*/notifications/sms/send", "POST"),
             new AntPathRequestMatcher("/api/admin/reservations/*/notifications/sms/resend-failed", "POST"),
             new AntPathRequestMatcher("/api/admin/session/login", "POST"),
+            new AntPathRequestMatcher("/api/admin/session/logout", "POST"),
             new AntPathRequestMatcher("/api/admin/reservations/customer-requests/*/approve", "POST"),
             new AntPathRequestMatcher("/api/admin/reservations/customer-requests/*/reject", "POST")
     };
@@ -88,6 +89,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/availability").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/faqs").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/admin/session/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/admin/session/logout").permitAll()
                         .requestMatchers(PUBLIC_DOCUMENT_PATHS).permitAll()
                         .requestMatchers(PUBLIC_PAGE_PATHS).permitAll()
                         .requestMatchers(ADMIN_API_PATH).hasRole("ADMIN")

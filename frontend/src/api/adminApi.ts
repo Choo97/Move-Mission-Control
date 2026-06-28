@@ -51,6 +51,17 @@ export async function getAdminSession() {
   return response.json() as Promise<AdminSessionResponse>
 }
 
+export async function logoutAdmin() {
+  const response = await fetch(`${API_BASE_URL}/api/admin/session/logout`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    await throwApiError(response, '관리자 로그아웃에 실패했습니다.')
+  }
+}
+
 export async function getOperatingSchedules() {
   const response = await fetch(`${API_BASE_URL}/api/admin/operating-schedules`, { credentials: 'include' })
   if (!response.ok) await throwApiError(response, '요일별 운영시간을 불러오지 못했습니다.')

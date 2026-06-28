@@ -590,6 +590,21 @@ h3 {
   color: #1f5ea8;
 }
 
+.admin-session-status button {
+  border: 0;
+  border-left: 1px solid #dce6f2;
+  padding: 3px 0 3px 10px;
+  color: #172033;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.admin-session-status button:disabled {
+  color: #94a3b8;
+  cursor: progress;
+}
+
 .admin-filters {
   display: grid;
   grid-template-columns: 150px minmax(220px, 1fr) 170px 130px 150px;

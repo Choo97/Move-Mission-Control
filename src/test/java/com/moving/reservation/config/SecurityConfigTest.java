@@ -1,6 +1,7 @@
 package com.moving.reservation.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -92,6 +93,31 @@ class SecurityConfigTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value("admin"))
                 .andExpect(jsonPath("$.roles[0]").value("ROLE_ADMIN"));
+    }
+
+    @Test
+    void React_관리자_로그아웃_API는_세션을_종료한다() throws Exception {
+        MvcResult loginResult = mockMvc.perform(post("/api/admin/session/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "username": "admin",
+                                  "password": "admin1234"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        MockHttpSession session = (MockHttpSession) loginResult.getRequest().getSession(false);
+
+        mockMvc.perform(get("/api/admin/session/me").session(session))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/admin/session/logout").session(session))
+                .andExpect(status().isNoContent())
+                .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("JSESSIONID=")))
+                .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("Max-Age=0")))
+                .andExpect(result -> assertThat(session.isInvalid()).isTrue());
     }
 
     @Test
@@ -203,6 +229,16 @@ class SecurityConfigTest {
     @Test
     void React_개발서버는_관리자_로그인_API_CORS_사전요청을_보낼_수_있다() throws Exception {
         mockMvc.perform(options("/api/admin/session/login")
+                        .header(HttpHeaders.ORIGIN, "http://localhost:5173")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost:5173"))
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true"));
+    }
+
+    @Test
+    void React_개발서버는_관리자_로그아웃_API_CORS_사전요청을_보낼_수_있다() throws Exception {
+        mockMvc.perform(options("/api/admin/session/logout")
                         .header(HttpHeaders.ORIGIN, "http://localhost:5173")
                         .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST"))
                 .andExpect(status().isOk())

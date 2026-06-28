@@ -4,6 +4,7 @@ import {
   getAdminSession,
   getAdminReservationConflictAttempts,
   getAdminReservations,
+  logoutAdmin,
 } from '../api/adminApi'
 import { getErrorMessage } from '../api/apiError'
 import { API_BASE_URL } from '../reservationData'
@@ -79,6 +80,7 @@ export function AdminReservationListView() {
   )
   const [refreshVersion, setRefreshVersion] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [isAuthenticationRequired, setIsAuthenticationRequired] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -159,6 +161,19 @@ export function AdminReservationListView() {
     setQuery((current) => ({ ...current, page: nextPage }))
   }
 
+  const submitLogout = async () => {
+    setIsLoggingOut(true)
+    setErrorMessage('')
+
+    try {
+      await logoutAdmin()
+      window.location.assign('/login?logout')
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error, '관리자 로그아웃에 실패했습니다.'))
+      setIsLoggingOut(false)
+    }
+  }
+
   return (
     <section className="admin-reservation-view">
       <div className="admin-heading">
@@ -175,6 +190,9 @@ export function AdminReservationListView() {
         <div className="admin-session-status">
           <span>로그인 관리자</span>
           <strong>{adminSession.username}</strong>
+          <button type="button" onClick={submitLogout} disabled={isLoggingOut}>
+            {isLoggingOut ? '로그아웃 중' : '로그아웃'}
+          </button>
         </div>
       )}
 
