@@ -347,13 +347,22 @@ export function AdminReservationListView() {
                   <th>이사일</th>
                   <th>경로</th>
                   <th>상태</th>
+                  <th>다음 처리</th>
                   <th>견적</th>
                   <th>관리</th>
                 </tr>
               </thead>
               <tbody>
                 {reservationPage?.content.map((reservation) => (
-                  <tr key={reservation.id} className={selectedReservationId === reservation.id ? 'selected' : ''}>
+                  <tr
+                    key={reservation.id}
+                    className={[
+                      selectedReservationId === reservation.id ? 'selected' : '',
+                      reservation.attentionRequired ? 'attention-required' : 'attention-complete',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                  >
                     <td>#{reservation.id}</td>
                     <td>
                       <strong>{reservation.customerName}</strong>
@@ -370,6 +379,17 @@ export function AdminReservationListView() {
                     <td>
                       <span className="admin-status">{reservation.statusLabel}</span>
                       <span>{reservation.moveTypeLabel}</span>
+                    </td>
+                    <td>
+                      <span
+                        className={[
+                          'admin-next-action',
+                          reservation.attentionRequired ? 'is-active' : 'is-complete',
+                        ].join(' ')}
+                      >
+                        {reservation.nextActionLabel}
+                      </span>
+                      <span>{reservation.nextActionDescription}</span>
                     </td>
                     <td>
                       <strong>{reservation.finalEstimatedPrice.toLocaleString()}원</strong>

@@ -907,7 +907,7 @@ h3 {
 
 .admin-reservation-table {
   width: 100%;
-  min-width: 940px;
+  min-width: 1080px;
   border-collapse: collapse;
 }
 
@@ -935,6 +935,14 @@ h3 {
   background: #fff7f2;
 }
 
+.admin-reservation-table tr.attention-required td:first-child {
+  border-left: 4px solid #1f5ea8;
+}
+
+.admin-reservation-table tr.attention-complete td {
+  color: #5f6877;
+}
+
 .admin-reservation-table td strong,
 .admin-reservation-table td span {
   display: block;
@@ -954,6 +962,26 @@ h3 {
   color: #30445f !important;
   background: #e5f0fb;
   font-weight: 900 !important;
+}
+
+.admin-reservation-table .admin-next-action {
+  width: fit-content;
+  border-radius: 6px;
+  padding: 5px 8px;
+  color: #172033;
+  background: #edf3fb;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-reservation-table .admin-next-action.is-active {
+  color: #173a63;
+  background: #dbeafe;
+}
+
+.admin-reservation-table .admin-next-action.is-complete {
+  color: #4b5563;
+  background: #eef0f3;
 }
 
 .admin-pagination {

@@ -14,6 +14,9 @@ export type AdminReservationListItemResponse = {
   moveTypeLabel: string
   status: ReservationStatus
   statusLabel: string
+  nextActionLabel: string
+  nextActionDescription: string
+  attentionRequired: boolean
   distanceKm: number | null
   finalEstimatedPrice: number
   createdAt: string
