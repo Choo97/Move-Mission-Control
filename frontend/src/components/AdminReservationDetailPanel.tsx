@@ -936,11 +936,6 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
             )}
           </section>
 
-          <div className="admin-detail-actions">
-            <a className="admin-row-link" href={`${API_BASE_URL}/admin/reservations/${reservation.id}`}>
-              기존 상세 화면 열기
-            </a>
-          </div>
         </div>
       )}
     </aside>

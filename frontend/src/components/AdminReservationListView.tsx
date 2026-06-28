@@ -8,7 +8,6 @@ import {
 } from '../api/adminApi'
 import { getErrorMessage } from '../api/apiError'
 import { adminLoginHref, redirectToAdminExpiredLogin } from '../adminAuthNavigation'
-import { API_BASE_URL } from '../reservationData'
 import { AdminReservationDetailPanel } from './AdminReservationDetailPanel'
 import { StatusNotice } from './StatusNotice'
 import type {
@@ -222,9 +221,6 @@ export function AdminReservationListView() {
           <p className="eyebrow">Admin Console</p>
           <h2>관리자 예약 목록</h2>
         </div>
-        <a className="admin-text-link" href={`${API_BASE_URL}/admin/reservations`}>
-          기존 관리자 화면
-        </a>
       </div>
 
       {!isAuthenticationRequired && adminSession && (
@@ -246,7 +242,6 @@ export function AdminReservationListView() {
             </div>
             <div className="admin-auth-actions">
               <a href={adminLoginHref()}>관리자 로그인</a>
-              <a className="secondary" href={`${API_BASE_URL}/admin/reservations`}>기존 관리자 화면</a>
             </div>
           </div>
         ) : (
