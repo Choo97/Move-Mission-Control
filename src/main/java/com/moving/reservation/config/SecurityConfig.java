@@ -51,7 +51,7 @@ public class SecurityConfig {
     };
 
     private static final String[] PUBLIC_PAGE_PATHS = {
-            "/", "/login", "/faq", "/css/**", "/js/**", "/reservations", "/reservations/**",
+            "/", "/login", "/error", "/faq", "/css/**", "/js/**", "/reservations", "/reservations/**",
             "/reviews", "/reviews/**", "/uploads/**"
     };
 

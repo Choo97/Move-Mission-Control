@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional(readOnly = true, noRollbackFor = ReservationScheduleConflictException.class)
 public class AvailabilityService {
 
     private final OperatingScheduleRepository scheduleRepository;

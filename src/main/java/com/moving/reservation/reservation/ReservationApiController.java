@@ -50,7 +50,7 @@ public class ReservationApiController {
         try {
             Reservation reservation = reservationService.create(request.toServiceRequest());
             return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(reservation));
-        } catch (IllegalArgumentException | IllegalStateException exception) {
+        } catch (IllegalArgumentException | IllegalStateException | ReservationScheduleConflictException exception) {
             return ResponseEntity.badRequest().body(ApiErrorResponse.badRequest(exception.getMessage()));
         }
     }

@@ -1,5 +1,6 @@
 package com.moving.reservation.config;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -113,6 +114,12 @@ class SecurityConfigTest {
     void OpenAPI_문서는_로그인없이_접근할_수_있다() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void 공통_오류경로는_로그인_오류로_바뀌지_않는다() throws Exception {
+        mockMvc.perform(get("/error"))
+                .andExpect(result -> assertThat(result.getResponse().getStatus()).isNotEqualTo(401));
     }
 
     @Test
