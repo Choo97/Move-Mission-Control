@@ -25,6 +25,7 @@ type Props = {
 
 const formatPrice = (price: number) => `${price.toLocaleString()}원`
 const formatAdjustment = (price: number) => `${price > 0 ? '+' : ''}${price.toLocaleString()}원`
+const formatDateTime = (dateTime: string) => dateTime.replace('T', ' ').slice(0, 16)
 
 const statusOptions: Array<{ value: ReservationStatus; label: string }> = [
   { value: 'RECEIVED', label: '접수' },
@@ -75,6 +76,11 @@ const countNotifications = (
   reservation: AdminReservationDetailResponse,
   status: 'READY' | 'SENT' | 'FAILED',
 ) => reservation.notifications.filter((notification) => notification.status === status).length
+
+const countCustomerRequests = (
+  reservation: AdminReservationDetailResponse,
+  status: 'PENDING' | 'APPROVED' | 'REJECTED',
+) => reservation.customerRequests.filter((request) => request.status === status).length
 
 export function AdminReservationDetailPanel({ reservationId, onClose, onReservationChanged }: Props) {
   const [reservation, setReservation] = useState<AdminReservationDetailResponse | null>(null)
@@ -462,7 +468,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
                 <p className="eyebrow">Operation</p>
                 <h3 id="admin-operation-title">운영 처리</h3>
               </div>
-              <span>현재 할 일: {getAdminNextTask(reservation)}</span>
+              <span className="admin-section-count">현재 할 일: {getAdminNextTask(reservation)}</span>
             </div>
 
             <div className="admin-operation-grid">
@@ -614,8 +620,18 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
             </div>
           </section>
 
-          <section>
-            <h3>고객 요청 처리</h3>
+          <section className="admin-followup-panel" aria-labelledby="admin-followup-title">
+            <div className="admin-section-heading">
+              <div>
+                <p className="eyebrow">Customer Request</p>
+                <h3 id="admin-followup-title">고객 요청 처리</h3>
+              </div>
+              <span className="admin-section-count">대기 {countCustomerRequests(reservation, 'PENDING')}건</span>
+            </div>
+            <div className="admin-history-summary">
+              <span>승인 {countCustomerRequests(reservation, 'APPROVED')}건</span>
+              <span>반려 {countCustomerRequests(reservation, 'REJECTED')}건</span>
+            </div>
             {reservation.customerRequests.length > 0 ? (
               <ul className="admin-history-list customer-request-review-list">
                 {reservation.customerRequests.map((request) => (
@@ -628,7 +644,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
                         </span>
                       </div>
                     </div>
-                    <span>{request.requestedAt.replace('T', ' ').slice(0, 16)}</span>
+                    <span>{formatDateTime(request.requestedAt)}</span>
                     <p>{request.detail}</p>
                     {request.rejectionReason && <p>반려 사유: {request.rejectionReason}</p>}
                     {request.status === 'PENDING' && (
@@ -657,46 +673,81 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
             )}
           </section>
 
-          <section>
-            <h3>상태 이력</h3>
-            {reservation.statusHistories.length > 0 ? (
-              <ul className="admin-history-list">
-                {reservation.statusHistories.map((history) => (
-                  <li key={history.id}>
-                    <strong>
-                      {history.previousStatusLabel} → {history.changedStatusLabel}
-                    </strong>
-                    <span>
-                      {history.changedAt.replace('T', ' ').slice(0, 16)} · {history.changedBy ?? 'system'}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="admin-empty inline">상태 변경 이력이 없습니다.</p>
-            )}
-          </section>
-
-          <section>
-            <h3>고객 행동 이력</h3>
-            {reservation.customerActionHistories.length > 0 ? (
-              <ul className="admin-history-list">
-                {reservation.customerActionHistories.map((history) => (
-                  <li key={history.id}>
-                    <strong>{history.summary}</strong>
-                    <span>{history.createdAt.replace('T', ' ').slice(0, 16)}</span>
-                    <p>{history.detail}</p>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="admin-empty inline">고객 행동 이력이 없습니다.</p>
-            )}
-          </section>
-
-          <section>
+          <section className="admin-history-panel" aria-labelledby="admin-history-title">
             <div className="admin-section-heading">
-              <h3>알림 이력</h3>
+              <div>
+                <p className="eyebrow">Timeline</p>
+                <h3 id="admin-history-title">운영 이력</h3>
+              </div>
+              <span className="admin-section-count">
+                상태 {reservation.statusHistories.length}건 · 고객 행동 {reservation.customerActionHistories.length}건
+              </span>
+            </div>
+            <div className="admin-history-columns">
+              <article className="admin-history-card">
+                <h4>상태 이력</h4>
+                {reservation.statusHistories.length > 0 ? (
+                  <ul className="admin-history-list">
+                    {reservation.statusHistories.map((history) => (
+                      <li key={history.id}>
+                        <strong>
+                          {history.previousStatusLabel} → {history.changedStatusLabel}
+                        </strong>
+                        <span>
+                          {formatDateTime(history.changedAt)} · {history.changedBy ?? 'system'}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="admin-empty inline">상태 변경 이력이 없습니다.</p>
+                )}
+              </article>
+
+              <article className="admin-history-card">
+                <h4>고객 행동 이력</h4>
+                {reservation.customerActionHistories.length > 0 ? (
+                  <ul className="admin-history-list">
+                    {reservation.customerActionHistories.map((history) => (
+                      <li key={history.id}>
+                        <strong>{history.summary}</strong>
+                        <span>{formatDateTime(history.createdAt)}</span>
+                        <p>{history.detail}</p>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="admin-empty inline">고객 행동 이력이 없습니다.</p>
+                )}
+              </article>
+
+              <article className="admin-history-card admin-history-card--wide">
+                <h4>관리자 감사로그</h4>
+                {reservation.auditLogs.length > 0 ? (
+                  <ul className="admin-history-list">
+                    {reservation.auditLogs.map((auditLog) => (
+                      <li key={auditLog.id}>
+                        <strong>{auditLog.action}</strong>
+                        <span>
+                          {formatDateTime(auditLog.createdAt)} · {auditLog.createdBy}
+                        </span>
+                        <p>{auditLog.detail}</p>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="admin-empty inline">관리자 감사로그가 없습니다.</p>
+                )}
+              </article>
+            </div>
+          </section>
+
+          <section className="admin-notification-panel" aria-labelledby="admin-notification-title">
+            <div className="admin-section-heading">
+              <div>
+                <p className="eyebrow">Notification</p>
+                <h3 id="admin-notification-title">알림 이력</h3>
+              </div>
               <div className="admin-notification-actions">
                 <button
                   type="button"
@@ -748,6 +799,11 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
                 </button>
               </div>
             </div>
+            <div className="admin-history-summary">
+              <span>발송 대기 {countNotifications(reservation, 'READY')}건</span>
+              <span>발송 완료 {countNotifications(reservation, 'SENT')}건</span>
+              <span>실패 {countNotifications(reservation, 'FAILED')}건</span>
+            </div>
             {reservation.notifications.length > 0 ? (
               <ul className="admin-history-list notification-history-list">
                 {reservation.notifications.map((notification) => (
@@ -762,7 +818,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
                       </div>
                     </div>
                     <span>
-                      {notification.createdAt.replace('T', ' ').slice(0, 16)} · {notification.recipientContact}
+                      {formatDateTime(notification.createdAt)} · {notification.recipientContact}
                     </span>
                     <p>{notification.message}</p>
                     {notification.failureReason && <p className="history-error">{notification.failureReason}</p>}
@@ -771,25 +827,6 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
               </ul>
             ) : (
               <p className="admin-empty inline">알림 이력이 없습니다.</p>
-            )}
-          </section>
-
-          <section>
-            <h3>관리자 감사로그</h3>
-            {reservation.auditLogs.length > 0 ? (
-              <ul className="admin-history-list">
-                {reservation.auditLogs.map((auditLog) => (
-                  <li key={auditLog.id}>
-                    <strong>{auditLog.action}</strong>
-                    <span>
-                      {auditLog.createdAt.replace('T', ' ').slice(0, 16)} · {auditLog.createdBy}
-                    </span>
-                    <p>{auditLog.detail}</p>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="admin-empty inline">관리자 감사로그가 없습니다.</p>
             )}
           </section>
 
