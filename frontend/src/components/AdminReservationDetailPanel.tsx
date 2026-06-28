@@ -456,137 +456,161 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
             </dl>
           </section>
 
-          <section>
-            <h3>상태 변경</h3>
-            <div className="admin-status-update">
-              <label>
-                예약 상태
-                <select
-                  value={selectedStatus}
-                  onChange={(event) => setSelectedStatus(event.target.value as ReservationStatus)}
-                >
-                  {statusOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button
-                type="button"
-                disabled={isUpdatingStatus || selectedStatus === reservation.status}
-                onClick={submitStatusUpdate}
-              >
-                {isUpdatingStatus ? '변경 중' : '상태 저장'}
-              </button>
-            </div>
-          </section>
-
-          <section>
-            <h3>이동 거리</h3>
-            <div className="admin-distance-update">
-              <label>
-                거리(km)
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  placeholder="확인 전"
-                  value={distanceAmount}
-                  onChange={(event) => setDistanceAmount(event.target.value)}
-                />
-              </label>
-              <button
-                type="button"
-                disabled={
-                  isUpdatingDistance ||
-                  (distanceAmount.trim() === '' ? null : Number(distanceAmount)) === reservation.distanceKm
-                }
-                onClick={submitDistanceUpdate}
-              >
-                {isUpdatingDistance ? '저장 중' : '거리 저장'}
-              </button>
-            </div>
-          </section>
-
-          <section>
-            <h3>견적 내역</h3>
-            <div className="admin-estimate-update">
-              <label>
-                견적 금액
-                <input
-                  type="number"
-                  min="0"
-                  step="1000"
-                  value={estimateAmount}
-                  onChange={(event) => setEstimateAmount(event.target.value)}
-                />
-              </label>
-              <button
-                type="button"
-                disabled={isUpdatingEstimate || Number(estimateAmount) === reservation.estimatedPrice}
-                onClick={submitEstimateUpdate}
-              >
-                {isUpdatingEstimate ? '저장 중' : '견적 저장'}
-              </button>
-            </div>
-            <dl className="admin-detail-grid compact">
-              {reservation.estimateLines.map((line) => (
-                <div key={line.label}>
-                  <dt>{line.label}</dt>
-                  <dd>{formatPrice(line.amount)}</dd>
-                </div>
-              ))}
-              <div className="admin-estimate-summary">
-                <dt>기본 계산 합계</dt>
-                <dd>{formatPrice(reservation.baseEstimatedPrice)}</dd>
-              </div>
-              {reservation.estimatedPrice !== reservation.baseEstimatedPrice && (
-                <div>
-                  <dt>관리자 조정</dt>
-                  <dd>{formatAdjustment(reservation.estimatedPrice - reservation.baseEstimatedPrice)}</dd>
-                </div>
-              )}
-              {reservation.discountAmount > 0 && (
-                <div>
-                  <dt>{reservation.couponName ? `${reservation.couponName} 할인` : '쿠폰 할인'}</dt>
-                  <dd>-{formatPrice(reservation.discountAmount)}</dd>
-                </div>
-              )}
-              <div className="admin-estimate-total">
-                <dt>최종 견적</dt>
-                <dd>{formatPrice(reservation.finalEstimatedPrice)}</dd>
-              </div>
-            </dl>
-          </section>
-
-          <section>
-            <h3>메모</h3>
-            <div className="admin-note-grid">
+          <section className="admin-operation-panel" aria-labelledby="admin-operation-title">
+            <div className="admin-section-heading">
               <div>
-                <strong>고객 요청사항</strong>
-                <p>{reservation.memo || '입력된 요청사항이 없습니다.'}</p>
+                <p className="eyebrow">Operation</p>
+                <h3 id="admin-operation-title">운영 처리</h3>
               </div>
-              <div className="admin-memo-editor">
-                <strong>관리자 메모</strong>
-                <textarea
-                  maxLength={1000}
-                  placeholder="상담 내용과 현장 특이사항을 기록하세요."
-                  value={adminMemo}
-                  onChange={(event) => setAdminMemo(event.target.value)}
-                />
-                <div className="admin-memo-footer">
-                  <span>{adminMemo.length}/1,000자</span>
+              <span>현재 할 일: {getAdminNextTask(reservation)}</span>
+            </div>
+
+            <div className="admin-operation-grid">
+              <article className="admin-operation-card">
+                <div>
+                  <h4>상태 변경</h4>
+                  <p>상담 진행, 견적 안내, 확정, 완료 같은 예약 흐름을 관리자 기준으로 기록합니다.</p>
+                </div>
+                <div className="admin-status-update">
+                  <label>
+                    예약 상태
+                    <select
+                      value={selectedStatus}
+                      onChange={(event) => setSelectedStatus(event.target.value as ReservationStatus)}
+                    >
+                      {statusOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
                   <button
                     type="button"
-                    disabled={isUpdatingMemo || adminMemo === (reservation.adminMemo ?? '')}
-                    onClick={submitAdminMemoUpdate}
+                    disabled={isUpdatingStatus || selectedStatus === reservation.status}
+                    onClick={submitStatusUpdate}
                   >
-                    {isUpdatingMemo ? '저장 중' : '메모 저장'}
+                    {isUpdatingStatus ? '변경 중' : '상태 저장'}
                   </button>
                 </div>
-                {reservation.adminMemoUpdatedBy && <small>최근 저장: {reservation.adminMemoUpdatedBy}</small>}
-              </div>
+              </article>
+
+              <article className="admin-operation-card">
+                <div>
+                  <h4>이동 거리</h4>
+                  <p>출발지와 도착지를 확인한 뒤 거리 기준 견적을 다시 계산할 때 사용합니다.</p>
+                </div>
+                <div className="admin-distance-update">
+                  <label>
+                    거리(km)
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      placeholder="확인 전"
+                      value={distanceAmount}
+                      onChange={(event) => setDistanceAmount(event.target.value)}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    disabled={
+                      isUpdatingDistance ||
+                      (distanceAmount.trim() === '' ? null : Number(distanceAmount)) === reservation.distanceKm
+                    }
+                    onClick={submitDistanceUpdate}
+                  >
+                    {isUpdatingDistance ? '저장 중' : '거리 저장'}
+                  </button>
+                </div>
+              </article>
+
+              <article className="admin-operation-card admin-operation-card--wide">
+                <div>
+                  <h4>견적 저장</h4>
+                  <p>고객에게 안내할 최종 금액의 기준입니다. 쿠폰 할인이 있으면 최종 견적에 반영됩니다.</p>
+                </div>
+                <div className="admin-estimate-update">
+                  <label>
+                    견적 금액
+                    <input
+                      type="number"
+                      min="0"
+                      step="1000"
+                      value={estimateAmount}
+                      onChange={(event) => setEstimateAmount(event.target.value)}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    disabled={isUpdatingEstimate || Number(estimateAmount) === reservation.estimatedPrice}
+                    onClick={submitEstimateUpdate}
+                  >
+                    {isUpdatingEstimate ? '저장 중' : '견적 저장'}
+                  </button>
+                </div>
+                <dl className="admin-detail-grid compact">
+                  {reservation.estimateLines.map((line) => (
+                    <div key={line.label}>
+                      <dt>{line.label}</dt>
+                      <dd>{formatPrice(line.amount)}</dd>
+                    </div>
+                  ))}
+                  <div className="admin-estimate-summary">
+                    <dt>기본 계산 합계</dt>
+                    <dd>{formatPrice(reservation.baseEstimatedPrice)}</dd>
+                  </div>
+                  {reservation.estimatedPrice !== reservation.baseEstimatedPrice && (
+                    <div>
+                      <dt>관리자 조정</dt>
+                      <dd>{formatAdjustment(reservation.estimatedPrice - reservation.baseEstimatedPrice)}</dd>
+                    </div>
+                  )}
+                  {reservation.discountAmount > 0 && (
+                    <div>
+                      <dt>{reservation.couponName ? `${reservation.couponName} 할인` : '쿠폰 할인'}</dt>
+                      <dd>-{formatPrice(reservation.discountAmount)}</dd>
+                    </div>
+                  )}
+                  <div className="admin-estimate-total">
+                    <dt>최종 견적</dt>
+                    <dd>{formatPrice(reservation.finalEstimatedPrice)}</dd>
+                  </div>
+                </dl>
+              </article>
+
+              <article className="admin-operation-card admin-operation-card--wide">
+                <div>
+                  <h4>고객 요청사항과 관리자 메모</h4>
+                  <p>고객 요청은 확인용이고, 관리자 메모는 고객에게 보이지 않는 내부 기록입니다.</p>
+                </div>
+                <div className="admin-note-grid">
+                  <div>
+                    <strong>고객 요청사항</strong>
+                    <p>{reservation.memo || '입력된 요청사항이 없습니다.'}</p>
+                  </div>
+                  <div className="admin-memo-editor">
+                    <strong>관리자 메모</strong>
+                    <textarea
+                      maxLength={1000}
+                      placeholder="상담 내용과 현장 특이사항을 기록하세요."
+                      value={adminMemo}
+                      onChange={(event) => setAdminMemo(event.target.value)}
+                    />
+                    <div className="admin-memo-footer">
+                      <span>{adminMemo.length}/1,000자</span>
+                      <button
+                        type="button"
+                        disabled={isUpdatingMemo || adminMemo === (reservation.adminMemo ?? '')}
+                        onClick={submitAdminMemoUpdate}
+                      >
+                        {isUpdatingMemo ? '저장 중' : '메모 저장'}
+                      </button>
+                    </div>
+                    {reservation.adminMemoUpdatedBy && <small>최근 저장: {reservation.adminMemoUpdatedBy}</small>}
+                  </div>
+                </div>
+              </article>
             </div>
           </section>
 

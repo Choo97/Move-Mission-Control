@@ -1048,6 +1048,63 @@ h3 {
   line-height: 1.5;
 }
 
+.admin-operation-panel {
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  padding: 16px;
+  background: #ffffff;
+}
+
+.admin-operation-panel .admin-section-heading {
+  align-items: start;
+  margin: 0 0 14px;
+}
+
+.admin-operation-panel .admin-section-heading > span {
+  max-width: 320px;
+  border: 1px solid #cfe0f3;
+  border-radius: 999px;
+  padding: 7px 11px;
+  color: #30445f;
+  background: #eef6ff;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.4;
+}
+
+.admin-operation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-operation-card {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  border: 1px solid #e0eaf4;
+  border-radius: 8px;
+  padding: 14px;
+  background: #f8fbff;
+}
+
+.admin-operation-card--wide {
+  grid-column: 1 / -1;
+}
+
+.admin-operation-card h4 {
+  margin: 0;
+  color: #172033;
+  font-size: 15px;
+}
+
+.admin-operation-card p {
+  margin: 6px 0 0;
+  color: #5e6f84;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .admin-detail-title strong {
   color: #1f5ea8;
   font-size: 21px;
@@ -1083,7 +1140,7 @@ h3 {
   gap: 10px;
 }
 
-.admin-note-grid div {
+.admin-note-grid > div {
   border: 1px solid #eee5dc;
   border-radius: 6px;
   padding: 12px;
@@ -1318,7 +1375,7 @@ h3 {
 }
 
 .admin-distance-update {
-  grid-template-columns: minmax(0, 1fr) 92px 92px;
+  grid-template-columns: minmax(0, 1fr) 104px;
 }
 
 .admin-status-update button,
@@ -2279,6 +2336,14 @@ dd {
 
   .admin-workflow-grid {
     grid-template-columns: 1fr;
+  }
+
+  .admin-operation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-operation-panel .admin-section-heading > span {
+    max-width: none;
   }
 
   .admin-distance-update {
