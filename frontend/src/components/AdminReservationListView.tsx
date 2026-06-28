@@ -7,6 +7,7 @@ import {
   logoutAdmin,
 } from '../api/adminApi'
 import { getErrorMessage } from '../api/apiError'
+import { adminLoginHref, redirectToAdminExpiredLogin } from '../adminAuthNavigation'
 import { API_BASE_URL } from '../reservationData'
 import { AdminReservationDetailPanel } from './AdminReservationDetailPanel'
 import { StatusNotice } from './StatusNotice'
@@ -19,8 +20,6 @@ import type {
   AdminSessionResponse,
   ReservationStatus,
 } from '../types'
-
-const loginHref = () => `/login?next=${encodeURIComponent(`${window.location.pathname}${window.location.search}`)}`
 
 const statusOptions: Array<{ value: ReservationStatus; label: string }> = [
   { value: 'RECEIVED', label: '접수' },
@@ -103,7 +102,14 @@ export function AdminReservationListView() {
         setAdminSession(null)
         setReservationPage(null)
         setConflictAttempts([])
-        setIsAuthenticationRequired(error instanceof AdminAuthenticationRequiredError)
+        if (error instanceof AdminAuthenticationRequiredError) {
+          setIsAuthenticationRequired(true)
+          setErrorMessage(getErrorMessage(error, '관리자 로그인이 필요합니다.'))
+          redirectToAdminExpiredLogin()
+          return
+        }
+
+        setIsAuthenticationRequired(false)
         setErrorMessage(getErrorMessage(error, '관리자 예약 목록을 불러오지 못했습니다.'))
       } finally {
         setIsLoading(false)
@@ -169,6 +175,11 @@ export function AdminReservationListView() {
       await logoutAdmin()
       window.location.assign('/login?logout')
     } catch (error) {
+      if (error instanceof AdminAuthenticationRequiredError) {
+        redirectToAdminExpiredLogin()
+        return
+      }
+
       setErrorMessage(getErrorMessage(error, '관리자 로그아웃에 실패했습니다.'))
       setIsLoggingOut(false)
     }
@@ -204,7 +215,7 @@ export function AdminReservationListView() {
               <p>React 관리자 화면은 백엔드 관리자 로그인 세션을 사용합니다. 먼저 로그인한 뒤 이 화면을 새로고침해 주세요.</p>
             </div>
             <div className="admin-auth-actions">
-              <a href={loginHref()}>관리자 로그인</a>
+              <a href={adminLoginHref()}>관리자 로그인</a>
               <a className="secondary" href={`${API_BASE_URL}/admin/reservations`}>기존 관리자 화면</a>
             </div>
           </div>

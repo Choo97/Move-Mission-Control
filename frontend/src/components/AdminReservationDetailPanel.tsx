@@ -14,6 +14,7 @@ import {
   updateAdminReservationStatus,
 } from '../api/adminApi'
 import { getErrorMessage } from '../api/apiError'
+import { adminLoginHref, redirectToAdminExpiredLogin } from '../adminAuthNavigation'
 import { API_BASE_URL } from '../reservationData'
 import type { AdminReservationDetailResponse, ReservationStatus } from '../types'
 
@@ -28,7 +29,6 @@ const formatAdjustment = (price: number) => `${price > 0 ? '+' : ''}${price.toLo
 const formatDateTime = (dateTime: string) => dateTime.replace('T', ' ').slice(0, 16)
 const formatBoolean = (value: boolean) => (value ? '예' : '아니오')
 const adminPhotoUrl = (fileUrl: string) => (fileUrl.startsWith('http') ? fileUrl : `${API_BASE_URL}${fileUrl}`)
-const loginHref = () => `/login?next=${encodeURIComponent(`${window.location.pathname}${window.location.search}`)}`
 
 const statusOptions: Array<{ value: ReservationStatus; label: string }> = [
   { value: 'RECEIVED', label: '접수' },
@@ -106,7 +106,14 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
   const [actionMessage, setActionMessage] = useState('')
 
   const showAdminError = useCallback((error: unknown, fallbackMessage: string) => {
-    setIsAuthenticationRequired(error instanceof AdminAuthenticationRequiredError)
+    if (error instanceof AdminAuthenticationRequiredError) {
+      setIsAuthenticationRequired(true)
+      setErrorMessage(getErrorMessage(error, '관리자 로그인이 필요합니다.'))
+      redirectToAdminExpiredLogin()
+      return
+    }
+
+    setIsAuthenticationRequired(false)
     setErrorMessage(getErrorMessage(error, fallbackMessage))
   }, [])
 
@@ -411,7 +418,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
         (isAuthenticationRequired ? (
           <div className="admin-auth-notice">
             <strong>{errorMessage}</strong>
-            <a href={loginHref()}>관리자 로그인</a>
+            <a href={adminLoginHref()}>관리자 로그인</a>
           </div>
         ) : (
           <p className="message error">{errorMessage}</p>
