@@ -47,6 +47,12 @@ bash run-backend.sh
 bash run-frontend.sh
 ```
 
+실행 상태가 헷갈릴 때:
+
+```bash
+bash check-local.sh
+```
+
 ```text
 고객 React 화면  http://localhost:5173/
 React 관리자 화면 http://localhost:5173/admin/reservations

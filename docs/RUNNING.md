@@ -35,6 +35,54 @@ React 관리자 화면 http://localhost:5173/admin/reservations
 
 프론트엔드는 `.env.local`의 `VITE_API_BASE_URL` 값을 사용해 백엔드 API에 연결합니다. 기본값은 `http://localhost:8081`입니다.
 
+### 실행 상태 점검
+
+서버를 켰는데 화면이 이상하거나, 백엔드 수정 후 최신 코드가 반영됐는지 헷갈릴 때 아래 명령을 실행합니다.
+
+```bash
+bash check-local.sh
+```
+
+이 명령은 아래 항목을 확인합니다.
+
+| 점검 항목 | 의미 |
+| --- | --- |
+| 백엔드 홈 | Spring Boot 서버가 `8081`에서 응답하는지 확인 |
+| 공개 API | 백엔드 REST API가 정상 응답하는지 확인 |
+| 관리자 API 보호 상태 | 관리자 API가 로그인 보호를 받고 있는지 확인 |
+| React 고객 화면 | Vite 프론트엔드가 `5173`에서 응답하는지 확인 |
+| React 관리자 라우트 | React 관리자 URL이 새로고침에도 열리는지 확인 |
+
+관리자 예약 상세 API까지 확인하려면 관리자 계정과 예약 번호를 같이 지정합니다.
+
+```bash
+ADMIN_CHECK_USERNAME=admin ADMIN_CHECK_PASSWORD=admin1234 ADMIN_CHECK_RESERVATION_ID=12 bash check-local.sh
+```
+
+이 점검이 실패하면 먼저 아래를 확인합니다.
+
+| 증상 | 먼저 확인할 것 |
+| --- | --- |
+| 백엔드 홈 또는 공개 API 실패 | `bash run-backend.sh`가 실행 중인지 확인 |
+| React 고객 화면 실패 | `bash run-frontend.sh`가 실행 중인지 확인 |
+| 관리자 상세 API만 실패 | 백엔드 서버가 최신 코드로 재시작됐는지 확인 |
+| 관리자 로그인 API 실패 | 관리자 ID/비밀번호 또는 로그인 잠금 상태 확인 |
+
+### 재시작 기준
+
+React 프론트엔드는 Vite 개발 서버가 파일 변경을 감지해 브라우저에 빠르게 반영합니다. 반면 Spring Boot 백엔드는 Java 프로세스가 시작될 때 컴파일된 클래스를 읽기 때문에, 백엔드 코드를 수정하면 서버를 다시 시작해야 합니다.
+
+| 변경한 내용 | 필요한 조치 |
+| --- | --- |
+| `frontend/src/**` | 브라우저 새로고침 또는 Vite 자동 반영 확인 |
+| `src/main/java/**` | 백엔드 서버 종료 후 `bash run-backend.sh` 재실행 |
+| `src/main/resources/application.yml` | 백엔드 서버 재시작 |
+| `.env.local`의 백엔드 설정 | 백엔드 서버 재시작 |
+| `.env.local`의 `VITE_*`, `FRONTEND_PORT` | 프론트엔드 서버 재시작 |
+| `pom.xml` | 백엔드 서버 재시작, 필요하면 `mvn clean test` 실행 |
+
+관리자 상세 화면에서 `관리자 예약 상세를 불러오지 못했습니다.`가 나오는데 목록은 정상이라면, 우선 `bash check-local.sh`로 점검하고 백엔드 서버를 재시작합니다. 목록 화면은 예전 코드로도 보일 수 있지만, 상세 API는 최신 DTO나 로직이 필요할 수 있기 때문입니다.
+
 ### 공통 준비 사항
 
 - Java 17 설치
