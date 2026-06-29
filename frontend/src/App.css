@@ -1335,7 +1335,7 @@ h3 {
 
 .admin-operation-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 12px;
 }
 
@@ -2086,6 +2086,13 @@ h3 {
   gap: 8px;
 }
 
+.admin-status-actions button {
+  min-width: 118px;
+  white-space: normal;
+  word-break: keep-all;
+  line-height: 1.3;
+}
+
 .admin-status-confirm {
   display: grid;
   gap: 12px;
@@ -2183,7 +2190,7 @@ h3 {
 }
 
 .admin-distance-update {
-  grid-template-columns: minmax(0, 1fr) 104px;
+  grid-template-columns: minmax(150px, 1fr) auto;
 }
 
 .admin-status-update button,
@@ -2196,6 +2203,12 @@ h3 {
   background: #1f5ea8;
   font-weight: 800;
   cursor: pointer;
+}
+
+.admin-distance-update button {
+  min-width: 96px;
+  padding: 0 12px;
+  white-space: nowrap;
 }
 
 .admin-status-update button {

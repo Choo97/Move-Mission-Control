@@ -56,6 +56,14 @@ const statusButtonLabel = (option: AdminReservationStatusOptionResponse) => {
     return '확정 처리'
   }
 
+  if (option.status === 'CONSULTING') {
+    return '상담 중으로 변경'
+  }
+
+  if (option.status === 'ESTIMATE_SENT') {
+    return '견적 안내로 변경'
+  }
+
   return `${option.statusLabel}로 변경`
 }
 
