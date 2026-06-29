@@ -1161,7 +1161,7 @@ h3 {
 
 .admin-workflow-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 10px;
 }
 
@@ -1271,7 +1271,7 @@ h3 {
 
 .admin-notification-summary-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
   gap: 10px;
   margin-bottom: 12px;
 }
@@ -1466,7 +1466,7 @@ h3 {
 
 .admin-history-columns {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 12px;
 }
 
@@ -1790,6 +1790,31 @@ h3 {
   margin: 0;
 }
 
+.admin-detail-panel .admin-section-heading {
+  align-items: start;
+  flex-wrap: wrap;
+  margin: 0 0 14px;
+}
+
+.admin-detail-panel .admin-section-heading > div:first-child {
+  min-width: 0;
+}
+
+.admin-detail-panel .admin-section-count,
+.admin-detail-panel .admin-notification-actions {
+  flex: 1 1 100%;
+  max-width: none;
+  width: 100%;
+}
+
+.admin-detail-panel .admin-section-count {
+  border-radius: 6px;
+}
+
+.admin-detail-panel .admin-notification-actions {
+  justify-content: start;
+}
+
 .admin-notification-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1881,7 +1906,7 @@ h3 {
 
 .admin-notification-meta-grid {
   display: grid;
-  grid-template-columns: 1.1fr repeat(2, minmax(0, 0.95fr));
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
   gap: 8px;
 }
 
@@ -2177,6 +2202,15 @@ h3 {
   background: #ffffff;
   font-size: 12px;
   font-weight: 800;
+}
+
+.admin-detail-panel .admin-status-result {
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
+.admin-detail-panel .admin-status-result-meta {
+  justify-content: start;
 }
 
 .admin-status-confirm-actions {
