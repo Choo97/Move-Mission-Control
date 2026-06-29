@@ -1,6 +1,8 @@
 import type { MoveType, ReservationCustomerRequestResponse, ReservationStatus } from './reservation'
 
 export type AdminReservationSort = 'PRIORITY' | 'MOVE_DATE' | 'CREATED_DESC'
+export type AdminNotificationChannel = 'SMS' | 'EMAIL' | 'KAKAO_ALIMTALK'
+export type AdminNotificationStatus = 'READY' | 'SENT' | 'FAILED'
 
 export type AdminReservationListItemResponse = {
   id: number
@@ -74,9 +76,9 @@ export type AdminNotificationHistoryResponse = {
   id: number
   type: string
   typeLabel: string
-  channel: 'SMS' | 'EMAIL' | 'KAKAO_ALIMTALK'
+  channel: AdminNotificationChannel
   channelLabel: string
-  status: 'READY' | 'SENT' | 'FAILED'
+  status: AdminNotificationStatus
   statusLabel: string
   recipientContact: string
   message: string
@@ -94,14 +96,39 @@ export type AdminNotificationActionItemResponse = {
   moveTime: string
   type: string
   typeLabel: string
-  channel: 'SMS' | 'EMAIL' | 'KAKAO_ALIMTALK'
+  channel: AdminNotificationChannel
   channelLabel: string
-  status: 'READY' | 'SENT' | 'FAILED'
+  status: AdminNotificationStatus
   statusLabel: string
   recipientContact: string
   message: string
   failureReason: string | null
   createdAt: string
+}
+
+export type AdminNotificationListItemResponse = {
+  id: number
+  reservationId: number
+  customerName: string
+  phone: string
+  email: string | null
+  type: string
+  typeLabel: string
+  channel: AdminNotificationChannel
+  channelLabel: string
+  status: AdminNotificationStatus
+  statusLabel: string
+  recipientContact: string
+  message: string
+  failureReason: string | null
+  sentAt: string | null
+  createdAt: string
+}
+
+export type AdminNotificationListQuery = {
+  channel?: AdminNotificationChannel
+  status?: AdminNotificationStatus
+  keyword?: string
 }
 
 export type AdminAuditLogResponse = {

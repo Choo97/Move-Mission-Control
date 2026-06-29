@@ -151,6 +151,37 @@ class AdminReservationApiControllerTest {
     }
 
     @Test
+    void 관리자_알림이력_API도_로그인이_필요하다() throws Exception {
+        mockMvc.perform(get("/api/admin/notifications"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void 관리자_알림이력_API는_필터와_검색어를_적용한다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("알림검색고객", "010-7777-1111"));
+
+        mockMvc.perform(post("/api/admin/reservations/{id}/notifications/email/send", reservation.getId())
+                        .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/admin/notifications")
+                        .param("channel", "EMAIL")
+                        .param("status", "FAILED")
+                        .param("keyword", "알림검색")
+                        .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].reservationId").value(reservation.getId()))
+                .andExpect(jsonPath("$[0].customerName").value("알림검색고객"))
+                .andExpect(jsonPath("$[0].phone").value("010-7777-1111"))
+                .andExpect(jsonPath("$[0].email").value("admin-api@example.com"))
+                .andExpect(jsonPath("$[0].channel").value("EMAIL"))
+                .andExpect(jsonPath("$[0].status").value("FAILED"))
+                .andExpect(jsonPath("$[0].recipientContact").value("admin-api@example.com"))
+                .andExpect(jsonPath("$[0].message").isString())
+                .andExpect(jsonPath("$[0].createdAt").isString());
+    }
+
+    @Test
     void 관리자_알림처리대상_API는_실패와_대기알림을_우선순위로_조회한다() throws Exception {
         var reservation = reservationService.create(reservationCreateRequest("알림처리대상고객", "010-7777-0000"));
 

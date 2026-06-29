@@ -623,6 +623,36 @@ h3 {
   margin-bottom: 20px;
 }
 
+.admin-console-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #dce6f2;
+}
+
+.admin-console-nav a {
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  padding: 10px 14px;
+  color: #5e6f84;
+  font-size: 14px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.admin-console-nav a.active {
+  border-color: #dce6f2;
+  color: #172033;
+  background: #ffffff;
+}
+
+.admin-console-nav a:hover {
+  color: #172033;
+  background: #f8fbff;
+}
+
 .admin-row-link {
   color: #172033;
   font-size: 14px;
@@ -893,6 +923,165 @@ h3 {
   white-space: nowrap;
 }
 
+.admin-notification-view {
+  width: 100%;
+}
+
+.admin-notification-summary-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.admin-notification-summary-row article {
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  padding: 14px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(30, 64, 114, 0.07);
+}
+
+.admin-notification-summary-row span {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-notification-summary-row strong {
+  display: block;
+  margin-top: 8px;
+  color: #172033;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.admin-notification-summary-row p {
+  margin: 8px 0 0;
+  color: #30445f;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.admin-notification-filters {
+  display: grid;
+  grid-template-columns: 150px 150px minmax(220px, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 16px;
+  border: 1px solid #e5ddd5;
+  border-radius: 8px;
+  padding: 16px;
+  background: #ffffff;
+}
+
+.admin-notification-filter-actions,
+.admin-notification-quick-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-notification-filter-actions button,
+.admin-notification-quick-filters button {
+  border: 1px solid #dce6f2;
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: #172033;
+  background: #ffffff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-notification-filter-actions button[type='submit'] {
+  border-color: #1f5ea8;
+  color: #ffffff;
+  background: #1f5ea8;
+}
+
+.admin-notification-filter-actions button:hover,
+.admin-notification-quick-filters button:hover {
+  border-color: #1f5ea8;
+  color: #ffffff;
+  background: #174a86;
+}
+
+.admin-notification-quick-filters {
+  grid-column: 1 / -1;
+}
+
+.admin-notification-history-table {
+  width: 100%;
+  min-width: 1180px;
+  border-collapse: collapse;
+}
+
+.admin-notification-history-table th,
+.admin-notification-history-table td {
+  border-bottom: 1px solid #eee5dc;
+  padding: 13px 14px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-notification-history-table th {
+  color: #71665e;
+  background: #fffaf6;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.admin-notification-history-table td {
+  color: #24211e;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.admin-notification-history-table tr.failed td:first-child {
+  border-left: 4px solid #374151;
+}
+
+.admin-notification-history-table tr.ready td:first-child {
+  border-left: 4px solid #1f5ea8;
+}
+
+.admin-notification-history-table td strong,
+.admin-notification-history-table td span {
+  display: block;
+}
+
+.admin-notification-history-table td span {
+  margin-top: 5px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.admin-notification-history-table .history-badge {
+  display: inline-block;
+  width: fit-content;
+  margin-top: 0;
+  border-radius: 999px;
+  padding: 5px 8px;
+  color: #30445f;
+  background: #e5f0fb;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-notification-history-table .history-badge.sent {
+  color: #14532d;
+  background: #dcfce7;
+}
+
+.admin-notification-history-table .history-badge.failed {
+  color: #172033;
+  background: #e5e7eb;
+}
+
 .admin-conflict-attempts {
   display: grid;
   grid-template-columns: minmax(220px, 0.7fr) minmax(0, 1.8fr);
@@ -1040,6 +1229,16 @@ h3 {
 }
 
 @media (max-width: 900px) {
+  .admin-notification-summary-row,
+  .admin-notification-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .admin-notification-filter-actions,
+  .admin-notification-quick-filters {
+    grid-column: 1 / -1;
+  }
+
   .admin-notification-action-heading {
     flex-direction: column;
   }

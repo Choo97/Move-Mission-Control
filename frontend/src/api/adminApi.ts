@@ -3,6 +3,8 @@ import type {
   ApiErrorResponse,
   AdminEmailSendResponse,
   AdminNotificationActionItemResponse,
+  AdminNotificationListItemResponse,
+  AdminNotificationListQuery,
   AdminReservationConflictAttemptResponse,
   AdminReservationDetailResponse,
   AdminReservationListQuery,
@@ -165,6 +167,25 @@ export async function getAdminNotificationActionItems(limit = 8) {
   }
 
   return response.json() as Promise<AdminNotificationActionItemResponse[]>
+}
+
+export async function getAdminNotifications(query: AdminNotificationListQuery = {}) {
+  const params = new URLSearchParams()
+  appendQueryParam(params, 'channel', query.channel)
+  appendQueryParam(params, 'status', query.status)
+  appendQueryParam(params, 'keyword', query.keyword)
+
+  const queryString = params.toString()
+  const response = await fetch(
+    `${API_BASE_URL}/api/admin/notifications${queryString ? `?${queryString}` : ''}`,
+    { credentials: 'include' },
+  )
+
+  if (!response.ok) {
+    await throwApiError(response, '관리자 알림 이력을 불러오지 못했습니다.')
+  }
+
+  return response.json() as Promise<AdminNotificationListItemResponse[]>
 }
 
 export async function getAdminReservation(reservationId: number) {

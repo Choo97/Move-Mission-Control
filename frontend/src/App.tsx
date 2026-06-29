@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import './App.css'
 import { AdminLoginView } from './components/AdminLoginView'
+import { AdminNotificationListView } from './components/AdminNotificationListView'
 import { AdminReservationListView } from './components/AdminReservationListView'
 import { ReservationCreateForm } from './components/ReservationCreateForm'
 import { ReservationDetailPanel } from './components/ReservationDetailPanel'
@@ -50,7 +51,6 @@ const getViewFromUrl = (): ActiveView => {
 
 const isAdminRoute = () => window.location.pathname.startsWith('/admin')
 const isLoginRoute = () => window.location.pathname === '/login'
-
 const adminRouteSearch = () => {
   const params = new URLSearchParams(window.location.search)
   params.delete('view')
@@ -80,6 +80,7 @@ const formatPhoneNumber = (value: string) => {
 function App() {
   const [adminRoute, setAdminRoute] = useState(isAdminRoute)
   const [loginRoute, setLoginRoute] = useState(isLoginRoute)
+  const [currentPath, setCurrentPath] = useState(window.location.pathname)
   const [activeView, setActiveView] = useState<ActiveView>(getViewFromUrl)
   const [form, setForm] = useState<ReservationForm>(loadReservationDraft)
   const [searchForm, setSearchForm] = useState<ReservationSearchForm>(getInitialSearchForm)
@@ -120,6 +121,7 @@ function App() {
 
       setAdminRoute(isAdminRoute())
       setLoginRoute(isLoginRoute())
+      setCurrentPath(window.location.pathname)
       setActiveView(getViewFromUrl())
     }
 
@@ -393,7 +395,8 @@ function App() {
   if (adminRoute) {
     return (
       <main className="app-shell">
-        <AdminReservationListView />
+        <AdminConsoleNav activeView={currentPath.startsWith('/admin/notifications') ? 'notifications' : 'reservations'} />
+        {currentPath.startsWith('/admin/notifications') ? <AdminNotificationListView /> : <AdminReservationListView />}
       </main>
     )
   }
@@ -559,6 +562,19 @@ function App() {
       )}
       <SiteFooter />
     </main>
+  )
+}
+
+function AdminConsoleNav({ activeView }: { activeView: 'reservations' | 'notifications' }) {
+  return (
+    <nav className="admin-console-nav" aria-label="관리자 메뉴">
+      <a className={activeView === 'reservations' ? 'active' : ''} href="/admin/reservations">
+        예약 관리
+      </a>
+      <a className={activeView === 'notifications' ? 'active' : ''} href="/admin/notifications">
+        알림 이력
+      </a>
+    </nav>
   )
 }
 

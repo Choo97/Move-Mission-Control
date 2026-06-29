@@ -1,6 +1,8 @@
 package com.moving.reservation.admin;
 
 import com.moving.reservation.notification.CustomerNotificationService;
+import com.moving.reservation.notification.NotificationChannel;
+import com.moving.reservation.notification.NotificationStatus;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +17,16 @@ public class AdminNotificationApiController {
 
     public AdminNotificationApiController(CustomerNotificationService customerNotificationService) {
         this.customerNotificationService = customerNotificationService;
+    }
+
+    @GetMapping
+    public List<AdminNotificationListItemResponse> list(@RequestParam(required = false) NotificationChannel channel,
+                                                        @RequestParam(required = false) NotificationStatus status,
+                                                        @RequestParam(required = false) String keyword) {
+        return customerNotificationService.search(channel, status, keyword)
+                .stream()
+                .map(AdminNotificationListItemResponse::from)
+                .toList();
     }
 
     @GetMapping("/action-items")

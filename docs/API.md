@@ -39,6 +39,8 @@ React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 기능 
 | 고객 리뷰 | `POST` | `/api/reviews` | 완료 예약 리뷰 작성 |
 | 관리자 고객 요청 | `POST` | `/api/admin/reservations/customer-requests/{requestId}/approve` | 고객 수정/취소 요청 승인 |
 | 관리자 고객 요청 | `POST` | `/api/admin/reservations/customer-requests/{requestId}/reject` | 고객 수정/취소 요청 반려 |
+| 관리자 알림 | `GET` | `/api/admin/notifications` | 전체 알림 이력 조회 |
+| 관리자 알림 | `GET` | `/api/admin/notifications/action-items` | 실패/발송 대기 알림 처리 대상 조회 |
 | 관리자 알림 | `POST` | `/api/admin/reservations/{reservationId}/notifications/email/send` | 준비 이메일 발송 |
 | 관리자 알림 | `POST` | `/api/admin/reservations/{reservationId}/notifications/email/resend-failed` | 실패 이메일 재발송 |
 | 관리자 알림 | `POST` | `/api/admin/reservations/{reservationId}/notifications/sms/send` | 준비 SMS 발송 |
@@ -269,6 +271,49 @@ Content-Type: application/json
 ```
 
 반려 사유는 필수입니다. 고객 요청 이력에는 `REJECTED` 상태와 반려 사유가 남습니다.
+
+## 관리자 알림 API
+
+관리자 알림 API는 로그인한 관리자만 호출할 수 있습니다. React 관리자 화면에서는 예약 상세의 알림 이력과 별도로, 전체 알림 이력과 처리 대상 알림을 확인할 때 사용합니다.
+
+### 전체 알림 이력 조회
+
+```http
+GET /api/admin/notifications?channel=EMAIL&status=FAILED&keyword=홍길동
+```
+
+채널, 상태, 검색어는 모두 선택값입니다. 검색어는 고객명, 연락처, 이메일, 알림 수신처에 적용됩니다.
+
+```json
+[
+  {
+    "id": 1,
+    "reservationId": 10,
+    "customerName": "홍길동",
+    "phone": "010-1234-5678",
+    "email": "customer@example.com",
+    "type": "RESERVATION_CREATED",
+    "typeLabel": "예약 접수",
+    "channel": "EMAIL",
+    "channelLabel": "이메일",
+    "status": "FAILED",
+    "statusLabel": "발송 실패",
+    "recipientContact": "customer@example.com",
+    "message": "예약이 접수되었습니다.",
+    "failureReason": "이메일 발송 설정이 비활성화되어 있습니다.",
+    "sentAt": null,
+    "createdAt": "2026-06-29T18:00:00"
+  }
+]
+```
+
+### 알림 처리 대상 조회
+
+```http
+GET /api/admin/notifications/action-items?limit=8
+```
+
+실패 알림과 발송 대기 알림만 조회합니다. 실패 알림은 고객에게 안내가 전달되지 않았을 수 있으므로 발송 대기 알림보다 먼저 응답합니다.
 
 ## 고객 안내 API
 
