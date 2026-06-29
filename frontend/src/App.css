@@ -1545,6 +1545,158 @@ h3 {
   font-weight: 700;
 }
 
+.admin-status-timeline {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-status-timeline li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 10px;
+  padding-bottom: 12px;
+}
+
+.admin-status-timeline li:last-child {
+  padding-bottom: 0;
+}
+
+.admin-status-timeline li:not(:last-child)::before {
+  position: absolute;
+  top: 34px;
+  bottom: -2px;
+  left: 20px;
+  width: 2px;
+  background: #dce6f2;
+  content: "";
+}
+
+.admin-status-timeline-marker {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.admin-status-timeline-marker span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #cfe0f3;
+  border-radius: 999px;
+  color: #1f5ea8;
+  background: #eef6ff;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.admin-status-timeline li.latest .admin-status-timeline-marker span {
+  border-color: #1f5ea8;
+  color: #ffffff;
+  background: #1f5ea8;
+}
+
+.admin-status-timeline-body {
+  min-width: 0;
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.admin-status-timeline li.latest .admin-status-timeline-body {
+  border-color: #b8d1ec;
+  background: #f4f9ff;
+}
+
+.admin-status-timeline-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.admin-status-timeline-heading strong {
+  min-width: 0;
+  color: #172033;
+  font-size: 15px;
+}
+
+.admin-status-timeline-heading .history-badge.current {
+  display: inline-flex;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 4px 8px;
+  color: #1f5ea8;
+  background: #dcecff;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.admin-status-transition {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 9px;
+}
+
+.admin-status-transition span {
+  border: 1px solid #e0eaf4;
+  border-radius: 999px;
+  padding: 5px 8px;
+  color: #30445f;
+  background: #f8fbff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-status-transition b {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.admin-status-timeline-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.admin-status-timeline-meta div {
+  min-width: 0;
+  border: 1px solid #e0eaf4;
+  border-radius: 6px;
+  padding: 8px;
+  background: #fbfdff;
+}
+
+.admin-status-timeline-meta span,
+.admin-status-timeline-meta strong {
+  display: block;
+}
+
+.admin-status-timeline-meta span {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.admin-status-timeline-meta strong {
+  overflow-wrap: anywhere;
+  margin-top: 3px;
+  color: #172033;
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .admin-history-heading {
   display: flex;
   align-items: start;
@@ -3130,6 +3282,33 @@ dd {
   }
 
   .admin-task-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-status-timeline {
+    gap: 10px;
+  }
+
+  .admin-status-timeline li {
+    grid-template-columns: 34px minmax(0, 1fr);
+    padding-bottom: 0;
+  }
+
+  .admin-status-timeline li:not(:last-child)::before {
+    display: none;
+  }
+
+  .admin-status-timeline-marker span {
+    width: 32px;
+    height: 32px;
+    font-size: 10px;
+  }
+
+  .admin-status-timeline-heading {
+    flex-direction: column;
+  }
+
+  .admin-status-timeline-meta {
     grid-template-columns: 1fr;
   }
 }

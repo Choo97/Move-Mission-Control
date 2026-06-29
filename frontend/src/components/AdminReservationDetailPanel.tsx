@@ -881,15 +881,33 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
               <article className="admin-history-card">
                 <h4>상태 이력</h4>
                 {reservation.statusHistories.length > 0 ? (
-                  <ul className="admin-history-list">
-                    {reservation.statusHistories.map((history) => (
-                      <li key={history.id}>
-                        <strong>
-                          {history.previousStatusLabel} → {history.changedStatusLabel}
-                        </strong>
-                        <span>
-                          {formatDateTime(history.changedAt)} · {history.changedBy ?? 'system'}
-                        </span>
+                  <ul className="admin-status-timeline" aria-label="예약 상태 변경 타임라인">
+                    {reservation.statusHistories.map((history, index) => (
+                      <li key={history.id} className={index === 0 ? 'latest' : undefined}>
+                        <div className="admin-status-timeline-marker" aria-hidden="true">
+                          <span>{index === 0 ? '최근' : reservation.statusHistories.length - index}</span>
+                        </div>
+                        <div className="admin-status-timeline-body">
+                          <div className="admin-status-timeline-heading">
+                            <strong>{history.changedStatusLabel}</strong>
+                            {index === 0 && <span className="history-badge current">최근 변경</span>}
+                          </div>
+                          <div className="admin-status-transition">
+                            <span>{history.previousStatusLabel}</span>
+                            <b aria-hidden="true">→</b>
+                            <span>{history.changedStatusLabel}</span>
+                          </div>
+                          <div className="admin-status-timeline-meta">
+                            <div>
+                              <span>변경 시각</span>
+                              <strong>{formatDateTime(history.changedAt)}</strong>
+                            </div>
+                            <div>
+                              <span>변경자</span>
+                              <strong>{history.changedBy ?? '시스템'}</strong>
+                            </div>
+                          </div>
+                        </div>
                       </li>
                     ))}
                   </ul>
