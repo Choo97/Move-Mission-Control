@@ -1368,7 +1368,7 @@ h3 {
 
 .admin-site-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 12px;
 }
 
@@ -1417,7 +1417,7 @@ h3 {
 
 .admin-photo-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 10px;
   margin-top: 14px;
 }
@@ -1426,6 +1426,10 @@ h3 {
   display: grid;
   gap: 7px;
   min-width: 0;
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  padding: 8px;
+  background: #ffffff;
   color: #534941;
   text-decoration: none;
 }
@@ -1433,8 +1437,7 @@ h3 {
 .admin-photo-card img {
   width: 100%;
   aspect-ratio: 1 / 1;
-  border: 1px solid #dce6f2;
-  border-radius: 8px;
+  border-radius: 6px;
   object-fit: cover;
   background: #fffdfb;
 }
@@ -1445,8 +1448,15 @@ h3 {
   color: #5e6f84;
   font-size: 12px;
   font-weight: 800;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.admin-photo-card span {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .admin-photo-card small {
