@@ -145,6 +145,35 @@ class AdminReservationApiControllerTest {
     }
 
     @Test
+    void 관리자_알림처리대상_API도_로그인이_필요하다() throws Exception {
+        mockMvc.perform(get("/api/admin/notifications/action-items"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void 관리자_알림처리대상_API는_실패와_대기알림을_우선순위로_조회한다() throws Exception {
+        var reservation = reservationService.create(reservationCreateRequest("알림처리대상고객", "010-7777-0000"));
+
+        mockMvc.perform(post("/api/admin/reservations/{id}/notifications/email/send", reservation.getId())
+                        .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.failedCount").value(1));
+
+        mockMvc.perform(get("/api/admin/notifications/action-items")
+                        .param("limit", "5")
+                        .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].reservationId").value(reservation.getId()))
+                .andExpect(jsonPath("$[0].customerName").value("알림처리대상고객"))
+                .andExpect(jsonPath("$[0].status").value("FAILED"))
+                .andExpect(jsonPath("$[0].channel").value("EMAIL"))
+                .andExpect(jsonPath("$[0].failureReason").value("이메일 발송 설정이 비활성화되어 있습니다."))
+                .andExpect(jsonPath("$[1].reservationId").value(reservation.getId()))
+                .andExpect(jsonPath("$[1].status").value("READY"))
+                .andExpect(jsonPath("$[1].channel").value("SMS"));
+    }
+
+    @Test
     void 관리자_예약상태_API는_상태를_변경하고_상세를_JSON으로_응답한다() throws Exception {
         var reservation = reservationService.create(reservationCreateRequest("상태변경고객", "010-1111-9999"));
 

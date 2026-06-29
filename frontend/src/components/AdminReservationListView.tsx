@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
   AdminAuthenticationRequiredError,
+  getAdminNotificationActionItems,
   getAdminSession,
   getAdminReservationConflictAttempts,
   getAdminReservations,
@@ -12,6 +13,7 @@ import { AdminReservationDetailPanel } from './AdminReservationDetailPanel'
 import { StatusNotice } from './StatusNotice'
 import type {
   AdminDashboardTaskSummary,
+  AdminNotificationActionItemResponse,
   AdminReservationListQuery,
   AdminReservationPageResponse,
   AdminReservationConflictAttemptResponse,
@@ -38,6 +40,7 @@ const sortOptions: Array<{ value: AdminReservationSort; label: string }> = [
 const pageSizeOptions = [10, 20, 50]
 const adminReservationListPath = '/admin/reservations'
 const formatNullablePrice = (price: number | null) => (price === null ? '견적 확인 전' : `${price.toLocaleString()}원`)
+const formatDateTime = (dateTime: string) => dateTime.replace('T', ' ').slice(0, 16)
 
 const readReservationIdFromPath = () => {
   const match = window.location.pathname.match(/^\/admin\/reservations\/(\d+)\/?$/)
@@ -88,6 +91,7 @@ export function AdminReservationListView() {
   const [keywordInput, setKeywordInput] = useState(() => readInitialAdminState().query.keyword ?? '')
   const [reservationPage, setReservationPage] = useState<AdminReservationPageResponse | null>(null)
   const [conflictAttempts, setConflictAttempts] = useState<AdminReservationConflictAttemptResponse[]>([])
+  const [notificationActionItems, setNotificationActionItems] = useState<AdminNotificationActionItemResponse[]>([])
   const [adminSession, setAdminSession] = useState<AdminSessionResponse | null>(null)
   const [selectedReservationId, setSelectedReservationId] = useState<number | null>(
     () => readInitialAdminState().selectedReservationId,
@@ -106,17 +110,20 @@ export function AdminReservationListView() {
 
       try {
         const nextAdminSession = await getAdminSession()
-        const [nextReservationPage, nextConflictAttempts] = await Promise.all([
+        const [nextReservationPage, nextConflictAttempts, nextNotificationActionItems] = await Promise.all([
           getAdminReservations(query),
           getAdminReservationConflictAttempts(),
+          getAdminNotificationActionItems(),
         ])
         setAdminSession(nextAdminSession)
         setReservationPage(nextReservationPage)
         setConflictAttempts(nextConflictAttempts)
+        setNotificationActionItems(nextNotificationActionItems)
       } catch (error) {
         setAdminSession(null)
         setReservationPage(null)
         setConflictAttempts([])
+        setNotificationActionItems([])
         if (error instanceof AdminAuthenticationRequiredError) {
           setIsAuthenticationRequired(true)
           setErrorMessage(getErrorMessage(error, '관리자 로그인이 필요합니다.'))
@@ -253,6 +260,13 @@ export function AdminReservationListView() {
 
       {!isAuthenticationRequired && reservationPage?.taskSummary && (
         <AdminTaskSummaryCards summary={reservationPage.taskSummary} />
+      )}
+
+      {!isAuthenticationRequired && notificationActionItems.length > 0 && (
+        <AdminNotificationActionItems
+          items={notificationActionItems}
+          onSelectReservation={(reservationId) => setSelectedReservationId(reservationId)}
+        />
       )}
 
       {!isAuthenticationRequired && conflictAttempts.length > 0 && (
@@ -547,6 +561,66 @@ function AdminTaskSummaryCards({ summary }: { summary: AdminDashboardTaskSummary
           </article>
         ))}
       </div>
+    </section>
+  )
+}
+
+function AdminNotificationActionItems({
+  items,
+  onSelectReservation,
+}: {
+  items: AdminNotificationActionItemResponse[]
+  onSelectReservation: (reservationId: number) => void
+}) {
+  const failedCount = items.filter((item) => item.status === 'FAILED').length
+  const readyCount = items.filter((item) => item.status === 'READY').length
+
+  return (
+    <section className="admin-notification-action-panel" aria-labelledby="admin-notification-action-title">
+      <div className="admin-notification-action-heading">
+        <div>
+          <p className="eyebrow">Notification Focus</p>
+          <h3 id="admin-notification-action-title">알림 처리 대상</h3>
+          <p>실패했거나 아직 발송하지 않은 고객 안내를 먼저 확인합니다.</p>
+        </div>
+        <div className="admin-notification-action-summary" aria-label="알림 처리 대상 요약">
+          <span>실패 {failedCount}건</span>
+          <span>발송 대기 {readyCount}건</span>
+        </div>
+      </div>
+      <ul className="admin-notification-action-list">
+        {items.map((item) => (
+          <li key={item.id} className={item.status.toLowerCase()}>
+            <div className="admin-notification-action-main">
+              <span className={`admin-notification-action-status ${item.status.toLowerCase()}`}>
+                {item.status === 'FAILED' ? '재확인 필요' : '발송 대기'}
+              </span>
+              <strong>
+                #{item.reservationId} {item.customerName}
+              </strong>
+              <p>{item.message}</p>
+              {item.failureReason && <p className="admin-notification-action-failure">실패 사유: {item.failureReason}</p>}
+            </div>
+            <div className="admin-notification-action-meta">
+              <span>{item.channelLabel}</span>
+              <span>{item.typeLabel}</span>
+              <span>
+                {item.moveDate} {item.moveTime.slice(0, 5)}
+              </span>
+              <span>{formatDateTime(item.createdAt)}</span>
+            </div>
+            <a
+              href={adminReservationPath(item.reservationId)}
+              onClick={(event) => {
+                event.preventDefault()
+                onSelectReservation(item.reservationId)
+              }}
+            >
+              예약 상세
+            </a>
+          </li>
+        ))}
+      </ul>
     </section>
   )
 }

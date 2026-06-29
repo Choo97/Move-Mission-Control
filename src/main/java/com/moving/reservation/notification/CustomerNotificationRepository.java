@@ -1,5 +1,6 @@
 package com.moving.reservation.notification;
 
+import java.util.Collection;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,6 +17,15 @@ public interface CustomerNotificationRepository extends JpaRepository<CustomerNo
     );
 
     long countByChannelAndStatus(NotificationChannel channel, NotificationStatus status);
+
+    @Query("""
+            select notification
+            from CustomerNotification notification
+            join fetch notification.reservation reservation
+            where notification.status in :statuses
+            order by notification.createdAt desc
+            """)
+    List<CustomerNotification> findByStatusInFetchReservation(@Param("statuses") Collection<NotificationStatus> statuses);
 
     @Query("""
             select notification

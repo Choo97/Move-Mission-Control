@@ -4,6 +4,7 @@ export type {
   AdminDashboardTaskSummary,
   AdminAuditLogResponse,
   AdminEmailSendResponse,
+  AdminNotificationActionItemResponse,
   AdminNotificationSendResponse,
   AdminNotificationHistoryResponse,
   AdminReservationCustomerActionHistoryResponse,

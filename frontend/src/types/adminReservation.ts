@@ -85,6 +85,25 @@ export type AdminNotificationHistoryResponse = {
   createdAt: string
 }
 
+export type AdminNotificationActionItemResponse = {
+  id: number
+  reservationId: number
+  customerName: string
+  phone: string
+  moveDate: string
+  moveTime: string
+  type: string
+  typeLabel: string
+  channel: 'SMS' | 'EMAIL' | 'KAKAO_ALIMTALK'
+  channelLabel: string
+  status: 'READY' | 'SENT' | 'FAILED'
+  statusLabel: string
+  recipientContact: string
+  message: string
+  failureReason: string | null
+  createdAt: string
+}
+
 export type AdminAuditLogResponse = {
   id: number
   action: string

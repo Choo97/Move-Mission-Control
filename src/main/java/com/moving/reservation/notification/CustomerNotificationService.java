@@ -3,6 +3,7 @@ package com.moving.reservation.notification;
 import com.moving.reservation.reservation.Reservation;
 import com.moving.reservation.reservation.ReservationStatus;
 import java.text.NumberFormat;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import org.springframework.stereotype.Service;
@@ -69,6 +70,19 @@ public class CustomerNotificationService {
 
     public List<CustomerNotification> search(NotificationChannel channel, NotificationStatus status, String keyword) {
         return customerNotificationRepository.search(channel, status, normalizeKeyword(keyword));
+    }
+
+    public List<CustomerNotification> findActionRequired(int limit) {
+        int selectedLimit = limit <= 0 ? 8 : Math.min(limit, 20);
+
+        return customerNotificationRepository
+                .findByStatusInFetchReservation(List.of(NotificationStatus.FAILED, NotificationStatus.READY))
+                .stream()
+                .sorted(Comparator
+                        .comparingInt((CustomerNotification notification) -> notificationStatusPriority(notification.getStatus()))
+                        .thenComparing(CustomerNotification::getCreatedAt, Comparator.reverseOrder()))
+                .limit(selectedLimit)
+                .toList();
     }
 
     public long countFailedEmails() {
@@ -186,5 +200,17 @@ public class CustomerNotificationService {
         }
 
         return trimmedKeyword.toLowerCase();
+    }
+
+    private int notificationStatusPriority(NotificationStatus status) {
+        if (status == NotificationStatus.FAILED) {
+            return 0;
+        }
+
+        if (status == NotificationStatus.READY) {
+            return 1;
+        }
+
+        return 2;
     }
 }
