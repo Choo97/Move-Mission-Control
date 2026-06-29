@@ -1269,6 +1269,70 @@ h3 {
   font-weight: 900;
 }
 
+.admin-notification-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.admin-notification-summary-card {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  padding: 12px;
+  background: #f8fbff;
+}
+
+.admin-notification-summary-card span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-notification-summary-card strong {
+  color: #172033;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.admin-notification-summary-card p {
+  margin: 0;
+  color: #5e6f84;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.admin-notification-summary-card.ready {
+  border-color: #b8d1ec;
+  background: #eef6ff;
+}
+
+.admin-notification-summary-card.sent {
+  border-color: #c8e6d1;
+  background: #f1faf4;
+}
+
+.admin-notification-summary-card.failed {
+  border-color: #cfd8e3;
+  background: #f3f4f6;
+}
+
+.admin-notification-guide {
+  margin: 0 0 12px;
+  border: 1px solid #dce6f2;
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: #30445f;
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
 .admin-operation-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1740,6 +1804,125 @@ h3 {
   opacity: 0.5;
 }
 
+.admin-notification-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-notification-item {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  border: 1px solid #dce6f2;
+  border-left: 4px solid #cfd8e3;
+  border-radius: 8px;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.admin-notification-item.ready {
+  border-left-color: #1f5ea8;
+  background: #f8fbff;
+}
+
+.admin-notification-item.sent {
+  border-left-color: #2e7d46;
+}
+
+.admin-notification-item.failed {
+  border-left-color: #374151;
+  background: #f7f8fa;
+}
+
+.admin-notification-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.admin-notification-heading > div:first-child {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.admin-notification-heading > div:first-child span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-notification-heading strong {
+  color: #172033;
+  font-size: 15px;
+}
+
+.admin-notification-badges {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.admin-notification-meta-grid {
+  display: grid;
+  grid-template-columns: 1.1fr repeat(2, minmax(0, 0.95fr));
+  gap: 8px;
+}
+
+.admin-notification-meta-grid div {
+  min-width: 0;
+  border: 1px solid #e0eaf4;
+  border-radius: 6px;
+  padding: 8px;
+  background: #fbfdff;
+}
+
+.admin-notification-meta-grid span,
+.admin-notification-meta-grid strong {
+  display: block;
+}
+
+.admin-notification-meta-grid span {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.admin-notification-meta-grid strong {
+  overflow-wrap: anywhere;
+  margin-top: 3px;
+  color: #172033;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.admin-notification-message,
+.admin-notification-failure {
+  margin: 0;
+  color: #30445f;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.admin-notification-message {
+  font-weight: 700;
+}
+
+.admin-notification-failure {
+  border: 1px solid #cfd8e3;
+  border-radius: 6px;
+  padding: 9px 10px;
+  color: #172033;
+  background: #ffffff;
+  font-weight: 900;
+}
+
 .admin-history-heading div {
   display: flex;
   gap: 5px;
@@ -1756,7 +1939,29 @@ h3 {
   font-weight: 900;
 }
 
+.admin-history-heading .history-badge.ready,
+.admin-notification-badges .history-badge.ready {
+  color: #1f5ea8;
+  background: #e5f0fb;
+}
+
+.admin-notification-badges .history-badge {
+  display: inline-flex;
+  margin-top: 0;
+  border-radius: 999px;
+  padding: 4px 7px;
+  color: #5f5149;
+  background: #efe7df;
+  font-size: 11px;
+  font-weight: 900;
+}
+
 .admin-history-heading .history-badge.sent {
+  color: #27623b;
+  background: #e9f6ed;
+}
+
+.admin-notification-badges .history-badge.sent {
   color: #27623b;
   background: #e9f6ed;
 }
@@ -1767,6 +1972,11 @@ h3 {
 }
 
 .admin-history-heading .history-badge.failed {
+  color: #172033;
+  background: #f3f4f6;
+}
+
+.admin-notification-badges .history-badge.failed {
   color: #172033;
   background: #f3f4f6;
 }
@@ -3051,6 +3261,19 @@ dd {
   }
 
   .admin-notification-actions {
+    justify-content: start;
+  }
+
+  .admin-notification-summary-grid,
+  .admin-notification-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-notification-heading {
+    flex-direction: column;
+  }
+
+  .admin-notification-badges {
     justify-content: start;
   }
 

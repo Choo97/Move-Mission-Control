@@ -16,7 +16,12 @@ import {
 import { getErrorMessage } from '../api/apiError'
 import { adminLoginHref, redirectToAdminExpiredLogin } from '../adminAuthNavigation'
 import { API_BASE_URL } from '../reservationData'
-import type { AdminReservationDetailResponse, AdminReservationStatusOptionResponse, ReservationStatus } from '../types'
+import type {
+  AdminNotificationHistoryResponse,
+  AdminReservationDetailResponse,
+  AdminReservationStatusOptionResponse,
+  ReservationStatus,
+} from '../types'
 
 type Props = {
   reservationId: number
@@ -94,6 +99,50 @@ const countNotifications = (
   reservation: AdminReservationDetailResponse,
   status: 'READY' | 'SENT' | 'FAILED',
 ) => reservation.notifications.filter((notification) => notification.status === status).length
+
+const notificationStatusPriority: Record<AdminNotificationHistoryResponse['status'], number> = {
+  FAILED: 0,
+  READY: 1,
+  SENT: 2,
+}
+
+const sortNotificationsForAdmin = (notifications: AdminNotificationHistoryResponse[]) =>
+  [...notifications].sort((left, right) => {
+    const priorityDifference = notificationStatusPriority[left.status] - notificationStatusPriority[right.status]
+
+    if (priorityDifference !== 0) {
+      return priorityDifference
+    }
+
+    return right.createdAt.localeCompare(left.createdAt)
+  })
+
+const getNotificationActionLabel = (notification: AdminNotificationHistoryResponse) => {
+  if (notification.status === 'FAILED') {
+    return '재발송 필요'
+  }
+
+  if (notification.status === 'READY') {
+    return `${notification.channelLabel} 발송 대기`
+  }
+
+  return '발송 완료'
+}
+
+const getNotificationGuide = (reservation: AdminReservationDetailResponse) => {
+  const failedCount = countNotifications(reservation, 'FAILED')
+  const readyCount = countNotifications(reservation, 'READY')
+
+  if (failedCount > 0) {
+    return '실패 알림을 먼저 확인하고 재발송 버튼으로 처리하세요.'
+  }
+
+  if (readyCount > 0) {
+    return '발송 대기 알림이 있습니다. 이메일 또는 SMS 발송 버튼으로 고객에게 안내하세요.'
+  }
+
+  return '지금 바로 처리할 알림은 없습니다. 발송 완료 이력만 확인하면 됩니다.'
+}
 
 const countCustomerRequests = (
   reservation: AdminReservationDetailResponse,
@@ -433,6 +482,41 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
 
   const nextStatusOptions = reservation?.selectableStatuses.filter((option) => !option.current) ?? []
   const currentStatusDescription = reservation?.selectableStatuses.find((option) => option.current)?.description
+  const notificationSummaryItems = reservation
+    ? [
+        {
+          status: 'READY' as const,
+          label: '발송 대기',
+          count: countNotifications(reservation, 'READY'),
+          description: '고객에게 아직 보내지 않은 안내',
+        },
+        {
+          status: 'SENT' as const,
+          label: '발송 완료',
+          count: countNotifications(reservation, 'SENT'),
+          description: '정상 발송 처리된 안내',
+        },
+        {
+          status: 'FAILED' as const,
+          label: '실패',
+          count: countNotifications(reservation, 'FAILED'),
+          description: '재발송 또는 설정 확인 필요',
+        },
+      ]
+    : []
+  const sortedNotifications = reservation ? sortNotificationsForAdmin(reservation.notifications) : []
+  const hasReadyEmail = reservation?.notifications.some(
+    (notification) => notification.channel === 'EMAIL' && notification.status === 'READY',
+  ) ?? false
+  const hasFailedEmail = reservation?.notifications.some(
+    (notification) => notification.channel === 'EMAIL' && notification.status === 'FAILED',
+  ) ?? false
+  const hasReadySms = reservation?.notifications.some(
+    (notification) => notification.channel === 'SMS' && notification.status === 'READY',
+  ) ?? false
+  const hasFailedSms = reservation?.notifications.some(
+    (notification) => notification.channel === 'SMS' && notification.status === 'FAILED',
+  ) ?? false
 
   return (
     <aside className="admin-detail-panel">
@@ -963,77 +1047,70 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
               <div className="admin-notification-actions">
                 <button
                   type="button"
-                  disabled={
-                    isSendingEmail ||
-                    !reservation.notifications.some(
-                      (notification) => notification.channel === 'EMAIL' && notification.status === 'READY',
-                    )
-                  }
+                  disabled={isSendingEmail || !hasReadyEmail}
                   onClick={sendReadyEmails}
                 >
                   {isSendingEmail ? '발송 중' : '준비 이메일 발송'}
                 </button>
                 <button
                   type="button"
-                  disabled={
-                    isResendingEmail ||
-                    !reservation.notifications.some(
-                      (notification) => notification.channel === 'EMAIL' && notification.status === 'FAILED',
-                    )
-                  }
+                  disabled={isResendingEmail || !hasFailedEmail}
                   onClick={resendFailedEmails}
                 >
                   {isResendingEmail ? '재발송 중' : '실패 이메일 재발송'}
                 </button>
-                <button
-                  type="button"
-                  disabled={
-                    isSendingSms ||
-                    !reservation.notifications.some(
-                      (notification) => notification.channel === 'SMS' && notification.status === 'READY',
-                    )
-                  }
-                  onClick={sendReadySms}
-                >
+                <button type="button" disabled={isSendingSms || !hasReadySms} onClick={sendReadySms}>
                   {isSendingSms ? '발송 중' : '준비 SMS 발송'}
                 </button>
-                <button
-                  type="button"
-                  disabled={
-                    isResendingSms ||
-                    !reservation.notifications.some(
-                      (notification) => notification.channel === 'SMS' && notification.status === 'FAILED',
-                    )
-                  }
-                  onClick={resendFailedSms}
-                >
+                <button type="button" disabled={isResendingSms || !hasFailedSms} onClick={resendFailedSms}>
                   {isResendingSms ? '재발송 중' : '실패 SMS 재발송'}
                 </button>
               </div>
             </div>
-            <div className="admin-history-summary">
-              <span>발송 대기 {countNotifications(reservation, 'READY')}건</span>
-              <span>발송 완료 {countNotifications(reservation, 'SENT')}건</span>
-              <span>실패 {countNotifications(reservation, 'FAILED')}건</span>
+            <div className="admin-notification-summary-grid">
+              {notificationSummaryItems.map((item) => (
+                <article key={item.status} className={`admin-notification-summary-card ${item.status.toLowerCase()}`}>
+                  <span>{item.label}</span>
+                  <strong>{item.count}건</strong>
+                  <p>{item.description}</p>
+                </article>
+              ))}
             </div>
+            <p className="admin-notification-guide">{getNotificationGuide(reservation)}</p>
             {reservation.notifications.length > 0 ? (
-              <ul className="admin-history-list notification-history-list">
-                {reservation.notifications.map((notification) => (
-                  <li key={notification.id}>
-                    <div className="admin-history-heading">
-                      <strong>{notification.typeLabel}</strong>
+              <ul className="admin-notification-list">
+                {sortedNotifications.map((notification) => (
+                  <li key={notification.id} className={`admin-notification-item ${notification.status.toLowerCase()}`}>
+                    <div className="admin-notification-heading">
                       <div>
+                        <span>{getNotificationActionLabel(notification)}</span>
+                        <strong>{notification.typeLabel}</strong>
+                      </div>
+                      <div className="admin-notification-badges">
                         <span className="history-badge">{notification.channelLabel}</span>
                         <span className={`history-badge ${notification.status.toLowerCase()}`}>
                           {notification.statusLabel}
                         </span>
                       </div>
                     </div>
-                    <span>
-                      {formatDateTime(notification.createdAt)} · {notification.recipientContact}
-                    </span>
-                    <p>{notification.message}</p>
-                    {notification.failureReason && <p className="history-error">{notification.failureReason}</p>}
+                    <div className="admin-notification-meta-grid">
+                      <div>
+                        <span>수신처</span>
+                        <strong>{notification.recipientContact}</strong>
+                      </div>
+                      <div>
+                        <span>생성</span>
+                        <strong>{formatDateTime(notification.createdAt)}</strong>
+                      </div>
+                      <div>
+                        <span>발송</span>
+                        <strong>{notification.sentAt ? formatDateTime(notification.sentAt) : '발송 전'}</strong>
+                      </div>
+                    </div>
+                    <p className="admin-notification-message">{notification.message}</p>
+                    {notification.failureReason && (
+                      <p className="admin-notification-failure">실패 사유: {notification.failureReason}</p>
+                    )}
                   </li>
                 ))}
               </ul>
