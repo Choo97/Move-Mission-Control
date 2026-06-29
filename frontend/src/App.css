@@ -1746,6 +1746,60 @@ h3 {
   line-height: 1.5;
 }
 
+.admin-status-result {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  margin: 16px 0 0;
+  border: 1px solid #b8d1ec;
+  border-left: 4px solid #1f5ea8;
+  border-radius: 6px;
+  padding: 14px;
+  background: #f4f9ff;
+  box-shadow: 0 10px 22px rgba(30, 64, 114, 0.08);
+}
+
+.admin-status-result-main {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-status-result-main span {
+  color: #667085;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.admin-status-result-main strong {
+  color: #172033;
+  font-size: 17px;
+}
+
+.admin-status-result-main p {
+  margin: 0;
+  color: #475467;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.admin-status-result-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.admin-status-result-meta span {
+  border: 1px solid #dce6f2;
+  border-radius: 999px;
+  padding: 7px 10px;
+  color: #344054;
+  background: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .admin-status-confirm-actions {
   display: flex;
   flex-wrap: wrap;
@@ -2804,6 +2858,14 @@ dd {
 
   .admin-master-detail {
     grid-template-columns: 1fr;
+  }
+
+  .admin-status-result {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-status-result-meta {
+    justify-content: start;
   }
 
   .admin-site-grid,

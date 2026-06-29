@@ -24,6 +24,13 @@ type Props = {
   onReservationChanged: () => void
 }
 
+type StatusUpdateNotice = {
+  previousStatusLabel: string
+  nextStatusLabel: string
+  nextTask: string
+  readyNotificationCount: number
+}
+
 const formatPrice = (price: number | null | undefined) => (price == null ? '견적 확인 전' : `${price.toLocaleString()}원`)
 const formatAdjustment = (price: number) => `${price > 0 ? '+' : ''}${price.toLocaleString()}원`
 const formatEstimateInput = (price: number | null) => (price === null ? '' : String(price))
@@ -93,6 +100,16 @@ const countCustomerRequests = (
   status: 'PENDING' | 'APPROVED' | 'REJECTED',
 ) => reservation.customerRequests.filter((request) => request.status === status).length
 
+const createStatusUpdateNotice = (
+  previousReservation: AdminReservationDetailResponse,
+  updatedReservation: AdminReservationDetailResponse,
+): StatusUpdateNotice => ({
+  previousStatusLabel: previousReservation.statusLabel,
+  nextStatusLabel: updatedReservation.statusLabel,
+  nextTask: getAdminNextTask(updatedReservation),
+  readyNotificationCount: countNotifications(updatedReservation, 'READY'),
+})
+
 export function AdminReservationDetailPanel({ reservationId, onClose, onReservationChanged }: Props) {
   const [reservation, setReservation] = useState<AdminReservationDetailResponse | null>(null)
   const [estimateAmount, setEstimateAmount] = useState('')
@@ -112,6 +129,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
   const [updatingStatus, setUpdatingStatus] = useState<ReservationStatus | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
   const [actionMessage, setActionMessage] = useState('')
+  const [statusUpdateNotice, setStatusUpdateNotice] = useState<StatusUpdateNotice | null>(null)
 
   const showAdminError = useCallback((error: unknown, fallbackMessage: string) => {
     if (error instanceof AdminAuthenticationRequiredError) {
@@ -125,10 +143,17 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
     setErrorMessage(getErrorMessage(error, fallbackMessage))
   }, [])
 
+  const clearActionFeedback = () => {
+    setActionMessage('')
+    setStatusUpdateNotice(null)
+  }
+
   useEffect(() => {
     const loadReservation = async () => {
       setIsLoading(true)
       setErrorMessage('')
+      setActionMessage('')
+      setStatusUpdateNotice(null)
       setReservation(null)
 
       try {
@@ -155,7 +180,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
 
     setUpdatingStatus(nextStatus)
     setErrorMessage('')
-    setActionMessage('')
+    clearActionFeedback()
 
     try {
       const updatedReservation = await updateAdminReservationStatus(reservation.id, nextStatus)
@@ -163,7 +188,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
       setEstimateAmount(formatEstimateInput(updatedReservation.estimatedPrice))
       setDistanceAmount(updatedReservation.distanceKm === null ? '' : String(updatedReservation.distanceKm))
       setPendingStatusOption(null)
-      setActionMessage(`예약 상태가 '${updatedReservation.statusLabel}'(으)로 변경되었습니다.`)
+      setStatusUpdateNotice(createStatusUpdateNotice(reservation, updatedReservation))
       onReservationChanged()
     } catch (error) {
       showAdminError(error, '관리자 예약 상태 변경에 실패했습니다.')
@@ -181,19 +206,19 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
 
     if (estimateAmount.trim() === '' || Number.isNaN(nextEstimateAmount)) {
       setErrorMessage('견적 금액을 숫자로 입력해 주세요.')
-      setActionMessage('')
+      clearActionFeedback()
       return
     }
 
     if (nextEstimateAmount < 0) {
       setErrorMessage('견적 금액은 0원 이상이어야 합니다.')
-      setActionMessage('')
+      clearActionFeedback()
       return
     }
 
     setIsUpdatingEstimate(true)
     setErrorMessage('')
-    setActionMessage('')
+    clearActionFeedback()
 
     try {
       const updatedReservation = await updateAdminReservationEstimate(reservation.id, nextEstimateAmount)
@@ -218,19 +243,19 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
 
     if (nextDistance !== null && Number.isNaN(nextDistance)) {
       setErrorMessage('이동 거리를 숫자로 입력해 주세요.')
-      setActionMessage('')
+      clearActionFeedback()
       return
     }
 
     if (nextDistance !== null && nextDistance < 0) {
       setErrorMessage('이동 거리는 0km 이상이어야 합니다.')
-      setActionMessage('')
+      clearActionFeedback()
       return
     }
 
     setIsUpdatingDistance(true)
     setErrorMessage('')
-    setActionMessage('')
+    clearActionFeedback()
 
     try {
       const updatedReservation = await updateAdminReservationDistance(reservation.id, nextDistance)
@@ -257,13 +282,13 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
 
     if (adminMemo.length > 1000) {
       setErrorMessage('관리자 메모는 1,000자 이내로 입력해 주세요.')
-      setActionMessage('')
+      clearActionFeedback()
       return
     }
 
     setIsUpdatingMemo(true)
     setErrorMessage('')
-    setActionMessage('')
+    clearActionFeedback()
 
     try {
       const updatedReservation = await updateAdminReservationMemo(reservation.id, adminMemo)
@@ -284,7 +309,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
 
     setIsSendingEmail(true)
     setErrorMessage('')
-    setActionMessage('')
+    clearActionFeedback()
 
     try {
       const result = await sendAdminReservationEmails(reservation.id)
@@ -304,7 +329,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
 
     setIsResendingEmail(true)
     setErrorMessage('')
-    setActionMessage('')
+    clearActionFeedback()
 
     try {
       const result = await resendAdminReservationFailedEmails(reservation.id)
@@ -324,7 +349,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
 
     setIsSendingSms(true)
     setErrorMessage('')
-    setActionMessage('')
+    clearActionFeedback()
 
     try {
       const result = await sendAdminReservationSms(reservation.id)
@@ -344,7 +369,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
 
     setIsResendingSms(true)
     setErrorMessage('')
-    setActionMessage('')
+    clearActionFeedback()
 
     try {
       const result = await resendAdminReservationFailedSms(reservation.id)
@@ -360,7 +385,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
   const approveCustomerRequest = async (requestId: number) => {
     setProcessingCustomerRequestId(requestId)
     setErrorMessage('')
-    setActionMessage('')
+    clearActionFeedback()
 
     try {
       const updatedReservation = await approveAdminCustomerRequest(requestId)
@@ -386,13 +411,13 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
 
     if (rejectionReason.trim() === '') {
       setErrorMessage('반려 사유를 입력해 주세요.')
-      setActionMessage('')
+      clearActionFeedback()
       return
     }
 
     setProcessingCustomerRequestId(requestId)
     setErrorMessage('')
-    setActionMessage('')
+    clearActionFeedback()
 
     try {
       const updatedReservation = await rejectAdminCustomerRequest(requestId, rejectionReason.trim())
@@ -431,6 +456,21 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
         ) : (
           <p className="message error">{errorMessage}</p>
         ))}
+      {statusUpdateNotice && (
+        <section className="admin-status-result" aria-label="상태 변경 완료 안내" aria-live="polite">
+          <div className="admin-status-result-main">
+            <span>상태 변경 완료</span>
+            <strong>
+              {statusUpdateNotice.previousStatusLabel} → {statusUpdateNotice.nextStatusLabel}
+            </strong>
+            <p>다음 할 일: {statusUpdateNotice.nextTask}</p>
+          </div>
+          <div className="admin-status-result-meta">
+            <span>준비된 알림 {statusUpdateNotice.readyNotificationCount}건</span>
+            <span>상태 이력 기록 완료</span>
+          </div>
+        </section>
+      )}
       {actionMessage && <p className="message info">{actionMessage}</p>}
 
       {reservation && (
@@ -606,7 +646,7 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
                           disabled={updatingStatus !== null}
                           onClick={() => {
                             setErrorMessage('')
-                            setActionMessage('')
+                            clearActionFeedback()
                             setPendingStatusOption(option)
                           }}
                           title={option.nextAction}
