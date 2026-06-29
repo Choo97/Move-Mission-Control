@@ -660,6 +660,24 @@ h3 {
   text-decoration: none;
 }
 
+.admin-outline-link {
+  flex: 0 0 auto;
+  border: 1px solid #dce6f2;
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: #172033;
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.admin-outline-link:hover {
+  border-color: #1f5ea8;
+  color: #ffffff;
+  background: #174a86;
+}
+
 .admin-session-status {
   display: inline-flex;
   align-items: center;
@@ -1082,6 +1100,165 @@ h3 {
   background: #e5e7eb;
 }
 
+.admin-faq-view {
+  width: 100%;
+}
+
+.admin-faq-summary-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.admin-faq-summary-row article {
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  padding: 14px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(30, 64, 114, 0.07);
+}
+
+.admin-faq-summary-row span {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-faq-summary-row strong {
+  display: block;
+  margin-top: 8px;
+  color: #172033;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.admin-faq-summary-row p {
+  margin: 8px 0 0;
+  color: #30445f;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.admin-faq-create-panel {
+  display: grid;
+  grid-template-columns: 120px minmax(220px, 1fr) minmax(280px, 1.5fr) auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 18px;
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  padding: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(30, 64, 114, 0.07);
+}
+
+.admin-faq-create-panel > div:first-child {
+  grid-column: 1 / -1;
+}
+
+.admin-faq-create-panel h3,
+.admin-faq-create-panel p {
+  margin: 0;
+}
+
+.admin-faq-create-panel button,
+.admin-faq-card-heading button,
+.admin-faq-card-actions button {
+  border: 1px solid #1f5ea8;
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: #ffffff;
+  background: #1f5ea8;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-faq-create-panel button:hover,
+.admin-faq-card-heading button:hover,
+.admin-faq-card-actions button:hover {
+  background: #174a86;
+}
+
+.admin-faq-create-panel button:disabled,
+.admin-faq-card-heading button:disabled,
+.admin-faq-card-actions button:disabled {
+  border-color: #cbd5e1;
+  color: #64748b;
+  background: #e5e7eb;
+  cursor: progress;
+}
+
+.admin-faq-list {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-faq-card {
+  display: grid;
+  gap: 14px;
+  border: 1px solid #dce6f2;
+  border-left: 4px solid #1f5ea8;
+  border-radius: 8px;
+  padding: 16px;
+  background: #ffffff;
+}
+
+.admin-faq-card.hidden {
+  border-left-color: #374151;
+  background: #f7f8fa;
+}
+
+.admin-faq-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-faq-card-heading > div {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-faq-card-heading strong {
+  color: #172033;
+  font-size: 14px;
+}
+
+.admin-faq-card-heading .history-badge {
+  border-radius: 999px;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-faq-card-heading .history-badge.sent {
+  color: #14532d;
+  background: #dcfce7;
+}
+
+.admin-faq-card-heading .history-badge.failed {
+  color: #172033;
+  background: #e5e7eb;
+}
+
+.admin-faq-edit-grid {
+  display: grid;
+  grid-template-columns: 120px minmax(220px, 1fr) minmax(280px, 1.6fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.admin-faq-card-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .admin-conflict-attempts {
   display: grid;
   grid-template-columns: minmax(220px, 0.7fr) minmax(0, 1.8fr);
@@ -1230,13 +1407,28 @@ h3 {
 
 @media (max-width: 900px) {
   .admin-notification-summary-row,
-  .admin-notification-filters {
+  .admin-notification-filters,
+  .admin-faq-summary-row,
+  .admin-faq-create-panel,
+  .admin-faq-edit-grid {
     grid-template-columns: 1fr 1fr;
   }
 
   .admin-notification-filter-actions,
-  .admin-notification-quick-filters {
+  .admin-notification-quick-filters,
+  .admin-faq-create-panel > div:first-child,
+  .admin-faq-create-panel label:nth-of-type(3),
+  .admin-faq-edit-grid label:nth-of-type(3) {
     grid-column: 1 / -1;
+  }
+
+  .admin-faq-card-heading {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .admin-faq-card-actions {
+    justify-content: start;
   }
 
   .admin-notification-action-heading {

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import './App.css'
+import { AdminFaqListView } from './components/AdminFaqListView'
 import { AdminLoginView } from './components/AdminLoginView'
 import { AdminNotificationListView } from './components/AdminNotificationListView'
 import { AdminReservationListView } from './components/AdminReservationListView'
@@ -51,6 +52,17 @@ const getViewFromUrl = (): ActiveView => {
 
 const isAdminRoute = () => window.location.pathname.startsWith('/admin')
 const isLoginRoute = () => window.location.pathname === '/login'
+const adminConsoleView = (path: string): 'reservations' | 'notifications' | 'faqs' => {
+  if (path.startsWith('/admin/notifications')) {
+    return 'notifications'
+  }
+
+  if (path.startsWith('/admin/faqs')) {
+    return 'faqs'
+  }
+
+  return 'reservations'
+}
 const adminRouteSearch = () => {
   const params = new URLSearchParams(window.location.search)
   params.delete('view')
@@ -393,10 +405,14 @@ function App() {
   }
 
   if (adminRoute) {
+    const currentAdminView = adminConsoleView(currentPath)
+
     return (
       <main className="app-shell">
-        <AdminConsoleNav activeView={currentPath.startsWith('/admin/notifications') ? 'notifications' : 'reservations'} />
-        {currentPath.startsWith('/admin/notifications') ? <AdminNotificationListView /> : <AdminReservationListView />}
+        <AdminConsoleNav activeView={currentAdminView} />
+        {currentAdminView === 'notifications' && <AdminNotificationListView />}
+        {currentAdminView === 'faqs' && <AdminFaqListView />}
+        {currentAdminView === 'reservations' && <AdminReservationListView />}
       </main>
     )
   }
@@ -565,7 +581,7 @@ function App() {
   )
 }
 
-function AdminConsoleNav({ activeView }: { activeView: 'reservations' | 'notifications' }) {
+function AdminConsoleNav({ activeView }: { activeView: 'reservations' | 'notifications' | 'faqs' }) {
   return (
     <nav className="admin-console-nav" aria-label="관리자 메뉴">
       <a className={activeView === 'reservations' ? 'active' : ''} href="/admin/reservations">
@@ -573,6 +589,9 @@ function AdminConsoleNav({ activeView }: { activeView: 'reservations' | 'notific
       </a>
       <a className={activeView === 'notifications' ? 'active' : ''} href="/admin/notifications">
         알림 이력
+      </a>
+      <a className={activeView === 'faqs' ? 'active' : ''} href="/admin/faqs">
+        FAQ 관리
       </a>
     </nav>
   )

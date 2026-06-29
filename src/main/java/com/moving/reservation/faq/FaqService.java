@@ -3,6 +3,7 @@ package com.moving.reservation.faq;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 @Transactional(readOnly = true)
@@ -23,31 +24,40 @@ public class FaqService {
     }
 
     @Transactional
-    public void create(FaqSaveRequest request) {
-        faqRepository.save(new Faq(
-                request.getQuestion().trim(),
-                request.getAnswer().trim(),
-                request.getDisplayOrder()
+    public Faq create(FaqSaveRequest request) {
+        FaqSaveRequest validRequest = requiredRequest(request);
+
+        return faqRepository.save(new Faq(
+                requiredText(validRequest.getQuestion(), "질문을 입력해 주세요.", 200),
+                requiredText(validRequest.getAnswer(), "답변을 입력해 주세요.", 1000),
+                requiredDisplayOrder(validRequest.getDisplayOrder())
         ));
     }
 
     @Transactional
-    public void update(Long id, FaqSaveRequest request) {
-        get(id).update(
-                request.getQuestion().trim(),
-                request.getAnswer().trim(),
-                request.getDisplayOrder()
+    public Faq update(Long id, FaqSaveRequest request) {
+        FaqSaveRequest validRequest = requiredRequest(request);
+        Faq faq = get(id);
+        faq.update(
+                requiredText(validRequest.getQuestion(), "질문을 입력해 주세요.", 200),
+                requiredText(validRequest.getAnswer(), "답변을 입력해 주세요.", 1000),
+                requiredDisplayOrder(validRequest.getDisplayOrder())
         );
+        return faq;
     }
 
     @Transactional
-    public void activate(Long id) {
-        get(id).activate();
+    public Faq activate(Long id) {
+        Faq faq = get(id);
+        faq.activate();
+        return faq;
     }
 
     @Transactional
-    public void deactivate(Long id) {
-        get(id).deactivate();
+    public Faq deactivate(Long id) {
+        Faq faq = get(id);
+        faq.deactivate();
+        return faq;
     }
 
     @Transactional
@@ -75,5 +85,42 @@ public class FaqService {
     private Faq get(Long id) {
         return faqRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("FAQ를 찾을 수 없습니다."));
+    }
+
+    private FaqSaveRequest requiredRequest(FaqSaveRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("FAQ 입력값을 확인해 주세요.");
+        }
+
+        return request;
+    }
+
+    private String requiredText(String value, String message, int maxLength) {
+        if (!StringUtils.hasText(value)) {
+            throw new IllegalArgumentException(message);
+        }
+
+        String trimmedValue = value.trim();
+        if (trimmedValue.length() > maxLength) {
+            throw new IllegalArgumentException("FAQ 입력값이 너무 깁니다.");
+        }
+
+        return trimmedValue;
+    }
+
+    private Integer requiredDisplayOrder(Integer displayOrder) {
+        if (displayOrder == null) {
+            throw new IllegalArgumentException("정렬 순서를 입력해 주세요.");
+        }
+
+        if (displayOrder < 1) {
+            throw new IllegalArgumentException("정렬 순서는 1 이상이어야 합니다.");
+        }
+
+        if (displayOrder > 999) {
+            throw new IllegalArgumentException("정렬 순서가 너무 큽니다.");
+        }
+
+        return displayOrder;
     }
 }

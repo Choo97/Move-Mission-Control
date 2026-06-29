@@ -2,6 +2,8 @@ import { API_BASE_URL } from '../reservationData'
 import type {
   ApiErrorResponse,
   AdminEmailSendResponse,
+  AdminFaqResponse,
+  AdminFaqSaveRequest,
   AdminNotificationActionItemResponse,
   AdminNotificationListItemResponse,
   AdminNotificationListQuery,
@@ -108,6 +110,45 @@ export async function deleteOperatingHoliday(holidayId: number) {
     credentials: 'include',
   })
   if (!response.ok) await throwApiError(response, '휴무일 삭제에 실패했습니다.')
+}
+
+export async function getAdminFaqs() {
+  const response = await fetch(`${API_BASE_URL}/api/admin/faqs`, { credentials: 'include' })
+  if (!response.ok) await throwApiError(response, '관리자 FAQ 목록을 불러오지 못했습니다.')
+  return response.json() as Promise<AdminFaqResponse[]>
+}
+
+export async function createAdminFaq(request: AdminFaqSaveRequest) {
+  const response = await fetch(`${API_BASE_URL}/api/admin/faqs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(request),
+  })
+  if (!response.ok) await throwApiError(response, 'FAQ 추가에 실패했습니다.')
+  return response.json() as Promise<AdminFaqResponse>
+}
+
+export async function updateAdminFaq(faqId: number, request: AdminFaqSaveRequest) {
+  const response = await fetch(`${API_BASE_URL}/api/admin/faqs/${faqId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(request),
+  })
+  if (!response.ok) await throwApiError(response, 'FAQ 수정에 실패했습니다.')
+  return response.json() as Promise<AdminFaqResponse>
+}
+
+export async function updateAdminFaqActive(faqId: number, active: boolean) {
+  const response = await fetch(`${API_BASE_URL}/api/admin/faqs/${faqId}/active`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ active }),
+  })
+  if (!response.ok) await throwApiError(response, 'FAQ 공개 상태 변경에 실패했습니다.')
+  return response.json() as Promise<AdminFaqResponse>
 }
 
 const appendQueryParam = (params: URLSearchParams, key: string, value: string | number | boolean | undefined) => {

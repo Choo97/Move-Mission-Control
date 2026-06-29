@@ -45,6 +45,10 @@ React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 기능 
 | 관리자 알림 | `POST` | `/api/admin/reservations/{reservationId}/notifications/email/resend-failed` | 실패 이메일 재발송 |
 | 관리자 알림 | `POST` | `/api/admin/reservations/{reservationId}/notifications/sms/send` | 준비 SMS 발송 |
 | 관리자 알림 | `POST` | `/api/admin/reservations/{reservationId}/notifications/sms/resend-failed` | 실패 SMS 재발송 |
+| 관리자 FAQ | `GET` | `/api/admin/faqs` | 전체 FAQ 조회 |
+| 관리자 FAQ | `POST` | `/api/admin/faqs` | FAQ 추가 |
+| 관리자 FAQ | `PATCH` | `/api/admin/faqs/{faqId}` | FAQ 질문, 답변, 정렬 순서 수정 |
+| 관리자 FAQ | `PATCH` | `/api/admin/faqs/{faqId}/active` | FAQ 공개 또는 숨김 처리 |
 
 ## React 전환 준비 점검
 
@@ -314,6 +318,72 @@ GET /api/admin/notifications/action-items?limit=8
 ```
 
 실패 알림과 발송 대기 알림만 조회합니다. 실패 알림은 고객에게 안내가 전달되지 않았을 수 있으므로 발송 대기 알림보다 먼저 응답합니다.
+
+## 관리자 FAQ API
+
+관리자 FAQ API는 로그인한 관리자만 호출할 수 있습니다. 고객용 `/api/faqs`는 공개 FAQ만 조회하지만, 관리자용 `/api/admin/faqs`는 숨김 FAQ까지 포함해 운영자가 전체 FAQ를 관리합니다.
+
+### 전체 FAQ 조회
+
+```http
+GET /api/admin/faqs
+```
+
+정렬 순서와 FAQ 번호 기준으로 전체 FAQ를 응답합니다.
+
+```json
+[
+  {
+    "id": 1,
+    "question": "예약 후에는 어떻게 확인하나요?",
+    "answer": "예약 번호와 연락처로 예약조회 화면에서 확인할 수 있습니다.",
+    "displayOrder": 1,
+    "active": true,
+    "createdAt": "2026-06-29T18:00:00"
+  }
+]
+```
+
+### FAQ 추가
+
+```http
+POST /api/admin/faqs
+Content-Type: application/json
+```
+
+```json
+{
+  "question": "예약 후에는 어떻게 확인하나요?",
+  "answer": "예약번호와 연락처로 예약조회 화면에서 확인할 수 있습니다.",
+  "displayOrder": 1
+}
+```
+
+성공하면 `201 Created`와 함께 생성된 FAQ를 응답합니다. 새 FAQ는 기본적으로 공개 상태입니다.
+
+### FAQ 수정
+
+```http
+PATCH /api/admin/faqs/{faqId}
+Content-Type: application/json
+```
+
+질문, 답변, 정렬 순서를 수정합니다. 고객 화면에 보이는 내용이 바뀌므로 저장 전 문구를 확인해야 합니다.
+
+### FAQ 공개 상태 변경
+
+```http
+PATCH /api/admin/faqs/{faqId}/active
+Content-Type: application/json
+```
+
+```json
+{
+  "active": false
+}
+```
+
+`active`가 `true`이면 고객 FAQ 화면에 표시하고, `false`이면 관리자 화면에서만 보관합니다.
 
 ## 고객 안내 API
 

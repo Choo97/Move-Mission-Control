@@ -23,7 +23,7 @@ export type {
   AdminSmsSendResponse,
 } from './types/adminReservation'
 export type { CustomerGuideItem } from './types/customerGuide'
-export type { FaqResponse } from './types/faq'
+export type { AdminFaqResponse, AdminFaqSaveRequest, FaqResponse } from './types/faq'
 export type {
   AvailabilityResponse,
   OperatingHolidayResponse,
