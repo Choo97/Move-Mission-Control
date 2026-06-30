@@ -1298,6 +1298,59 @@ h3 {
   overflow-wrap: anywhere;
 }
 
+.admin-review-reply-panel {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #e5edf7;
+  border-radius: 8px;
+  padding: 12px;
+  background: #f8fbff;
+}
+
+.admin-review-reply-panel > div:first-child,
+.admin-review-reply-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.admin-review-reply-panel strong {
+  color: #172033;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.admin-review-reply-panel span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.admin-review-reply-panel textarea {
+  min-height: 82px;
+  resize: vertical;
+}
+
+.admin-review-reply-actions button {
+  border: 1px solid #1f5ea8;
+  border-radius: 6px;
+  padding: 9px 11px;
+  color: #ffffff;
+  background: #1f5ea8;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-review-reply-actions button:hover:not(:disabled) {
+  background: #174a86;
+}
+
+.admin-review-reply-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
 .admin-review-meta {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

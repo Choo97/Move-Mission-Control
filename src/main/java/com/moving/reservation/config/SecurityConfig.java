@@ -48,6 +48,7 @@ public class SecurityConfig {
             new AntPathRequestMatcher("/api/admin/faqs/*", "PATCH"),
             new AntPathRequestMatcher("/api/admin/faqs/*/active", "PATCH"),
             new AntPathRequestMatcher("/api/admin/reviews/*/published", "PATCH"),
+            new AntPathRequestMatcher("/api/admin/reviews/*/reply", "PATCH"),
             new AntPathRequestMatcher("/api/admin/reservations/*/notifications/email/send", "POST"),
             new AntPathRequestMatcher("/api/admin/reservations/*/notifications/email/resend-failed", "POST"),
             new AntPathRequestMatcher("/api/admin/reservations/*/notifications/sms/send", "POST"),

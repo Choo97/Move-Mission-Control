@@ -169,6 +169,17 @@ export async function updateAdminReviewPublished(reviewId: number, published: bo
   return response.json() as Promise<AdminReviewResponse>
 }
 
+export async function updateAdminReviewReply(reviewId: number, reply: string) {
+  const response = await fetch(`${API_BASE_URL}/api/admin/reviews/${reviewId}/reply`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ reply }),
+  })
+  if (!response.ok) await throwApiError(response, '리뷰 답변 저장에 실패했습니다.')
+  return response.json() as Promise<AdminReviewResponse>
+}
+
 const appendQueryParam = (params: URLSearchParams, key: string, value: string | number | boolean | undefined) => {
   if (value !== undefined && value !== '') {
     params.set(key, String(value))

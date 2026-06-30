@@ -47,6 +47,7 @@ React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 기능 
 | 관리자 알림 | `POST` | `/api/admin/reservations/{reservationId}/notifications/sms/resend-failed` | 실패 SMS 재발송 |
 | 관리자 리뷰 | `GET` | `/api/admin/reviews` | 전체 리뷰와 연결된 예약 정보 조회 |
 | 관리자 리뷰 | `PATCH` | `/api/admin/reviews/{reviewId}/published` | 리뷰 공개 또는 숨김 처리 |
+| 관리자 리뷰 | `PATCH` | `/api/admin/reviews/{reviewId}/reply` | 리뷰 관리자 답변 저장 또는 삭제 |
 | 관리자 FAQ | `GET` | `/api/admin/faqs` | 전체 FAQ 조회 |
 | 관리자 FAQ | `POST` | `/api/admin/faqs` | FAQ 추가 |
 | 관리자 FAQ | `PATCH` | `/api/admin/faqs/{faqId}` | FAQ 질문, 답변, 정렬 순서 수정 |
@@ -344,6 +345,9 @@ GET /api/admin/reviews
     "rating": 5,
     "content": "친절하고 정확했습니다.",
     "published": true,
+    "adminReply": "이용해 주셔서 감사합니다.",
+    "adminRepliedBy": "admin",
+    "adminRepliedAt": "2026-07-02T17:00:00",
     "moveDate": "2026-07-01",
     "moveTime": "10:30:00",
     "status": "COMPLETED",
@@ -366,6 +370,20 @@ PATCH /api/admin/reviews/{reviewId}/published
 ```
 
 `published`가 `true`이면 고객 화면에 노출할 수 있는 리뷰로 보관하고, `false`이면 관리자 화면에서만 확인하는 숨김 리뷰로 보관합니다. 고객이 작성한 원본 리뷰는 삭제하지 않고 공개 상태만 변경합니다.
+
+### 리뷰 관리자 답변 저장
+
+```http
+PATCH /api/admin/reviews/{reviewId}/reply
+```
+
+```json
+{
+  "reply": "불편을 드려 죄송합니다. 담당자가 다시 연락드리겠습니다."
+}
+```
+
+답변은 1,000자 이내로 저장합니다. 공백 문자열을 보내면 기존 답변을 삭제합니다. 응답에는 `adminReply`, `adminRepliedBy`, `adminRepliedAt`이 포함되며, 현재 단계에서는 관리자 화면에서 리뷰 대응 기록을 남기는 용도로 사용합니다.
 
 ## 관리자 FAQ API
 

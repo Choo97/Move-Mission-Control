@@ -22,6 +22,9 @@ export type AdminReviewResponse = {
   rating: number
   content: string
   published: boolean
+  adminReply: string | null
+  adminRepliedBy: string | null
+  adminRepliedAt: string | null
   moveDate: string
   moveTime: string
   status: string

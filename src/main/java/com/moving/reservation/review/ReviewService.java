@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 @Transactional(readOnly = true)
@@ -53,6 +54,19 @@ public class ReviewService {
     }
 
     @Transactional
+    public Review updateAdminReply(Long id, String reply, String adminUsername) {
+        Review review = get(id);
+        String normalizedReply = normalizeReply(reply);
+        if (!StringUtils.hasText(normalizedReply)) {
+            review.clearAdminReply();
+            return review;
+        }
+
+        review.updateAdminReply(normalizedReply, normalizeAdminUsername(adminUsername));
+        return review;
+    }
+
+    @Transactional
     public Review create(ReviewCreateRequest request) {
         Reservation reservation = reservationRepository.findByIdAndPhone(request.getReservationId(), request.getPhone())
                 .orElseThrow(() -> new IllegalArgumentException("예약 번호와 연락처가 일치하지 않습니다."));
@@ -75,5 +89,29 @@ public class ReviewService {
     private Review get(Long id) {
         return reviewRepository.findByIdWithReservation(id)
                 .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
+    }
+
+    private String normalizeReply(String reply) {
+        if (!StringUtils.hasText(reply)) {
+            return "";
+        }
+
+        String trimmedReply = reply.trim();
+        if (trimmedReply.length() > 1000) {
+            throw new IllegalArgumentException("리뷰 답변은 1,000자 이내로 입력해 주세요.");
+        }
+
+        return trimmedReply;
+    }
+
+    private String normalizeAdminUsername(String adminUsername) {
+        if (!StringUtils.hasText(adminUsername)) {
+            return "admin";
+        }
+
+        String trimmedUsername = adminUsername.trim();
+        return trimmedUsername.length() > 100
+                ? trimmedUsername.substring(0, 100)
+                : trimmedUsername;
     }
 }

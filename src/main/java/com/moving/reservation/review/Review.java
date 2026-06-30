@@ -31,6 +31,14 @@ public class Review {
     @Column(nullable = false, columnDefinition = "boolean default true")
     private boolean published = true;
 
+    @Column(length = 1000)
+    private String adminReply;
+
+    @Column(length = 100)
+    private String adminRepliedBy;
+
+    private LocalDateTime adminRepliedAt;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
@@ -52,6 +60,18 @@ public class Review {
         this.published = false;
     }
 
+    public void updateAdminReply(String adminReply, String adminRepliedBy) {
+        this.adminReply = adminReply;
+        this.adminRepliedBy = adminRepliedBy;
+        this.adminRepliedAt = LocalDateTime.now();
+    }
+
+    public void clearAdminReply() {
+        this.adminReply = null;
+        this.adminRepliedBy = null;
+        this.adminRepliedAt = null;
+    }
+
     public Long getId() {
         return id;
     }
@@ -70,6 +90,18 @@ public class Review {
 
     public boolean isPublished() {
         return published;
+    }
+
+    public String getAdminReply() {
+        return adminReply;
+    }
+
+    public String getAdminRepliedBy() {
+        return adminRepliedBy;
+    }
+
+    public LocalDateTime getAdminRepliedAt() {
+        return adminRepliedAt;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -111,6 +111,59 @@ class AdminReviewApiControllerTest {
                 .andExpect(jsonPath("$.published").value(true));
     }
 
+    @Test
+    void 관리자_리뷰_API는_답변을_저장하고_비울_수_있다() throws Exception {
+        Reservation reservation = completedReservation("답변고객", "010-4444-4444");
+        Review review = reviewService.create(reviewCreateRequest(reservation.getId(), "010-4444-4444", 2, "응대가 아쉬웠습니다."));
+
+        mockMvc.perform(patch("/api/admin/reviews/{id}/reply", review.getId())
+                        .with(user("review-admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "reply": "불편을 드려 죄송합니다. 담당자가 다시 연락드리겠습니다."
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(review.getId()))
+                .andExpect(jsonPath("$.reservationId").value(reservation.getId()))
+                .andExpect(jsonPath("$.adminReply").value("불편을 드려 죄송합니다. 담당자가 다시 연락드리겠습니다."))
+                .andExpect(jsonPath("$.adminRepliedBy").value("review-admin"))
+                .andExpect(jsonPath("$.adminRepliedAt").isString());
+
+        mockMvc.perform(patch("/api/admin/reviews/{id}/reply", review.getId())
+                        .with(user("review-admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "reply": "   "
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(review.getId()))
+                .andExpect(jsonPath("$.adminReply").doesNotExist())
+                .andExpect(jsonPath("$.adminRepliedBy").doesNotExist())
+                .andExpect(jsonPath("$.adminRepliedAt").doesNotExist());
+    }
+
+    @Test
+    void 관리자_리뷰_API는_너무_긴_답변을_거부한다() throws Exception {
+        Reservation reservation = completedReservation("긴답변고객", "010-5555-5555");
+        Review review = reviewService.create(reviewCreateRequest(reservation.getId(), "010-5555-5555", 3, "답변 길이 테스트입니다."));
+
+        mockMvc.perform(patch("/api/admin/reviews/{id}/reply", review.getId())
+                        .with(user("review-admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "reply": "%s"
+                                }
+                                """.formatted("가".repeat(1001))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("리뷰 답변은 1,000자 이내로 입력해 주세요."));
+    }
+
     private Reservation completedReservation(String customerName, String phone) {
         Reservation reservation = reservationService.create(reservationCreateRequest(customerName, phone));
         reservationService.updateStatus(reservation.getId(), ReservationStatus.CONSULTING, "admin");

@@ -6,6 +6,7 @@ import {
   getAdminSession,
   logoutAdmin,
   updateAdminReviewPublished,
+  updateAdminReviewReply,
 } from '../api/adminApi'
 import { getErrorMessage } from '../api/apiError'
 import { adminLoginHref, redirectToAdminExpiredLogin } from '../adminAuthNavigation'
@@ -49,8 +50,12 @@ const matchesKeyword = (review: AdminReviewResponse, keyword: string) => {
     review.phone,
     review.email ?? '',
     review.content,
+    review.adminReply ?? '',
   ].some((value) => value.toLowerCase().includes(normalizedKeyword))
 }
+
+const buildReplyForms = (reviews: AdminReviewResponse[]) =>
+  Object.fromEntries(reviews.map((review) => [review.id, review.adminReply ?? '']))
 
 function RatingStars({ rating }: { rating: number }) {
   return (
@@ -65,6 +70,7 @@ export function AdminReviewListView() {
   const [query, setQuery] = useState<AdminReviewQuery>(readInitialReviewQuery)
   const [keywordInput, setKeywordInput] = useState(() => readInitialReviewQuery().keyword ?? '')
   const [reviews, setReviews] = useState<AdminReviewResponse[]>([])
+  const [replyForms, setReplyForms] = useState<Record<number, string>>({})
   const [adminSession, setAdminSession] = useState<AdminSessionResponse | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
@@ -119,9 +125,11 @@ export function AdminReviewListView() {
         const [nextAdminSession, nextReviews] = await Promise.all([getAdminSession(), getAdminReviews()])
         setAdminSession(nextAdminSession)
         setReviews(nextReviews)
+        setReplyForms(buildReplyForms(nextReviews))
       } catch (error) {
         setAdminSession(null)
         setReviews([])
+        setReplyForms({})
         if (error instanceof AdminAuthenticationRequiredError) {
           setIsAuthenticationRequired(true)
           setErrorMessage(getErrorMessage(error, '관리자 로그인이 필요합니다.'))
@@ -165,10 +173,13 @@ export function AdminReviewListView() {
     setQuery({})
   }
 
-  const updateReviewInList = (updatedReview: AdminReviewResponse) => {
+  const updateReviewInList = (updatedReview: AdminReviewResponse, syncReplyForm = true) => {
     setReviews((current) =>
       current.map((review) => (review.id === updatedReview.id ? updatedReview : review)),
     )
+    if (syncReplyForm) {
+      setReplyForms((current) => ({ ...current, [updatedReview.id]: updatedReview.adminReply ?? '' }))
+    }
   }
 
   const togglePublished = async (review: AdminReviewResponse) => {
@@ -178,7 +189,7 @@ export function AdminReviewListView() {
 
     try {
       const updatedReview = await updateAdminReviewPublished(review.id, !review.published)
-      updateReviewInList(updatedReview)
+      updateReviewInList(updatedReview, false)
       setMessage(updatedReview.published ? '리뷰를 공개했습니다.' : '리뷰를 숨김 처리했습니다.')
     } catch (error) {
       if (error instanceof AdminAuthenticationRequiredError) {
@@ -187,6 +198,28 @@ export function AdminReviewListView() {
       }
 
       setErrorMessage(getErrorMessage(error, '리뷰 공개 상태 변경에 실패했습니다.'))
+    } finally {
+      setProcessingReviewId(null)
+    }
+  }
+
+  const submitReply = async (review: AdminReviewResponse) => {
+    const reply = replyForms[review.id] ?? ''
+    setProcessingReviewId(review.id)
+    setMessage('')
+    setErrorMessage('')
+
+    try {
+      const updatedReview = await updateAdminReviewReply(review.id, reply)
+      updateReviewInList(updatedReview)
+      setMessage(reply.trim() ? '리뷰 답변을 저장했습니다.' : '리뷰 답변을 삭제했습니다.')
+    } catch (error) {
+      if (error instanceof AdminAuthenticationRequiredError) {
+        redirectToAdminExpiredLogin()
+        return
+      }
+
+      setErrorMessage(getErrorMessage(error, '리뷰 답변 저장에 실패했습니다.'))
     } finally {
       setProcessingReviewId(null)
     }
@@ -393,6 +426,35 @@ export function AdminReviewListView() {
                   </div>
                 </div>
                 <p className="admin-review-content">{review.content}</p>
+                <div className="admin-review-reply-panel">
+                  <div>
+                    <strong>관리자 답변</strong>
+                    {review.adminReply && review.adminRepliedAt && (
+                      <span>
+                        {review.adminRepliedBy ?? 'admin'} · {formatDateTime(review.adminRepliedAt)}
+                      </span>
+                    )}
+                  </div>
+                  <textarea
+                    rows={3}
+                    maxLength={1000}
+                    value={replyForms[review.id] ?? ''}
+                    placeholder="고객 리뷰에 대한 관리자 답변을 입력하세요."
+                    onChange={(event) =>
+                      setReplyForms((current) => ({ ...current, [review.id]: event.target.value }))
+                    }
+                  />
+                  <div className="admin-review-reply-actions">
+                    <span>{(replyForms[review.id] ?? '').length.toLocaleString()} / 1,000자</span>
+                    <button
+                      type="button"
+                      disabled={processingReviewId === review.id}
+                      onClick={() => void submitReply(review)}
+                    >
+                      {processingReviewId === review.id ? '저장 중' : '답변 저장'}
+                    </button>
+                  </div>
+                </div>
                 <dl className="admin-review-meta">
                   <div>
                     <dt>고객</dt>
