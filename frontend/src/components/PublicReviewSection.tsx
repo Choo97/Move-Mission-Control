@@ -57,7 +57,7 @@ export function PublicReviewSection() {
         <div>
           <p className="eyebrow">Customer Reviews</p>
           <h2 id="public-review-title">실제 이용 고객의 리뷰를 확인하세요</h2>
-          <p>관리자가 공개 처리한 리뷰만 개인정보 없이 보여드립니다.</p>
+          <p>24nalpo를 이용한 고객님의 실제 후기를 편안하게 확인해 보세요.</p>
         </div>
         <div className="public-review-summary" aria-label="공개 리뷰 요약">
           <article>
