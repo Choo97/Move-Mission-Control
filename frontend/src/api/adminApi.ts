@@ -7,6 +7,7 @@ import type {
   AdminNotificationActionItemResponse,
   AdminNotificationListItemResponse,
   AdminNotificationListQuery,
+  AdminReviewResponse,
   AdminReservationConflictAttemptResponse,
   AdminReservationDetailResponse,
   AdminReservationListQuery,
@@ -149,6 +150,12 @@ export async function updateAdminFaqActive(faqId: number, active: boolean) {
   })
   if (!response.ok) await throwApiError(response, 'FAQ 공개 상태 변경에 실패했습니다.')
   return response.json() as Promise<AdminFaqResponse>
+}
+
+export async function getAdminReviews() {
+  const response = await fetch(`${API_BASE_URL}/api/admin/reviews`, { credentials: 'include' })
+  if (!response.ok) await throwApiError(response, '관리자 리뷰 목록을 불러오지 못했습니다.')
+  return response.json() as Promise<AdminReviewResponse[]>
 }
 
 const appendQueryParam = (params: URLSearchParams, key: string, value: string | number | boolean | undefined) => {

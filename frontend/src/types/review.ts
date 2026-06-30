@@ -12,3 +12,18 @@ export type ReviewApiResponse = {
 }
 
 export type ReviewResponse = ReviewApiResponse
+
+export type AdminReviewResponse = {
+  id: number
+  reservationId: number
+  customerName: string
+  phone: string
+  email: string | null
+  rating: number
+  content: string
+  moveDate: string
+  moveTime: string
+  status: string
+  statusLabel: string
+  createdAt: string
+}

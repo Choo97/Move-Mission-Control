@@ -29,7 +29,7 @@ export type {
   OperatingHolidayResponse,
   OperatingScheduleResponse,
 } from './types/availability'
-export type { ReviewApiResponse, ReviewForm, ReviewResponse } from './types/review'
+export type { AdminReviewResponse, ReviewApiResponse, ReviewForm, ReviewResponse } from './types/review'
 export type {
   MoveType,
   ReservationApiEstimateLineResponse,

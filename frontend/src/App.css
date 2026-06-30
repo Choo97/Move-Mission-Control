@@ -1100,6 +1100,209 @@ h3 {
   background: #e5e7eb;
 }
 
+.admin-review-view {
+  width: 100%;
+}
+
+.admin-review-summary-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.admin-review-summary-row article {
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  padding: 14px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(30, 64, 114, 0.07);
+}
+
+.admin-review-summary-row span {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-review-summary-row strong {
+  display: block;
+  margin-top: 8px;
+  color: #172033;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.admin-review-summary-row p {
+  margin: 8px 0 0;
+  color: #30445f;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.admin-review-filters {
+  display: grid;
+  grid-template-columns: 150px minmax(260px, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 16px;
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  padding: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(30, 64, 114, 0.07);
+}
+
+.admin-review-filter-actions,
+.admin-review-rating-distribution {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-review-filter-actions button,
+.admin-review-rating-distribution button {
+  border: 1px solid #dce6f2;
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: #172033;
+  background: #ffffff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.admin-review-filter-actions button[type='submit'],
+.admin-review-rating-distribution button.active {
+  border-color: #1f5ea8;
+  color: #ffffff;
+  background: #1f5ea8;
+}
+
+.admin-review-filter-actions button:hover,
+.admin-review-rating-distribution button:hover {
+  border-color: #1f5ea8;
+  color: #ffffff;
+  background: #174a86;
+}
+
+.admin-review-rating-distribution {
+  grid-column: 1 / -1;
+}
+
+.admin-review-list {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-review-list article {
+  display: grid;
+  gap: 14px;
+  border: 1px solid #dce6f2;
+  border-left: 4px solid #1f5ea8;
+  border-radius: 8px;
+  padding: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(30, 64, 114, 0.07);
+}
+
+.admin-review-list article.needs-check {
+  border-left-color: #374151;
+  background: #f7f8fa;
+}
+
+.admin-review-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-review-card-heading > div {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-review-stars {
+  color: #1f5ea8;
+  font-size: 18px;
+  letter-spacing: 0;
+}
+
+.admin-review-card-heading strong {
+  color: #172033;
+  font-size: 15px;
+}
+
+.admin-review-card-heading .history-badge {
+  border-radius: 999px;
+  padding: 5px 8px;
+  color: #14532d;
+  background: #dcfce7;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-review-card-heading a {
+  flex: 0 0 auto;
+  border: 1px solid #dce6f2;
+  border-radius: 6px;
+  padding: 9px 11px;
+  background: #ffffff;
+}
+
+.admin-review-card-heading a:hover {
+  border-color: #1f5ea8;
+  color: #ffffff;
+  background: #174a86;
+}
+
+.admin-review-content {
+  margin: 0;
+  color: #172033;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.admin-review-meta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.admin-review-meta div {
+  min-width: 0;
+  border: 1px solid #e5edf7;
+  border-radius: 8px;
+  padding: 10px;
+  background: #f8fbff;
+}
+
+.admin-review-meta dt,
+.admin-review-meta dd {
+  margin: 0;
+}
+
+.admin-review-meta dt {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-review-meta dd {
+  margin-top: 6px;
+  color: #172033;
+  font-size: 13px;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
 .admin-faq-view {
   width: 100%;
 }
@@ -1408,6 +1611,9 @@ h3 {
 @media (max-width: 900px) {
   .admin-notification-summary-row,
   .admin-notification-filters,
+  .admin-review-summary-row,
+  .admin-review-filters,
+  .admin-review-meta,
   .admin-faq-summary-row,
   .admin-faq-create-panel,
   .admin-faq-edit-grid {
@@ -1416,6 +1622,8 @@ h3 {
 
   .admin-notification-filter-actions,
   .admin-notification-quick-filters,
+  .admin-review-filter-actions,
+  .admin-review-rating-distribution,
   .admin-faq-create-panel > div:first-child,
   .admin-faq-create-panel label:nth-of-type(3),
   .admin-faq-edit-grid label:nth-of-type(3) {
@@ -1423,6 +1631,11 @@ h3 {
   }
 
   .admin-faq-card-heading {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .admin-review-card-heading {
     align-items: start;
     flex-direction: column;
   }

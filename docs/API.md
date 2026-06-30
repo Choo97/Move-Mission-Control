@@ -45,6 +45,7 @@ React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 기능 
 | 관리자 알림 | `POST` | `/api/admin/reservations/{reservationId}/notifications/email/resend-failed` | 실패 이메일 재발송 |
 | 관리자 알림 | `POST` | `/api/admin/reservations/{reservationId}/notifications/sms/send` | 준비 SMS 발송 |
 | 관리자 알림 | `POST` | `/api/admin/reservations/{reservationId}/notifications/sms/resend-failed` | 실패 SMS 재발송 |
+| 관리자 리뷰 | `GET` | `/api/admin/reviews` | 전체 리뷰와 연결된 예약 정보 조회 |
 | 관리자 FAQ | `GET` | `/api/admin/faqs` | 전체 FAQ 조회 |
 | 관리자 FAQ | `POST` | `/api/admin/faqs` | FAQ 추가 |
 | 관리자 FAQ | `PATCH` | `/api/admin/faqs/{faqId}` | FAQ 질문, 답변, 정렬 순서 수정 |
@@ -318,6 +319,37 @@ GET /api/admin/notifications/action-items?limit=8
 ```
 
 실패 알림과 발송 대기 알림만 조회합니다. 실패 알림은 고객에게 안내가 전달되지 않았을 수 있으므로 발송 대기 알림보다 먼저 응답합니다.
+
+## 관리자 리뷰 API
+
+관리자 리뷰 API는 로그인한 관리자만 호출할 수 있습니다. 고객이 완료 예약에서 작성한 리뷰와 평점을 조회하고, React 관리자 화면에서 예약 상세로 연결할 때 사용합니다.
+
+### 전체 리뷰 조회
+
+```http
+GET /api/admin/reviews
+```
+
+최신 리뷰부터 조회합니다. 응답에는 리뷰 내용뿐 아니라 예약번호, 고객명, 연락처, 이사 일정, 예약 상태가 함께 포함됩니다.
+
+```json
+[
+  {
+    "id": 1,
+    "reservationId": 10,
+    "customerName": "홍길동",
+    "phone": "010-1234-5678",
+    "email": "customer@example.com",
+    "rating": 5,
+    "content": "친절하고 정확했습니다.",
+    "moveDate": "2026-07-01",
+    "moveTime": "10:30:00",
+    "status": "COMPLETED",
+    "statusLabel": "완료",
+    "createdAt": "2026-07-02T16:30:00"
+  }
+]
+```
 
 ## 관리자 FAQ API
 
