@@ -2,6 +2,7 @@ package com.moving.reservation.review;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,6 +58,7 @@ class AdminReviewApiControllerTest {
                 .andExpect(jsonPath("$[0].email").value("admin-review@example.com"))
                 .andExpect(jsonPath("$[0].rating").value(5))
                 .andExpect(jsonPath("$[0].content").value("친절하고 정확했습니다."))
+                .andExpect(jsonPath("$[0].published").value(true))
                 .andExpect(jsonPath("$[0].moveDate").isString())
                 .andExpect(jsonPath("$[0].moveTime").isString())
                 .andExpect(jsonPath("$[0].status").value(ReservationStatus.COMPLETED.name()))
@@ -75,6 +78,37 @@ class AdminReviewApiControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].customerName").value("두번째고객"))
                 .andExpect(jsonPath("$[1].customerName").value("첫번째고객"));
+    }
+
+    @Test
+    void 관리자_리뷰_API는_공개상태를_변경한다() throws Exception {
+        Reservation reservation = completedReservation("상태변경고객", "010-3333-3333");
+        Review review = reviewService.create(reviewCreateRequest(reservation.getId(), "010-3333-3333", 3, "확인이 필요한 리뷰입니다."));
+
+        mockMvc.perform(patch("/api/admin/reviews/{id}/published", review.getId())
+                        .with(user("admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "published": false
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(review.getId()))
+                .andExpect(jsonPath("$.reservationId").value(reservation.getId()))
+                .andExpect(jsonPath("$.published").value(false));
+
+        mockMvc.perform(patch("/api/admin/reviews/{id}/published", review.getId())
+                        .with(user("admin").roles("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "published": true
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(review.getId()))
+                .andExpect(jsonPath("$.published").value(true));
     }
 
     private Reservation completedReservation(String customerName, String phone) {

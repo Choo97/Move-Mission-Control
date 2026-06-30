@@ -5,6 +5,7 @@ import {
   getAdminReviews,
   getAdminSession,
   logoutAdmin,
+  updateAdminReviewPublished,
 } from '../api/adminApi'
 import { getErrorMessage } from '../api/apiError'
 import { adminLoginHref, redirectToAdminExpiredLogin } from '../adminAuthNavigation'
@@ -13,6 +14,7 @@ import type { AdminReviewResponse, AdminSessionResponse } from '../types'
 
 type AdminReviewQuery = {
   rating?: number
+  published?: boolean
   keyword?: string
 }
 
@@ -21,9 +23,11 @@ const ratingOptions = [5, 4, 3, 2, 1]
 const readInitialReviewQuery = (): AdminReviewQuery => {
   const params = new URLSearchParams(window.location.search)
   const rating = Number(params.get('rating'))
+  const published = params.get('published')
 
   return {
     rating: ratingOptions.includes(rating) ? rating : undefined,
+    published: published === 'true' ? true : published === 'false' ? false : undefined,
     keyword: params.get('keyword') ?? '',
   }
 }
@@ -64,13 +68,16 @@ export function AdminReviewListView() {
   const [adminSession, setAdminSession] = useState<AdminSessionResponse | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [processingReviewId, setProcessingReviewId] = useState<number | null>(null)
   const [isAuthenticationRequired, setIsAuthenticationRequired] = useState(false)
+  const [message, setMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
 
   const filteredReviews = useMemo(
     () =>
       reviews.filter((review) =>
         (query.rating === undefined || review.rating === query.rating) &&
+        (query.published === undefined || review.published === query.published) &&
         matchesKeyword(review, query.keyword?.trim() ?? ''),
       ),
     [query, reviews],
@@ -78,11 +85,15 @@ export function AdminReviewListView() {
 
   const summary = useMemo(() => {
     const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0)
+    const publishedCount = reviews.filter((review) => review.published).length
+    const hiddenCount = reviews.filter((review) => !review.published).length
     const lowRatingCount = reviews.filter((review) => review.rating <= 3).length
 
     return {
       totalCount: reviews.length,
       filteredCount: filteredReviews.length,
+      publishedCount,
+      hiddenCount,
       averageRating: reviews.length === 0 ? '0.0' : (totalRating / reviews.length).toFixed(1),
       lowRatingCount,
     }
@@ -100,6 +111,7 @@ export function AdminReviewListView() {
   useEffect(() => {
     const loadReviews = async () => {
       setIsLoading(true)
+      setMessage('')
       setErrorMessage('')
       setIsAuthenticationRequired(false)
 
@@ -132,6 +144,9 @@ export function AdminReviewListView() {
     if (query.rating !== undefined) {
       params.set('rating', String(query.rating))
     }
+    if (query.published !== undefined) {
+      params.set('published', String(query.published))
+    }
     if (query.keyword) {
       params.set('keyword', query.keyword)
     }
@@ -148,6 +163,33 @@ export function AdminReviewListView() {
   const resetFilters = () => {
     setKeywordInput('')
     setQuery({})
+  }
+
+  const updateReviewInList = (updatedReview: AdminReviewResponse) => {
+    setReviews((current) =>
+      current.map((review) => (review.id === updatedReview.id ? updatedReview : review)),
+    )
+  }
+
+  const togglePublished = async (review: AdminReviewResponse) => {
+    setProcessingReviewId(review.id)
+    setMessage('')
+    setErrorMessage('')
+
+    try {
+      const updatedReview = await updateAdminReviewPublished(review.id, !review.published)
+      updateReviewInList(updatedReview)
+      setMessage(updatedReview.published ? '리뷰를 공개했습니다.' : '리뷰를 숨김 처리했습니다.')
+    } catch (error) {
+      if (error instanceof AdminAuthenticationRequiredError) {
+        redirectToAdminExpiredLogin()
+        return
+      }
+
+      setErrorMessage(getErrorMessage(error, '리뷰 공개 상태 변경에 실패했습니다.'))
+    } finally {
+      setProcessingReviewId(null)
+    }
   }
 
   const submitLogout = async () => {
@@ -174,7 +216,7 @@ export function AdminReviewListView() {
         <div>
           <p className="eyebrow">Customer Voice</p>
           <h2>리뷰 관리</h2>
-          <p>완료 예약에서 작성된 고객 리뷰와 평점을 확인하고 예약 상세로 연결합니다.</p>
+          <p>완료 예약에서 작성된 고객 리뷰와 평점을 확인하고 공개 여부를 관리합니다.</p>
         </div>
       </div>
 
@@ -188,6 +230,7 @@ export function AdminReviewListView() {
         </div>
       )}
 
+      {message && <p className="message">{message}</p>}
       {errorMessage &&
         (isAuthenticationRequired ? (
           <div className="admin-auth-notice">
@@ -217,6 +260,16 @@ export function AdminReviewListView() {
               <p>필터 적용 결과</p>
             </article>
             <article>
+              <span>공개</span>
+              <strong>{summary.publishedCount.toLocaleString()}</strong>
+              <p>고객 노출 가능</p>
+            </article>
+            <article>
+              <span>숨김</span>
+              <strong>{summary.hiddenCount.toLocaleString()}</strong>
+              <p>관리자만 확인</p>
+            </article>
+            <article>
               <span>평균 평점</span>
               <strong>{summary.averageRating}</strong>
               <p>5점 만점 기준</p>
@@ -244,6 +297,23 @@ export function AdminReviewListView() {
                 {ratingOptions.map((rating) => (
                   <option key={rating} value={rating}>{rating}점</option>
                 ))}
+              </select>
+            </label>
+            <label>
+              공개 상태
+              <select
+                value={query.published === undefined ? '' : String(query.published)}
+                onChange={(event) => {
+                  const value = event.target.value
+                  setQuery((current) => ({
+                    ...current,
+                    published: value === '' ? undefined : value === 'true',
+                  }))
+                }}
+              >
+                <option value="">전체 상태</option>
+                <option value="true">공개</option>
+                <option value="false">숨김</option>
               </select>
             </label>
             <label>
@@ -294,16 +364,33 @@ export function AdminReviewListView() {
 
           <div className="admin-review-list">
             {filteredReviews.map((review) => (
-              <article key={review.id} className={review.rating <= 3 ? 'needs-check' : ''}>
+              <article
+                key={review.id}
+                className={`${review.rating <= 3 ? 'needs-check' : ''} ${review.published ? 'published' : 'hidden'}`}
+              >
                 <div className="admin-review-card-heading">
                   <div>
+                    <span className={`history-badge ${review.published ? 'sent' : 'failed'}`}>
+                      {review.published ? '공개' : '숨김'}
+                    </span>
                     <RatingStars rating={review.rating} />
                     <strong>{review.rating}점</strong>
                     <span className="history-badge sent">{review.statusLabel}</span>
                   </div>
-                  <a className="admin-row-link" href={`/admin/reservations/${review.reservationId}`}>
-                    예약 상세
-                  </a>
+                  <div className="admin-review-card-actions">
+                    <button
+                      type="button"
+                      disabled={processingReviewId === review.id}
+                      onClick={() => void togglePublished(review)}
+                    >
+                      {processingReviewId === review.id
+                        ? '처리 중'
+                        : review.published ? '숨김 처리' : '공개 처리'}
+                    </button>
+                    <a className="admin-row-link" href={`/admin/reservations/${review.reservationId}`}>
+                      예약 상세
+                    </a>
+                  </div>
                 </div>
                 <p className="admin-review-content">{review.content}</p>
                 <dl className="admin-review-meta">

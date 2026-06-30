@@ -28,6 +28,9 @@ public class Review {
     @Column(nullable = false, length = 1000)
     private String content;
 
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean published = true;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
@@ -39,6 +42,14 @@ public class Review {
         this.rating = rating;
         this.content = content;
         this.createdAt = LocalDateTime.now();
+    }
+
+    public void publish() {
+        this.published = true;
+    }
+
+    public void hide() {
+        this.published = false;
     }
 
     public Long getId() {
@@ -55,6 +66,10 @@ public class Review {
 
     public String getContent() {
         return content;
+    }
+
+    public boolean isPublished() {
+        return published;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -39,6 +39,20 @@ public class ReviewService {
     }
 
     @Transactional
+    public Review publish(Long id) {
+        Review review = get(id);
+        review.publish();
+        return review;
+    }
+
+    @Transactional
+    public Review hide(Long id) {
+        Review review = get(id);
+        review.hide();
+        return review;
+    }
+
+    @Transactional
     public Review create(ReviewCreateRequest request) {
         Reservation reservation = reservationRepository.findByIdAndPhone(request.getReservationId(), request.getPhone())
                 .orElseThrow(() -> new IllegalArgumentException("예약 번호와 연락처가 일치하지 않습니다."));
@@ -56,5 +70,10 @@ public class ReviewService {
                 request.getRating(),
                 request.getContent().trim()
         ));
+    }
+
+    private Review get(Long id) {
+        return reviewRepository.findByIdWithReservation(id)
+                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
     }
 }

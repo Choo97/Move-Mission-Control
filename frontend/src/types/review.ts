@@ -21,6 +21,7 @@ export type AdminReviewResponse = {
   email: string | null
   rating: number
   content: string
+  published: boolean
   moveDate: string
   moveTime: string
   status: string

@@ -46,6 +46,7 @@ React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 기능 
 | 관리자 알림 | `POST` | `/api/admin/reservations/{reservationId}/notifications/sms/send` | 준비 SMS 발송 |
 | 관리자 알림 | `POST` | `/api/admin/reservations/{reservationId}/notifications/sms/resend-failed` | 실패 SMS 재발송 |
 | 관리자 리뷰 | `GET` | `/api/admin/reviews` | 전체 리뷰와 연결된 예약 정보 조회 |
+| 관리자 리뷰 | `PATCH` | `/api/admin/reviews/{reviewId}/published` | 리뷰 공개 또는 숨김 처리 |
 | 관리자 FAQ | `GET` | `/api/admin/faqs` | 전체 FAQ 조회 |
 | 관리자 FAQ | `POST` | `/api/admin/faqs` | FAQ 추가 |
 | 관리자 FAQ | `PATCH` | `/api/admin/faqs/{faqId}` | FAQ 질문, 답변, 정렬 순서 수정 |
@@ -322,7 +323,7 @@ GET /api/admin/notifications/action-items?limit=8
 
 ## 관리자 리뷰 API
 
-관리자 리뷰 API는 로그인한 관리자만 호출할 수 있습니다. 고객이 완료 예약에서 작성한 리뷰와 평점을 조회하고, React 관리자 화면에서 예약 상세로 연결할 때 사용합니다.
+관리자 리뷰 API는 로그인한 관리자만 호출할 수 있습니다. 고객이 완료 예약에서 작성한 리뷰와 평점을 조회하고, React 관리자 화면에서 공개 여부를 관리하거나 예약 상세로 연결할 때 사용합니다.
 
 ### 전체 리뷰 조회
 
@@ -342,6 +343,7 @@ GET /api/admin/reviews
     "email": "customer@example.com",
     "rating": 5,
     "content": "친절하고 정확했습니다.",
+    "published": true,
     "moveDate": "2026-07-01",
     "moveTime": "10:30:00",
     "status": "COMPLETED",
@@ -350,6 +352,20 @@ GET /api/admin/reviews
   }
 ]
 ```
+
+### 리뷰 공개 상태 변경
+
+```http
+PATCH /api/admin/reviews/{reviewId}/published
+```
+
+```json
+{
+  "published": false
+}
+```
+
+`published`가 `true`이면 고객 화면에 노출할 수 있는 리뷰로 보관하고, `false`이면 관리자 화면에서만 확인하는 숨김 리뷰로 보관합니다. 고객이 작성한 원본 리뷰는 삭제하지 않고 공개 상태만 변경합니다.
 
 ## 관리자 FAQ API
 

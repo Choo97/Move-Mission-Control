@@ -15,6 +15,14 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             select review
             from Review review
             join fetch review.reservation
+            where review.id = ?1
+            """)
+    Optional<Review> findByIdWithReservation(Long id);
+
+    @Query("""
+            select review
+            from Review review
+            join fetch review.reservation
             order by review.createdAt desc, review.id desc
             """)
     List<Review> findAllWithReservationOrderByCreatedAtDesc();

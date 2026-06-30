@@ -158,6 +158,17 @@ export async function getAdminReviews() {
   return response.json() as Promise<AdminReviewResponse[]>
 }
 
+export async function updateAdminReviewPublished(reviewId: number, published: boolean) {
+  const response = await fetch(`${API_BASE_URL}/api/admin/reviews/${reviewId}/published`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ published }),
+  })
+  if (!response.ok) await throwApiError(response, '리뷰 공개 상태 변경에 실패했습니다.')
+  return response.json() as Promise<AdminReviewResponse>
+}
+
 const appendQueryParam = (params: URLSearchParams, key: string, value: string | number | boolean | undefined) => {
   if (value !== undefined && value !== '') {
     params.set(key, String(value))
