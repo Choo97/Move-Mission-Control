@@ -5,6 +5,18 @@ import './PublicReviewSection.css'
 
 const formatReviewDate = (dateTime: string) => dateTime.slice(0, 10).replaceAll('-', '.')
 
+const publicReviewIntro = (reviewCount: number) => {
+  if (reviewCount === 0) {
+    return '첫 후기가 등록되면 이곳에서 바로 확인할 수 있습니다.'
+  }
+
+  if (reviewCount === 1) {
+    return '최근 고객 후기를 통해 예약 이후의 진행 과정을 확인해 보세요.'
+  }
+
+  return '이사 예약부터 진행까지, 고객님들이 남겨주신 후기를 확인해 보세요.'
+}
+
 function PublicRatingStars({ rating }: { rating: number }) {
   return (
     <span className="public-review-stars" aria-label={`${rating}점`}>
@@ -33,6 +45,8 @@ export function PublicReviewSection() {
     [reviews],
   )
 
+  const reviewGridMode = reviews.length === 1 ? 'single' : reviews.length === 2 ? 'pair' : 'multiple'
+
   useEffect(() => {
     const loadReviews = async () => {
       setIsLoading(true)
@@ -57,11 +71,11 @@ export function PublicReviewSection() {
         <div>
           <p className="eyebrow">Customer Reviews</p>
           <h2 id="public-review-title">실제 이용 고객의 리뷰를 확인하세요</h2>
-          <p>이사 예약부터 진행까지, 고객님들이 남겨주신 후기를 확인해 보세요.</p>
+          <p>{publicReviewIntro(reviews.length)}</p>
         </div>
         <div className="public-review-summary" aria-label="공개 리뷰 요약">
           <article>
-            <span>공개 리뷰</span>
+            <span>소개 중인 후기</span>
             <strong>{reviews.length.toLocaleString()}</strong>
           </article>
           <article>
@@ -69,20 +83,33 @@ export function PublicReviewSection() {
             <strong>{averageRating}</strong>
           </article>
           <article>
-            <span>관리자 답변</span>
+            <span>답변 포함</span>
             <strong>{replyCount.toLocaleString()}</strong>
           </article>
         </div>
       </div>
 
-      {isLoading && <p className="public-review-status">공개 리뷰를 불러오는 중입니다.</p>}
-      {!isLoading && errorMessage && <p className="public-review-status">{errorMessage}</p>}
+      {isLoading && (
+        <div className="public-review-status" role="status">
+          <strong>고객 후기를 불러오고 있습니다</strong>
+          <p>최근 후기를 정리해 화면에 보여드릴게요.</p>
+        </div>
+      )}
+      {!isLoading && errorMessage && (
+        <div className="public-review-status">
+          <strong>후기를 불러오지 못했습니다</strong>
+          <p>{errorMessage}</p>
+        </div>
+      )}
       {!isLoading && !errorMessage && reviews.length === 0 && (
-        <p className="public-review-status">아직 공개된 리뷰가 없습니다.</p>
+        <div className="public-review-status public-review-empty">
+          <strong>아직 소개할 후기가 준비되지 않았습니다</strong>
+          <p>이사가 완료된 고객의 후기가 등록되면 이 영역에 차례대로 보여드립니다.</p>
+        </div>
       )}
 
       {!isLoading && reviews.length > 0 && (
-        <div className="public-review-grid">
+        <div className={`public-review-grid ${reviewGridMode}`}>
           {reviews.map((review) => (
             <article key={review.id} className="public-review-card">
               <div className="public-review-card-heading">

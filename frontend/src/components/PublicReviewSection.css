@@ -61,6 +61,8 @@
 }
 
 .public-review-status {
+  display: grid;
+  gap: 8px;
   margin: 0;
   border: 1px solid #dce6f2;
   border-radius: 8px;
@@ -70,10 +72,35 @@
   font-weight: 800;
 }
 
+.public-review-status strong {
+  color: #172033;
+  font-size: 17px;
+}
+
+.public-review-status p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.public-review-empty {
+  border-style: dashed;
+  background: #ffffff;
+}
+
 .public-review-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
+}
+
+.public-review-grid.single {
+  grid-template-columns: minmax(0, 680px);
+}
+
+.public-review-grid.pair {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .public-review-card {

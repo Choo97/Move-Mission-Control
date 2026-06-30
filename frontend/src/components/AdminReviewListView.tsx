@@ -12,6 +12,7 @@ import { getErrorMessage } from '../api/apiError'
 import { adminLoginHref, redirectToAdminExpiredLogin } from '../adminAuthNavigation'
 import { StatusNotice } from './StatusNotice'
 import type { AdminReviewResponse, AdminSessionResponse } from '../types'
+import './AdminReviewListView.css'
 
 type AdminReviewQuery = {
   rating?: number
@@ -56,6 +57,21 @@ const matchesKeyword = (review: AdminReviewResponse, keyword: string) => {
 
 const buildReplyForms = (reviews: AdminReviewResponse[]) =>
   Object.fromEntries(reviews.map((review) => [review.id, review.adminReply ?? '']))
+
+const reviewVisibilityText = (published: boolean) =>
+  published
+    ? {
+        label: '고객 홈 노출 중',
+        description: '이 리뷰는 고객 홈의 후기 섹션에 표시됩니다.',
+        actionLabel: '고객 화면에서 숨기기',
+        processingLabel: '숨기는 중',
+      }
+    : {
+        label: '고객 홈 숨김',
+        description: '이 리뷰는 관리자만 볼 수 있고 고객 홈에는 표시되지 않습니다.',
+        actionLabel: '고객 화면에 보이기',
+        processingLabel: '보이게 하는 중',
+      }
 
 function RatingStars({ rating }: { rating: number }) {
   return (
@@ -190,7 +206,11 @@ export function AdminReviewListView() {
     try {
       const updatedReview = await updateAdminReviewPublished(review.id, !review.published)
       updateReviewInList(updatedReview, false)
-      setMessage(updatedReview.published ? '리뷰를 공개했습니다.' : '리뷰를 숨김 처리했습니다.')
+      setMessage(
+        updatedReview.published
+          ? '고객 홈에 리뷰가 표시됩니다.'
+          : '고객 홈에서 리뷰가 숨겨졌습니다.',
+      )
     } catch (error) {
       if (error instanceof AdminAuthenticationRequiredError) {
         redirectToAdminExpiredLogin()
@@ -293,12 +313,12 @@ export function AdminReviewListView() {
               <p>필터 적용 결과</p>
             </article>
             <article>
-              <span>공개</span>
+              <span>고객 홈 노출</span>
               <strong>{summary.publishedCount.toLocaleString()}</strong>
-              <p>고객 노출 가능</p>
+              <p>고객이 볼 수 있음</p>
             </article>
             <article>
-              <span>숨김</span>
+              <span>고객 홈 숨김</span>
               <strong>{summary.hiddenCount.toLocaleString()}</strong>
               <p>관리자만 확인</p>
             </article>
@@ -333,7 +353,7 @@ export function AdminReviewListView() {
               </select>
             </label>
             <label>
-              공개 상태
+              고객 화면 표시 상태
               <select
                 value={query.published === undefined ? '' : String(query.published)}
                 onChange={(event) => {
@@ -345,8 +365,8 @@ export function AdminReviewListView() {
                 }}
               >
                 <option value="">전체 상태</option>
-                <option value="true">공개</option>
-                <option value="false">숨김</option>
+                <option value="true">고객 홈 노출</option>
+                <option value="false">고객 홈 숨김</option>
               </select>
             </label>
             <label>
@@ -396,85 +416,95 @@ export function AdminReviewListView() {
           )}
 
           <div className="admin-review-list">
-            {filteredReviews.map((review) => (
-              <article
-                key={review.id}
-                className={`${review.rating <= 3 ? 'needs-check' : ''} ${review.published ? 'published' : 'hidden'}`}
-              >
-                <div className="admin-review-card-heading">
-                  <div>
-                    <span className={`history-badge ${review.published ? 'sent' : 'failed'}`}>
-                      {review.published ? '공개' : '숨김'}
-                    </span>
-                    <RatingStars rating={review.rating} />
-                    <strong>{review.rating}점</strong>
-                    <span className="history-badge sent">{review.statusLabel}</span>
-                  </div>
-                  <div className="admin-review-card-actions">
-                    <button
-                      type="button"
-                      disabled={processingReviewId === review.id}
-                      onClick={() => void togglePublished(review)}
-                    >
-                      {processingReviewId === review.id
-                        ? '처리 중'
-                        : review.published ? '숨김 처리' : '공개 처리'}
-                    </button>
-                    <a className="admin-row-link" href={`/admin/reservations/${review.reservationId}`}>
-                      예약 상세
-                    </a>
-                  </div>
-                </div>
-                <p className="admin-review-content">{review.content}</p>
-                <div className="admin-review-reply-panel">
-                  <div>
-                    <strong>관리자 답변</strong>
-                    {review.adminReply && review.adminRepliedAt && (
-                      <span>
-                        {review.adminRepliedBy ?? 'admin'} · {formatDateTime(review.adminRepliedAt)}
+            {filteredReviews.map((review) => {
+              const visibility = reviewVisibilityText(review.published)
+
+              return (
+                <article
+                  key={review.id}
+                  className={`${review.rating <= 3 ? 'needs-check' : ''} ${review.published ? 'published' : 'hidden'}`}
+                >
+                  <div className="admin-review-card-heading">
+                    <div>
+                      <span className={`history-badge ${review.published ? 'sent' : 'failed'}`}>
+                        {visibility.label}
                       </span>
-                    )}
+                      <RatingStars rating={review.rating} />
+                      <strong>{review.rating}점</strong>
+                      <span className="history-badge sent">{review.statusLabel}</span>
+                    </div>
+                    <div className="admin-review-card-actions">
+                      <button
+                        type="button"
+                        className="admin-review-visibility-action"
+                        disabled={processingReviewId === review.id}
+                        onClick={() => void togglePublished(review)}
+                      >
+                        {processingReviewId === review.id ? visibility.processingLabel : visibility.actionLabel}
+                      </button>
+                      <a className="admin-row-link" href={`/admin/reservations/${review.reservationId}`}>
+                        예약 상세
+                      </a>
+                    </div>
                   </div>
-                  <textarea
-                    rows={3}
-                    maxLength={1000}
-                    value={replyForms[review.id] ?? ''}
-                    placeholder="고객 리뷰에 대한 관리자 답변을 입력하세요."
-                    onChange={(event) =>
-                      setReplyForms((current) => ({ ...current, [review.id]: event.target.value }))
-                    }
-                  />
-                  <div className="admin-review-reply-actions">
-                    <span>{(replyForms[review.id] ?? '').length.toLocaleString()} / 1,000자</span>
-                    <button
-                      type="button"
-                      disabled={processingReviewId === review.id}
-                      onClick={() => void submitReply(review)}
-                    >
-                      {processingReviewId === review.id ? '저장 중' : '답변 저장'}
-                    </button>
+                  <div
+                    className={`admin-review-visibility ${review.published ? 'is-visible' : 'is-hidden'}`}
+                    aria-label="고객 화면 표시 상태"
+                  >
+                    <span>{visibility.label}</span>
+                    <p>{visibility.description}</p>
                   </div>
-                </div>
-                <dl className="admin-review-meta">
-                  <div>
-                    <dt>고객</dt>
-                    <dd>{review.customerName}</dd>
+                  <p className="admin-review-content">{review.content}</p>
+                  <div className="admin-review-reply-panel">
+                    <div>
+                      <strong>관리자 답변</strong>
+                      {review.adminReply && review.adminRepliedAt && (
+                        <span>
+                          {review.adminRepliedBy ?? 'admin'} · {formatDateTime(review.adminRepliedAt)}
+                        </span>
+                      )}
+                    </div>
+                    <textarea
+                      rows={3}
+                      maxLength={1000}
+                      value={replyForms[review.id] ?? ''}
+                      placeholder="고객 리뷰에 대한 관리자 답변을 입력하세요."
+                      onChange={(event) =>
+                        setReplyForms((current) => ({ ...current, [review.id]: event.target.value }))
+                      }
+                    />
+                    <div className="admin-review-reply-actions">
+                      <span>{(replyForms[review.id] ?? '').length.toLocaleString()} / 1,000자</span>
+                      <button
+                        type="button"
+                        disabled={processingReviewId === review.id}
+                        onClick={() => void submitReply(review)}
+                      >
+                        {processingReviewId === review.id ? '저장 중' : '답변 저장'}
+                      </button>
+                    </div>
                   </div>
-                  <div>
-                    <dt>연락처</dt>
-                    <dd>{review.phone}</dd>
-                  </div>
-                  <div>
-                    <dt>이사 일정</dt>
-                    <dd>{formatMoveSchedule(review.moveDate, review.moveTime)}</dd>
-                  </div>
-                  <div>
-                    <dt>작성일</dt>
-                    <dd>{formatDateTime(review.createdAt)}</dd>
-                  </div>
-                </dl>
-              </article>
-            ))}
+                  <dl className="admin-review-meta">
+                    <div>
+                      <dt>고객</dt>
+                      <dd>{review.customerName}</dd>
+                    </div>
+                    <div>
+                      <dt>연락처</dt>
+                      <dd>{review.phone}</dd>
+                    </div>
+                    <div>
+                      <dt>이사 일정</dt>
+                      <dd>{formatMoveSchedule(review.moveDate, review.moveTime)}</dd>
+                    </div>
+                    <div>
+                      <dt>작성일</dt>
+                      <dd>{formatDateTime(review.createdAt)}</dd>
+                    </div>
+                  </dl>
+                </article>
+              )
+            })}
           </div>
         </>
       )}
