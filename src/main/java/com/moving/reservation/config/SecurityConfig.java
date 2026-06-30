@@ -89,6 +89,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/reservations/*/estimate/accept").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/reservations/*/photos").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/reviews").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/reviews/public").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/api/reservations/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/customer-guides/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/availability").permitAll()

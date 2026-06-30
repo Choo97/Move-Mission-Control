@@ -37,6 +37,7 @@ React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 기능 
 | 고객 FAQ | `GET` | `/api/faqs` | 공개 중인 FAQ 조회 |
 | 파일 업로드 | `POST` | `/api/reservations/{reservationId}/photos` | 짐 사진 업로드 |
 | 고객 리뷰 | `POST` | `/api/reviews` | 완료 예약 리뷰 작성 |
+| 고객 리뷰 | `GET` | `/api/reviews/public` | 고객 화면 공개 리뷰 조회 |
 | 관리자 고객 요청 | `POST` | `/api/admin/reservations/customer-requests/{requestId}/approve` | 고객 수정/취소 요청 승인 |
 | 관리자 고객 요청 | `POST` | `/api/admin/reservations/customer-requests/{requestId}/reject` | 고객 수정/취소 요청 반려 |
 | 관리자 알림 | `GET` | `/api/admin/notifications` | 전체 알림 이력 조회 |
@@ -65,6 +66,7 @@ React 같은 별도 프론트엔드에서 사용할 수 있도록 고객 기능 
 | 견적 동의 | 견적 동의 API 제공 | 견적 안내 후 확정 흐름 구현 가능 |
 | 짐 사진 업로드 | multipart API 제공 | React에서 `FormData`로 업로드 가능 |
 | 고객 리뷰 | `/api/reviews` 제공 | 완료 예약 리뷰 작성 화면 구현 가능 |
+| 공개 리뷰 | `/api/reviews/public` 제공 | 랜딩 페이지에 공개 리뷰 섹션 구현 가능 |
 | 고객 안내 | `/api/customer-guides/{status}` 제공 | 관리자에서 관리한 상태별 안내 문구 표시 가능 |
 | 오류 처리 | `code`, `message` 공통 응답 제공 | React에서 오류 종류별 화면 처리 가능 |
 | API 문서 | Swagger UI 제공 | 프론트 개발자가 요청/응답 구조 확인 가능 |
@@ -510,3 +512,25 @@ Content-Type: application/json
 
 예약 당시 연락처가 일치하고 예약 상태가 `완료`이면 리뷰를 작성할 수 있습니다. 같은 예약에는 리뷰를 한 번만 작성할 수 있습니다.
 React 고객 화면에서는 완료 상태의 예약을 조회했을 때 리뷰 작성 폼을 표시합니다.
+
+### 공개 리뷰 조회
+
+```http
+GET /api/reviews/public?limit=6
+```
+
+관리자가 공개 처리한 리뷰만 최신순으로 조회합니다. 고객 화면에 노출되는 API이므로 예약번호, 연락처, 이메일은 응답하지 않고 고객명도 마스킹합니다.
+
+```json
+[
+  {
+    "id": 1,
+    "customerName": "김** 고객",
+    "rating": 5,
+    "content": "상담부터 이사 완료까지 친절했습니다.",
+    "adminReply": "이용해 주셔서 감사합니다.",
+    "moveTypeLabel": "원룸",
+    "createdAt": "2026-07-02T16:30:00"
+  }
+]
+```

@@ -13,6 +13,16 @@ export type ReviewApiResponse = {
 
 export type ReviewResponse = ReviewApiResponse
 
+export type PublicReviewResponse = {
+  id: number
+  customerName: string
+  rating: number
+  content: string
+  adminReply: string | null
+  moveTypeLabel: string
+  createdAt: string
+}
+
 export type AdminReviewResponse = {
   id: number
   reservationId: number

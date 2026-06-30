@@ -2,6 +2,7 @@ package com.moving.reservation.review;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -26,6 +27,15 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             order by review.createdAt desc, review.id desc
             """)
     List<Review> findAllWithReservationOrderByCreatedAtDesc();
+
+    @Query("""
+            select review
+            from Review review
+            join fetch review.reservation
+            where review.published = true
+            order by review.createdAt desc, review.id desc
+            """)
+    List<Review> findPublishedWithReservationOrderByCreatedAtDesc(Pageable pageable);
 
     @Query("""
             select coalesce(avg(review.rating), 0)

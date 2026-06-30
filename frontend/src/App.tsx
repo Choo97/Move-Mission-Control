@@ -11,6 +11,7 @@ import { ReservationDetailPanel } from './components/ReservationDetailPanel'
 import { ReservationEditFormView } from './components/ReservationEditFormView'
 import { ReservationSearchFormView } from './components/ReservationSearchFormView'
 import { FaqView } from './components/FaqView'
+import { PublicReviewSection } from './components/PublicReviewSection'
 import {
   acceptEstimate as acceptEstimateApi,
   cancelReservation as cancelReservationApi,
@@ -700,6 +701,8 @@ function LandingSections({ onReserveClick, onSearchClick, onFaqClick }: LandingP
           <button type="button" className="text-button" onClick={onFaqClick}>FAQ 보기</button>
         </article>
       </div>
+
+      <PublicReviewSection />
     </section>
   )
 }

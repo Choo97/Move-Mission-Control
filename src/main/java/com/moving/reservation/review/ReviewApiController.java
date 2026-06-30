@@ -6,12 +6,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -23,6 +26,18 @@ public class ReviewApiController {
 
     public ReviewApiController(ReviewService reviewService) {
         this.reviewService = reviewService;
+    }
+
+    @Operation(
+            summary = "공개 리뷰 조회",
+            description = "관리자가 공개 처리한 리뷰만 개인정보 없이 최신순으로 조회합니다."
+    )
+    @ApiResponse(responseCode = "200", description = "공개 리뷰 조회 성공")
+    @GetMapping("/public")
+    public List<PublicReviewResponse> publicReviews(@RequestParam(defaultValue = "6") int limit) {
+        return reviewService.findPublished(limit).stream()
+                .map(PublicReviewResponse::from)
+                .toList();
     }
 
     @Operation(

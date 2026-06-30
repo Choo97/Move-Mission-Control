@@ -1,6 +1,7 @@
 package com.moving.reservation.review;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -31,6 +32,9 @@ class ReviewApiControllerTest {
 
     @Autowired
     private ReservationService reservationService;
+
+    @Autowired
+    private ReviewService reviewService;
 
     @Test
     void 리뷰작성_API로_완료된_예약에_리뷰를_작성한다() throws Exception {
@@ -108,8 +112,47 @@ class ReviewApiControllerTest {
                 .andExpect(status().isCreated());
     }
 
+    @Test
+    void 공개리뷰_API는_공개된_리뷰만_개인정보_없이_조회한다() throws Exception {
+        Reservation publicReservation = completedReservation("김민수", "010-1111-1111");
+        Review publicReview = reviewService.create(reviewCreateRequest(
+                publicReservation.getId(),
+                "010-1111-1111",
+                5,
+                "상담부터 이사 완료까지 친절했습니다."
+        ));
+        reviewService.updateAdminReply(publicReview.getId(), "이용해 주셔서 감사합니다.", "admin");
+
+        Reservation hiddenReservation = completedReservation("이영희", "010-2222-2222");
+        Review hiddenReview = reviewService.create(reviewCreateRequest(
+                hiddenReservation.getId(),
+                "010-2222-2222",
+                4,
+                "숨김 처리할 리뷰입니다."
+        ));
+        reviewService.hide(hiddenReview.getId());
+
+        mockMvc.perform(get("/api/reviews/public?limit=6"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(publicReview.getId()))
+                .andExpect(jsonPath("$[0].customerName").value("김** 고객"))
+                .andExpect(jsonPath("$[0].rating").value(5))
+                .andExpect(jsonPath("$[0].content").value("상담부터 이사 완료까지 친절했습니다."))
+                .andExpect(jsonPath("$[0].adminReply").value("이용해 주셔서 감사합니다."))
+                .andExpect(jsonPath("$[0].moveTypeLabel").value("원룸"))
+                .andExpect(jsonPath("$[0].createdAt").isString())
+                .andExpect(jsonPath("$[0].reservationId").doesNotExist())
+                .andExpect(jsonPath("$[0].phone").doesNotExist())
+                .andExpect(jsonPath("$[0].email").doesNotExist())
+                .andExpect(jsonPath("$[1]").doesNotExist());
+    }
+
     private Reservation completedReservation(String phone) {
-        Reservation reservation = reservationService.create(reservationCreateRequest(phone));
+        return completedReservation("리뷰API고객", phone);
+    }
+
+    private Reservation completedReservation(String customerName, String phone) {
+        Reservation reservation = reservationService.create(reservationCreateRequest(customerName, phone));
         reservationService.updateStatus(reservation.getId(), ReservationStatus.CONSULTING, "test-admin");
         reservationService.updateStatus(reservation.getId(), ReservationStatus.ESTIMATE_SENT, "test-admin");
         reservationService.updateStatus(reservation.getId(), ReservationStatus.CONFIRMED, "test-admin");
@@ -118,8 +161,12 @@ class ReviewApiControllerTest {
     }
 
     private ReservationCreateRequest reservationCreateRequest(String phone) {
+        return reservationCreateRequest("리뷰API고객", phone);
+    }
+
+    private ReservationCreateRequest reservationCreateRequest(String customerName, String phone) {
         ReservationCreateRequest request = new ReservationCreateRequest();
-        request.setCustomerName("리뷰API고객");
+        request.setCustomerName(customerName);
         request.setPhone(phone);
         request.setEmail("review-api@example.com");
         request.setMoveDate(LocalDate.now().plusDays(7));
@@ -132,6 +179,15 @@ class ReviewApiControllerTest {
         request.setFromFloor(3);
         request.setToFloor(5);
         request.setMemo("리뷰 API 테스트 예약입니다.");
+        return request;
+    }
+
+    private ReviewCreateRequest reviewCreateRequest(Long reservationId, String phone, Integer rating, String content) {
+        ReviewCreateRequest request = new ReviewCreateRequest();
+        request.setReservationId(reservationId);
+        request.setPhone(phone);
+        request.setRating(rating);
+        request.setContent(content);
         return request;
     }
 }

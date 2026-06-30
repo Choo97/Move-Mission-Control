@@ -5,6 +5,7 @@ import com.moving.reservation.reservation.ReservationRepository;
 import com.moving.reservation.reservation.ReservationStatus;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -33,6 +34,11 @@ public class ReviewService {
         return findAll().stream()
                 .limit(3)
                 .toList();
+    }
+
+    public List<Review> findPublished(int limit) {
+        int safeLimit = Math.max(1, Math.min(limit, 12));
+        return reviewRepository.findPublishedWithReservationOrderByCreatedAtDesc(PageRequest.of(0, safeLimit));
     }
 
     public double averageRating() {
