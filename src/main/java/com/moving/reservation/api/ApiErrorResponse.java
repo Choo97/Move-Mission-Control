@@ -25,4 +25,8 @@ public record ApiErrorResponse(
     public static ApiErrorResponse unauthorized(String message) {
         return new ApiErrorResponse("UNAUTHORIZED", message);
     }
+
+    public static ApiErrorResponse tooManyRequests(String message) {
+        return new ApiErrorResponse("TOO_MANY_REQUESTS", message);
+    }
 }

@@ -57,6 +57,13 @@ privacy:
     conflict-attempt-days: ${PRIVACY_CONFLICT_ATTEMPT_RETENTION_DAYS:30}
     cleanup-cron: "${PRIVACY_RETENTION_CLEANUP_CRON:0 0 3 * * *}"
 
+reservation:
+  lookup:
+    max-failure-count: ${RESERVATION_LOOKUP_MAX_FAILURE_COUNT:5}
+    failure-window-minutes: ${RESERVATION_LOOKUP_FAILURE_WINDOW_MINUTES:10}
+    lock-minutes: ${RESERVATION_LOOKUP_LOCK_MINUTES:10}
+    cleanup-delay-minutes: ${RESERVATION_LOOKUP_CLEANUP_DELAY_MINUTES:30}
+
 upload:
   reservation-photo:
     directory: ${RESERVATION_PHOTO_UPLOAD_DIR:uploads/reservation-photos}

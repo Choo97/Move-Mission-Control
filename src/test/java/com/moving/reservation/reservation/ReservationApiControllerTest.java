@@ -155,6 +155,79 @@ class ReservationApiControllerTest {
     }
 
     @Test
+    void 예약조회_API는_실패가_반복되면_잠시_제한한다() throws Exception {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+
+        for (int attempt = 0; attempt < 4; attempt++) {
+            mockMvc.perform(post("/api/reservations/search")
+                            .header("X-Forwarded-For", "203.0.113.70")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {
+                                      "reservationId": %d,
+                                      "phone": "010-0000-0000"
+                                    }
+                                    """.formatted(reservation.getId())))
+                    .andExpect(status().isNotFound());
+        }
+
+        mockMvc.perform(post("/api/reservations/search")
+                        .header("X-Forwarded-For", "203.0.113.70")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "reservationId": %d,
+                                  "phone": "010-0000-0000"
+                                }
+                                """.formatted(reservation.getId())))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.code").value("TOO_MANY_REQUESTS"))
+                .andExpect(jsonPath("$.message").value("예약 조회 시도가 많아 잠시 제한되었습니다. 10분 후 다시 시도해 주세요."));
+    }
+
+    @Test
+    void 예약조회_API는_성공하면_실패횟수를_초기화한다() throws Exception {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+
+        for (int attempt = 0; attempt < 4; attempt++) {
+            mockMvc.perform(post("/api/reservations/search")
+                            .header("X-Forwarded-For", "203.0.113.71")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {
+                                      "reservationId": %d,
+                                      "phone": "010-0000-0000"
+                                    }
+                                    """.formatted(reservation.getId())))
+                    .andExpect(status().isNotFound());
+        }
+
+        mockMvc.perform(post("/api/reservations/search")
+                        .header("X-Forwarded-For", "203.0.113.71")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "reservationId": %d,
+                                  "phone": "010-1234-5678"
+                                }
+                                """.formatted(reservation.getId())))
+                .andExpect(status().isOk());
+
+        for (int attempt = 0; attempt < 4; attempt++) {
+            mockMvc.perform(post("/api/reservations/search")
+                            .header("X-Forwarded-For", "203.0.113.71")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {
+                                      "reservationId": %d,
+                                      "phone": "010-0000-0000"
+                                    }
+                                    """.formatted(reservation.getId())))
+                    .andExpect(status().isNotFound());
+        }
+    }
+
+    @Test
     void 예약조회_API는_CSRF_토큰없이_호출할_수_있다() throws Exception {
         Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
 

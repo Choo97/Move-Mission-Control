@@ -6,8 +6,10 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,9 +29,12 @@ import org.springframework.web.multipart.MultipartFile;
 public class ReservationApiController {
 
     private final ReservationService reservationService;
+    private final ReservationLookupAttemptService lookupAttemptService;
 
-    public ReservationApiController(ReservationService reservationService) {
+    public ReservationApiController(ReservationService reservationService,
+                                    ReservationLookupAttemptService lookupAttemptService) {
         this.reservationService = reservationService;
+        this.lookupAttemptService = lookupAttemptService;
     }
 
     @Operation(
@@ -62,19 +67,35 @@ public class ReservationApiController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "예약 조회 성공"),
             @ApiResponse(responseCode = "400", description = "입력값 오류"),
-            @ApiResponse(responseCode = "404", description = "예약 번호와 연락처가 일치하는 예약 없음")
+            @ApiResponse(responseCode = "404", description = "예약 번호와 연락처가 일치하는 예약 없음"),
+            @ApiResponse(responseCode = "429", description = "예약 조회 시도 제한")
     })
     @PostMapping("/search")
     public ResponseEntity<?> search(@Valid @RequestBody ReservationSearchRequest request,
-                                    BindingResult bindingResult) {
+                                    BindingResult bindingResult,
+                                    HttpServletRequest servletRequest) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(ApiErrorResponse.badRequest(firstErrorMessage(bindingResult)));
         }
 
+        String clientIp = ReservationLookupClientInfo.from(servletRequest).ipAddress();
+        ReservationLookupAttemptResult allowed = lookupAttemptService.checkAllowed(clientIp);
+
+        if (!allowed.allowed()) {
+            return tooManyRequests(allowed);
+        }
+
         try {
             Reservation reservation = reservationService.search(request);
+            lookupAttemptService.recordSuccess(clientIp);
             return ResponseEntity.ok(toResponse(reservation));
         } catch (IllegalArgumentException exception) {
+            ReservationLookupAttemptResult failed = lookupAttemptService.recordFailure(clientIp);
+
+            if (!failed.allowed()) {
+                return tooManyRequests(failed);
+            }
+
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiErrorResponse.notFound(exception.getMessage()));
         }
@@ -175,6 +196,12 @@ public class ReservationApiController {
         } catch (IllegalArgumentException | IllegalStateException exception) {
             return ResponseEntity.badRequest().body(ApiErrorResponse.badRequest(exception.getMessage()));
         }
+    }
+
+    private ResponseEntity<ApiErrorResponse> tooManyRequests(ReservationLookupAttemptResult result) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header(HttpHeaders.RETRY_AFTER, String.valueOf(result.retryAfterSeconds()))
+                .body(ApiErrorResponse.tooManyRequests(result.message()));
     }
 
     private String firstErrorMessage(BindingResult bindingResult) {

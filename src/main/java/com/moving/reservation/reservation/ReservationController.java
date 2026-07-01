@@ -2,6 +2,7 @@ package com.moving.reservation.reservation;
 
 import com.moving.reservation.admin.EstimateDocumentPdfService;
 import com.moving.reservation.review.ReviewService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -31,15 +32,18 @@ public class ReservationController {
     private final ReviewService reviewService;
     private final EstimateDocumentPdfService estimateDocumentPdfService;
     private final CustomerGuideService customerGuideService;
+    private final ReservationLookupAttemptService lookupAttemptService;
 
     public ReservationController(ReservationService reservationService,
                                  ReviewService reviewService,
                                  EstimateDocumentPdfService estimateDocumentPdfService,
-                                 CustomerGuideService customerGuideService) {
+                                 CustomerGuideService customerGuideService,
+                                 ReservationLookupAttemptService lookupAttemptService) {
         this.reservationService = reservationService;
         this.reviewService = reviewService;
         this.estimateDocumentPdfService = estimateDocumentPdfService;
         this.customerGuideService = customerGuideService;
+        this.lookupAttemptService = lookupAttemptService;
     }
 
     @GetMapping("/new")
@@ -83,17 +87,28 @@ public class ReservationController {
     public String search(@Valid @ModelAttribute ReservationSearchRequest request,
                          BindingResult bindingResult,
                          Model model,
+                         HttpServletRequest servletRequest,
                          HttpSession session) {
         if (bindingResult.hasErrors()) {
             return "reservation/search";
         }
 
+        String clientIp = ReservationLookupClientInfo.from(servletRequest).ipAddress();
+        ReservationLookupAttemptResult allowed = lookupAttemptService.checkAllowed(clientIp);
+
+        if (!allowed.allowed()) {
+            model.addAttribute("searchError", allowed.message());
+            return "reservation/search";
+        }
+
         try {
             Reservation reservation = reservationService.search(request);
+            lookupAttemptService.recordSuccess(clientIp);
             ReservationAccessSession.authorize(session, reservation.getId());
             return "redirect:/reservations/" + reservation.getId();
         } catch (IllegalArgumentException exception) {
-            model.addAttribute("searchError", exception.getMessage());
+            ReservationLookupAttemptResult failed = lookupAttemptService.recordFailure(clientIp);
+            model.addAttribute("searchError", failed.allowed() ? exception.getMessage() : failed.message());
             return "reservation/search";
         }
     }

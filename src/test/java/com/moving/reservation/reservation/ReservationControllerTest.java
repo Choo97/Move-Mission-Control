@@ -91,6 +91,31 @@ class ReservationControllerTest {
     }
 
     @Test
+    void 예약조회_화면은_실패가_반복되면_잠시_제한한다() throws Exception {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+
+        for (int attempt = 0; attempt < 4; attempt++) {
+            mockMvc.perform(post("/reservations/search")
+                            .with(csrf())
+                            .header("X-Forwarded-For", "198.51.100.70")
+                            .param("reservationId", reservation.getId().toString())
+                            .param("phone", "010-0000-0000"))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("reservation/search"))
+                    .andExpect(model().attribute("searchError", "예약 번호와 연락처가 일치하는 예약을 찾을 수 없습니다."));
+        }
+
+        mockMvc.perform(post("/reservations/search")
+                        .with(csrf())
+                        .header("X-Forwarded-For", "198.51.100.70")
+                        .param("reservationId", reservation.getId().toString())
+                        .param("phone", "010-0000-0000"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("reservation/search"))
+                .andExpect(model().attribute("searchError", "예약 조회 시도가 많아 잠시 제한되었습니다. 10분 후 다시 시도해 주세요."));
+    }
+
+    @Test
     void 예약신청을_완료하면_상세화면으로_이동한다() throws Exception {
         mockMvc.perform(post("/reservations")
                         .param("customerName", "고객화면고객")
