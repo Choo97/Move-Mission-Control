@@ -1,8 +1,8 @@
 package com.moving.reservation.review;
 
 import com.moving.reservation.reservation.Reservation;
+import com.moving.reservation.privacy.PersonalInfoMasker;
 import java.time.LocalDateTime;
-import org.springframework.util.StringUtils;
 
 public record PublicReviewResponse(
         Long id,
@@ -18,21 +18,12 @@ public record PublicReviewResponse(
         Reservation reservation = review.getReservation();
         return new PublicReviewResponse(
                 review.getId(),
-                maskedCustomerName(reservation.getCustomerName()),
+                PersonalInfoMasker.maskReviewCustomerName(reservation.getCustomerName()),
                 review.getRating(),
                 review.getContent(),
                 review.getAdminReply(),
                 reservation.getMoveType().getLabel(),
                 review.getCreatedAt()
         );
-    }
-
-    private static String maskedCustomerName(String customerName) {
-        if (!StringUtils.hasText(customerName)) {
-            return "이사 고객";
-        }
-
-        String trimmedName = customerName.trim();
-        return trimmedName.substring(0, 1) + "** 고객";
     }
 }

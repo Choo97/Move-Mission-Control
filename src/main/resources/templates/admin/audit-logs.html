@@ -86,8 +86,9 @@
                     <a class="text-link"
                        th:if="${auditLog.reservation != null}"
                        th:href="@{/admin/reservations/{id}(id=${auditLog.reservation.id})}"
-                       th:text="${auditLog.reservation.customerName}">홍길동</a>
-                    <span th:if="${auditLog.reservation != null}" th:text="${auditLog.reservation.phone}">010-0000-0000</span>
+                       th:text="${T(com.moving.reservation.privacy.PersonalInfoMasker).maskName(auditLog.reservation.customerName)}">홍길동</a>
+                    <span th:if="${auditLog.reservation != null}"
+                          th:text="${T(com.moving.reservation.privacy.PersonalInfoMasker).maskPhone(auditLog.reservation.phone)}">010-0000-0000</span>
                     <span th:unless="${auditLog.reservation != null}">예약 없음</span>
                 </td>
                 <td>

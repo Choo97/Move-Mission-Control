@@ -1,6 +1,7 @@
 package com.moving.reservation.admin;
 
 import com.moving.reservation.notification.CustomerNotification;
+import com.moving.reservation.privacy.PersonalInfoMasker;
 import com.moving.reservation.reservation.Reservation;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,8 +32,8 @@ public record AdminNotificationActionItemResponse(
         return new AdminNotificationActionItemResponse(
                 notification.getId(),
                 reservation.getId(),
-                reservation.getCustomerName(),
-                reservation.getPhone(),
+                PersonalInfoMasker.maskName(reservation.getCustomerName()),
+                PersonalInfoMasker.maskPhone(reservation.getPhone()),
                 reservation.getMoveDate(),
                 reservation.getMoveTime(),
                 notification.getType().name(),
@@ -41,7 +42,7 @@ public record AdminNotificationActionItemResponse(
                 notification.getChannel().getLabel(),
                 notification.getStatus().name(),
                 notification.getStatus().getLabel(),
-                notification.getRecipientContact(),
+                PersonalInfoMasker.maskContact(notification.getRecipientContact()),
                 notification.getMessage(),
                 notification.getFailureReason(),
                 notification.getCreatedAt()

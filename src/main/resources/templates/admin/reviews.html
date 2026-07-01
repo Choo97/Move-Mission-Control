@@ -43,8 +43,8 @@
                 <td>
                     <a class="text-link"
                        th:href="@{/admin/reservations/{id}(id=${review.reservation.id})}"
-                       th:text="${review.reservation.customerName}">홍길동</a>
-                    <span th:text="${review.reservation.phone}">010-0000-0000</span>
+                       th:text="${T(com.moving.reservation.privacy.PersonalInfoMasker).maskName(review.reservation.customerName)}">홍길동</a>
+                    <span th:text="${T(com.moving.reservation.privacy.PersonalInfoMasker).maskPhone(review.reservation.phone)}">010-0000-0000</span>
                 </td>
                 <td th:text="${review.rating + '점'}">5점</td>
                 <td th:text="${review.content}">친절했습니다.</td>

@@ -1,6 +1,7 @@
 package com.moving.reservation.admin;
 
 import com.moving.reservation.reservation.Reservation;
+import com.moving.reservation.privacy.PersonalInfoMasker;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -28,12 +29,12 @@ public record AdminReservationListItemResponse(
     public static AdminReservationListItemResponse from(Reservation reservation) {
         return new AdminReservationListItemResponse(
                 reservation.getId(),
-                reservation.getCustomerName(),
-                reservation.getPhone(),
+                PersonalInfoMasker.maskName(reservation.getCustomerName()),
+                PersonalInfoMasker.maskPhone(reservation.getPhone()),
                 reservation.getMoveDate(),
                 reservation.getMoveTime(),
-                reservation.getFromAddress(),
-                reservation.getToAddress(),
+                PersonalInfoMasker.maskAddress(reservation.getFromAddress()),
+                PersonalInfoMasker.maskAddress(reservation.getToAddress()),
                 reservation.getMoveType().name(),
                 reservation.getMoveType().getLabel(),
                 reservation.getStatus().name(),

@@ -43,7 +43,7 @@
             <a th:each="reservation : ${todayReservations}"
                th:href="@{/admin/reservations/{id}(id=${reservation.id})}">
                 <span th:text="${reservation.moveTime + ' / ' + reservation.status.label}">09:00 / 접수</span>
-                <strong th:text="${reservation.customerName + ' / ' + reservation.moveType.label}">홍길동 / 원룸</strong>
+                <strong th:text="${T(com.moving.reservation.privacy.PersonalInfoMasker).maskName(reservation.customerName) + ' / ' + reservation.moveType.label}">홍길동 / 원룸</strong>
             </a>
         </div>
 
@@ -94,7 +94,7 @@
                                class="calendar-item"
                                th:classappend="${' calendar-status--' + #strings.toLowerCase(reservation.status.name())}"
                                th:href="@{/admin/reservations/{id}(id=${reservation.id})}"
-                               th:text="${reservation.moveTime + ' ' + reservation.customerName}">
+                               th:text="${reservation.moveTime + ' ' + T(com.moving.reservation.privacy.PersonalInfoMasker).maskName(reservation.customerName)}">
                                 09:00 홍길동
                             </a>
                             <span th:if="${day.reservations().size() > 2}"
@@ -120,8 +120,8 @@
                          th:classappend="${' agenda-item--' + #strings.toLowerCase(reservation.status.name())}">
                     <a th:href="@{/admin/reservations/{id}(id=${reservation.id})}">
                         <span th:text="${reservation.moveTime + ' / ' + reservation.status.label}">09:00 / 접수</span>
-                        <strong th:text="${reservation.customerName + ' / ' + reservation.moveType.label}">홍길동 / 원룸</strong>
-                        <small th:text="${reservation.fromAddress + ' -> ' + reservation.toAddress}">출발 -> 도착</small>
+                        <strong th:text="${T(com.moving.reservation.privacy.PersonalInfoMasker).maskName(reservation.customerName) + ' / ' + reservation.moveType.label}">홍길동 / 원룸</strong>
+                        <small th:text="${T(com.moving.reservation.privacy.PersonalInfoMasker).maskAddress(reservation.fromAddress) + ' -> ' + T(com.moving.reservation.privacy.PersonalInfoMasker).maskAddress(reservation.toAddress)}">출발 -> 도착</small>
                     </a>
                     <div class="agenda-actions">
                         <a th:href="@{/admin/reservations/{id}(id=${reservation.id})}">상세</a>

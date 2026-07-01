@@ -53,9 +53,9 @@ class AdminReviewApiControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").isNumber())
                 .andExpect(jsonPath("$[0].reservationId").value(reservation.getId()))
-                .andExpect(jsonPath("$[0].customerName").value("리뷰관리고객"))
-                .andExpect(jsonPath("$[0].phone").value("010-1234-5678"))
-                .andExpect(jsonPath("$[0].email").value("admin-review@example.com"))
+                .andExpect(jsonPath("$[0].customerName").value("리**"))
+                .andExpect(jsonPath("$[0].phone").value("010-****-5678"))
+                .andExpect(jsonPath("$[0].email").value("a***@example.com"))
                 .andExpect(jsonPath("$[0].rating").value(5))
                 .andExpect(jsonPath("$[0].content").value("친절하고 정확했습니다."))
                 .andExpect(jsonPath("$[0].published").value(true))
@@ -74,10 +74,10 @@ class AdminReviewApiControllerTest {
         reviewService.create(reviewCreateRequest(secondReservation.getId(), "010-2222-2222", 5, "두 번째 리뷰입니다."));
 
         mockMvc.perform(get("/api/admin/reviews")
-                        .with(user("admin").roles("ADMIN")))
+                .with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].customerName").value("두번째고객"))
-                .andExpect(jsonPath("$[1].customerName").value("첫번째고객"));
+                .andExpect(jsonPath("$[0].customerName").value("두**"))
+                .andExpect(jsonPath("$[1].customerName").value("첫**"));
     }
 
     @Test

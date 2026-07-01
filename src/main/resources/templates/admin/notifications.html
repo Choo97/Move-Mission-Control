@@ -83,9 +83,9 @@
                 <td>
                     <a class="text-link"
                        th:href="@{/admin/reservations/{id}(id=${notification.reservation.id})}"
-                       th:text="${notification.reservation.customerName}">홍길동</a>
-                    <span th:text="${notification.reservation.phone}">010-0000-0000</span>
-                    <span th:text="${notification.reservation.email == null ? '이메일 미입력' : notification.reservation.email}">email@example.com</span>
+                       th:text="${T(com.moving.reservation.privacy.PersonalInfoMasker).maskName(notification.reservation.customerName)}">홍길동</a>
+                    <span th:text="${T(com.moving.reservation.privacy.PersonalInfoMasker).maskPhone(notification.reservation.phone)}">010-0000-0000</span>
+                    <span th:text="${notification.reservation.email == null ? '이메일 미입력' : T(com.moving.reservation.privacy.PersonalInfoMasker).maskEmail(notification.reservation.email)}">email@example.com</span>
                 </td>
                 <td th:text="${notification.type.label}">예약 접수</td>
                 <td th:text="${notification.channel.label}">SMS</td>
@@ -94,7 +94,7 @@
                     <span th:if="${!#strings.isEmpty(notification.failureReason)}"
                           th:text="${notification.failureReason}">실패 사유</span>
                 </td>
-                <td th:text="${notification.recipientContact}">010-0000-0000</td>
+                <td th:text="${T(com.moving.reservation.privacy.PersonalInfoMasker).maskContact(notification.recipientContact)}">010-0000-0000</td>
                 <td>
                     <span th:text="${'생성 ' + #temporals.format(notification.createdAt, 'yyyy-MM-dd HH:mm')}">생성</span>
                     <span th:if="${notification.sentAt != null}"

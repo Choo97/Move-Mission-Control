@@ -1,5 +1,6 @@
 package com.moving.reservation.review;
 
+import com.moving.reservation.privacy.PersonalInfoMasker;
 import com.moving.reservation.reservation.Reservation;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,9 +31,9 @@ public record AdminReviewResponse(
         return new AdminReviewResponse(
                 review.getId(),
                 reservation.getId(),
-                reservation.getCustomerName(),
-                reservation.getPhone(),
-                reservation.getEmail(),
+                PersonalInfoMasker.maskName(reservation.getCustomerName()),
+                PersonalInfoMasker.maskPhone(reservation.getPhone()),
+                PersonalInfoMasker.maskEmail(reservation.getEmail()),
                 review.getRating(),
                 review.getContent(),
                 review.isPublished(),

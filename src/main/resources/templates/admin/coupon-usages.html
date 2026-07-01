@@ -51,8 +51,8 @@
                 <td>
                     <a class="text-link"
                        th:href="@{/admin/reservations/{id}(id=${usage.id})}"
-                       th:text="${usage.customerName}">홍길동</a>
-                    <span th:text="${usage.phone}">010-0000-0000</span>
+                       th:text="${T(com.moving.reservation.privacy.PersonalInfoMasker).maskName(usage.customerName)}">홍길동</a>
+                    <span th:text="${T(com.moving.reservation.privacy.PersonalInfoMasker).maskPhone(usage.phone)}">010-0000-0000</span>
                 </td>
                 <td>
                     <strong th:text="${usage.couponCode}">MOVE10</strong>
