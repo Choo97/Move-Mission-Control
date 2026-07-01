@@ -156,8 +156,117 @@
   line-height: 1.5;
 }
 
+.reservation-confirm-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.reservation-confirm-heading {
+  display: grid;
+  gap: 7px;
+}
+
+.reservation-confirm-heading span {
+  color: #0756d8;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.reservation-confirm-heading h3 {
+  margin: 0;
+  color: #06152f;
+  font-size: 21px;
+  line-height: 1.35;
+}
+
+.reservation-confirm-heading p,
+.reservation-confirm-note {
+  margin: 0;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.reservation-confirm-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.reservation-confirm-grid section {
+  display: grid;
+  gap: 12px;
+  border: 1px solid #d6e3f2;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fbfdff;
+}
+
+.reservation-confirm-grid section.wide {
+  grid-column: 1 / -1;
+}
+
+.reservation-confirm-grid h4 {
+  margin: 0;
+  color: #06152f;
+  font-size: 15px;
+}
+
+.reservation-confirm-grid dl {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.reservation-confirm-grid dl div {
+  display: grid;
+  grid-template-columns: minmax(72px, 0.35fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.reservation-confirm-grid dt {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.reservation-confirm-grid dd {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  margin: 0;
+  color: #172033;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.reservation-confirm-grid dd strong {
+  color: #06152f;
+  font-size: 14px;
+}
+
+.reservation-confirm-grid dd span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.reservation-confirm-note {
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: #eef6ff;
+}
+
 @media (max-width: 860px) {
   .reservation-schedule-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .reservation-confirm-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -180,5 +289,14 @@
 
   .reservation-calendar-grid span {
     display: none;
+  }
+
+  .reservation-confirm-grid section {
+    padding: 14px;
+  }
+
+  .reservation-confirm-grid dl div {
+    grid-template-columns: 1fr;
+    gap: 4px;
   }
 }

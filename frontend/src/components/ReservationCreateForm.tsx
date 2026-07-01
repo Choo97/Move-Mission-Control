@@ -5,7 +5,7 @@ import { moveTypeOptions } from '../reservationData'
 import type { MoveType, ReservationForm } from '../types'
 import './ReservationCreateForm.css'
 
-type FormStep = 'customer' | 'schedule' | 'address' | 'memo'
+type FormStep = 'customer' | 'schedule' | 'address' | 'memo' | 'confirm'
 
 type CalendarDay = {
   dateValue: string
@@ -50,6 +50,8 @@ const formatSelectedDate = (dateValue: string) => {
   const date = parseDateValue(dateValue)
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 (${weekdayLabels[date.getDay()]})`
 }
+
+const formatOptionalText = (value: string, fallback = '없음') => value.trim() || fallback
 
 const buildCalendarDays = (calendarMonth: Date, today: string): Array<CalendarDay | null> => {
   const firstDate = startOfMonth(calendarMonth)
@@ -163,15 +165,35 @@ export function ReservationCreateForm({
     ]
       .filter(Boolean)
       .join(' ')
+  const selectedMoveTypeLabel = moveTypeOptions.find((option) => option.value === form.moveType)?.label ?? form.moveType
+  const formattedMoveDate = formatSelectedDate(form.moveDate)
+  const fromSiteSummary = [
+    `${form.fromFloor}층`,
+    form.fromElevator ? '엘리베이터 있음' : '엘리베이터 없음',
+    form.fromLadderTruck ? '사다리차 요청' : '사다리차 미사용',
+  ].join(' · ')
+  const toSiteSummary = [
+    `${form.toFloor}층`,
+    form.toElevator ? '엘리베이터 있음' : '엘리베이터 없음',
+    form.toLadderTruck ? '사다리차 요청' : '사다리차 미사용',
+  ].join(' · ')
   const steps: { key: FormStep; label: string; description: string }[] = [
     { key: 'customer', label: '고객 정보', description: '이름과 연락처를 입력합니다.' },
     { key: 'schedule', label: '이사 일정', description: '날짜와 가능한 시간을 선택합니다.' },
     { key: 'address', label: '이사 주소', description: '출발지와 도착지를 입력합니다.' },
     { key: 'memo', label: '추가 정보', description: '요청사항과 쿠폰을 확인합니다.' },
+    { key: 'confirm', label: '최종 확인', description: '접수 전 내용을 확인합니다.' },
   ]
   const currentStepIndex = steps.findIndex((step) => step.key === currentStep)
   const isFirstStep = currentStepIndex === 0
   const isLastStep = currentStepIndex === steps.length - 1
+  const primaryButtonText = isLastStep
+    ? isSubmitting
+      ? '예약 접수 중'
+      : '예약 접수하기'
+    : currentStep === 'memo'
+      ? '예약 내용 확인'
+      : '다음'
 
   const validateCurrentStep = () => {
     if (currentStep === 'customer') {
@@ -209,6 +231,28 @@ export function ReservationCreateForm({
 
       if (form.fromFloor < 1 || form.toFloor < 1) {
         return '층수는 1층 이상으로 입력해 주세요.'
+      }
+    }
+
+    if (currentStep === 'confirm') {
+      if (!form.customerName.trim() || !form.phone.trim()) {
+        return '고객 정보를 다시 확인해 주세요.'
+      }
+
+      if (!form.moveDate || !form.moveTime) {
+        return '이사 일정을 다시 확인해 주세요.'
+      }
+
+      if (isLoadingAvailability) {
+        return '예약 가능 시간을 확인하고 있습니다.'
+      }
+
+      if (!displayedTimes.includes(form.moveTime)) {
+        return '예약 가능한 시간 중에서 다시 선택해 주세요.'
+      }
+
+      if (!form.fromAddress.trim() || !form.toAddress.trim()) {
+        return '출발지와 도착지 주소를 다시 확인해 주세요.'
       }
     }
 
@@ -533,6 +577,92 @@ export function ReservationCreateForm({
         </div>
       )}
 
+      {currentStep === 'confirm' && (
+        <div className="step-panel reservation-confirm-panel">
+          <div className="reservation-confirm-heading">
+            <span>제출 전 확인</span>
+            <h3>예약 내용을 한 번 더 확인해 주세요</h3>
+            <p>잘못 입력한 항목이 있으면 이전 버튼으로 돌아가 수정할 수 있습니다.</p>
+          </div>
+
+          <div className="reservation-confirm-grid">
+            <section>
+              <h4>고객 정보</h4>
+              <dl>
+                <div>
+                  <dt>이름</dt>
+                  <dd>{form.customerName}</dd>
+                </div>
+                <div>
+                  <dt>연락처</dt>
+                  <dd>{form.phone}</dd>
+                </div>
+                <div>
+                  <dt>이메일</dt>
+                  <dd>{formatOptionalText(form.email, '입력 안 함')}</dd>
+                </div>
+                <div>
+                  <dt>이사 유형</dt>
+                  <dd>{selectedMoveTypeLabel}</dd>
+                </div>
+              </dl>
+            </section>
+
+            <section>
+              <h4>이사 일정</h4>
+              <dl>
+                <div>
+                  <dt>날짜</dt>
+                  <dd>{formattedMoveDate}</dd>
+                </div>
+                <div>
+                  <dt>희망 시간</dt>
+                  <dd>{form.moveTime}</dd>
+                </div>
+              </dl>
+            </section>
+
+            <section className="wide">
+              <h4>이사 주소</h4>
+              <dl>
+                <div>
+                  <dt>출발지</dt>
+                  <dd>
+                    <strong>{form.fromAddress}</strong>
+                    <span>{fromSiteSummary}</span>
+                  </dd>
+                </div>
+                <div>
+                  <dt>도착지</dt>
+                  <dd>
+                    <strong>{form.toAddress}</strong>
+                    <span>{toSiteSummary}</span>
+                  </dd>
+                </div>
+              </dl>
+            </section>
+
+            <section className="wide">
+              <h4>추가 정보</h4>
+              <dl>
+                <div>
+                  <dt>요청사항</dt>
+                  <dd>{formatOptionalText(form.memo)}</dd>
+                </div>
+                <div>
+                  <dt>쿠폰 코드</dt>
+                  <dd>{formatOptionalText(form.couponCode, '사용 안 함')}</dd>
+                </div>
+              </dl>
+            </section>
+          </div>
+
+          <p className="reservation-confirm-note">
+            예약 접수 후에는 예약번호가 발급됩니다. 예약번호와 연락처로 진행 상황을 조회할 수 있습니다.
+          </p>
+        </div>
+      )}
+
       {stepMessage && <p className="message info">{stepMessage}</p>}
       {errorMessage && <p className="message error">{errorMessage}</p>}
 
@@ -541,7 +671,7 @@ export function ReservationCreateForm({
           이전
         </button>
         <button className="submit-button" type="submit" disabled={isSubmitting}>
-          {isLastStep ? (isSubmitting ? '예약 접수 중' : '예약 신청') : '다음'}
+          {primaryButtonText}
         </button>
       </div>
     </form>
