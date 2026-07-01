@@ -3,8 +3,15 @@ import type { FormEvent } from 'react'
 import { getAvailability } from '../api/customerApi'
 import { moveTypeOptions } from '../reservationData'
 import type { MoveType, ReservationForm } from '../types'
+import './ReservationCreateForm.css'
 
 type FormStep = 'customer' | 'schedule' | 'address' | 'memo'
+
+type CalendarDay = {
+  dateValue: string
+  day: number
+  disabled: boolean
+}
 
 type Props = {
   form: ReservationForm
@@ -13,6 +20,53 @@ type Props = {
   isSubmitting: boolean
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
   onChange: <K extends keyof ReservationForm>(key: K, value: ReservationForm[K]) => void
+}
+
+const weekdayLabels = ['일', '월', '화', '수', '목', '금', '토']
+
+const parseDateValue = (dateValue: string) => {
+  const [year, month, day] = dateValue.split('-').map(Number)
+  return new Date(year, month - 1, day)
+}
+
+const toDateValue = (date: Date) =>
+  [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0'),
+  ].join('-')
+
+const startOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1)
+
+const addMonths = (date: Date, amount: number) => new Date(date.getFullYear(), date.getMonth() + amount, 1)
+
+const formatCalendarMonth = (date: Date) => `${date.getFullYear()}년 ${date.getMonth() + 1}월`
+
+const formatSelectedDate = (dateValue: string) => {
+  if (!dateValue) {
+    return '날짜를 선택해 주세요'
+  }
+
+  const date = parseDateValue(dateValue)
+  return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 (${weekdayLabels[date.getDay()]})`
+}
+
+const buildCalendarDays = (calendarMonth: Date, today: string): Array<CalendarDay | null> => {
+  const firstDate = startOfMonth(calendarMonth)
+  const daysInMonth = new Date(firstDate.getFullYear(), firstDate.getMonth() + 1, 0).getDate()
+  const leadingBlankCount = firstDate.getDay()
+  const days = Array.from({ length: daysInMonth }, (_, index) => {
+    const date = new Date(firstDate.getFullYear(), firstDate.getMonth(), index + 1)
+    const dateValue = toDateValue(date)
+
+    return {
+      dateValue,
+      day: index + 1,
+      disabled: dateValue < today,
+    }
+  })
+
+  return [...Array<null>(leadingBlankCount).fill(null), ...days]
 }
 
 export function ReservationCreateForm({
@@ -28,6 +82,7 @@ export function ReservationCreateForm({
   const [isLoadingAvailability, setIsLoadingAvailability] = useState(Boolean(form.moveDate))
   const [currentStep, setCurrentStep] = useState<FormStep>('customer')
   const [stepMessage, setStepMessage] = useState('')
+  const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(parseDateValue(form.moveDate || today)))
 
   useEffect(() => {
     if (!form.moveDate) {
@@ -79,6 +134,8 @@ export function ReservationCreateForm({
   }, [availableTimes, form.moveDate, form.moveTime, isLoadingAvailability, onChange])
 
   const displayedTimes = form.moveDate && !isLoadingAvailability ? availableTimes : []
+  const calendarDays = buildCalendarDays(calendarMonth, today)
+  const isPreviousMonthDisabled = startOfMonth(calendarMonth) <= startOfMonth(parseDateValue(today))
   const displayedMessage = !form.moveDate
     ? '날짜를 선택해 주세요.'
     : isLoadingAvailability
@@ -151,6 +208,18 @@ export function ReservationCreateForm({
   const goToPreviousStep = () => {
     setStepMessage('')
     setCurrentStep(steps[Math.max(currentStepIndex - 1, 0)].key)
+  }
+
+  const selectMoveDate = (dateValue: string) => {
+    setCalendarMonth(startOfMonth(parseDateValue(dateValue)))
+
+    if (dateValue === form.moveDate) {
+      return
+    }
+
+    setIsLoadingAvailability(true)
+    onChange('moveDate', dateValue)
+    onChange('moveTime', '')
   }
 
   const submitStepForm = (event: FormEvent<HTMLFormElement>) => {
@@ -247,24 +316,59 @@ export function ReservationCreateForm({
 
       {currentStep === 'schedule' && (
         <div className="step-panel">
-          <div className="field-grid">
-            <label>
-              이사 날짜
-              <input
-                type="date"
-                min={today}
-                value={form.moveDate}
-                onChange={(event) => {
-                  const nextDate = event.target.value
-                  setIsLoadingAvailability(Boolean(nextDate))
-                  onChange('moveDate', nextDate)
-                  onChange('moveTime', '')
-                }}
-                required
-              />
-            </label>
-            <label>
-              희망 시간
+          <div className="reservation-schedule-layout">
+            <section className="reservation-calendar-card" aria-label="이사 날짜 선택">
+              <div className="reservation-calendar-header">
+                <button
+                  type="button"
+                  aria-label="이전 달"
+                  disabled={isPreviousMonthDisabled}
+                  onClick={() => setCalendarMonth((current) => addMonths(current, -1))}
+                >
+                  ‹
+                </button>
+                <strong>{formatCalendarMonth(calendarMonth)}</strong>
+                <button
+                  type="button"
+                  aria-label="다음 달"
+                  onClick={() => setCalendarMonth((current) => addMonths(current, 1))}
+                >
+                  ›
+                </button>
+              </div>
+              <div className="reservation-calendar-weekdays" aria-hidden="true">
+                {weekdayLabels.map((label) => (
+                  <span key={label}>{label}</span>
+                ))}
+              </div>
+              <div className="reservation-calendar-grid">
+                {calendarDays.map((day, index) =>
+                  day ? (
+                    <button
+                      key={day.dateValue}
+                      type="button"
+                      className={form.moveDate === day.dateValue ? 'selected' : ''}
+                      data-date={day.dateValue}
+                      disabled={day.disabled}
+                      aria-pressed={form.moveDate === day.dateValue}
+                      onClick={() => selectMoveDate(day.dateValue)}
+                    >
+                      <strong>{day.day}</strong>
+                      <span>{form.moveDate === day.dateValue ? '선택됨' : day.disabled ? '지난 날짜' : '예약 가능'}</span>
+                    </button>
+                  ) : (
+                    <span key={`blank-${index}`} className="blank" />
+                  ),
+                )}
+              </div>
+            </section>
+
+            <section className="reservation-time-card" aria-label="희망 시간 선택">
+              <div className="reservation-time-heading">
+                <span>선택한 날짜</span>
+                <strong>{formatSelectedDate(form.moveDate)}</strong>
+                {displayedMessage && <p>{displayedMessage}</p>}
+              </div>
               <div
                 className="time-slot-grid"
                 role="group"
@@ -289,8 +393,7 @@ export function ReservationCreateForm({
                   </button>
                 ))}
               </div>
-              {displayedMessage && <span className="field-message">{displayedMessage}</span>}
-            </label>
+            </section>
           </div>
         </div>
       )}
