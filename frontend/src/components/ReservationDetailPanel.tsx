@@ -3,6 +3,7 @@ import type { ChangeEvent, Dispatch, FormEvent, SetStateAction } from 'react'
 import { API_BASE_URL } from '../reservationData'
 import type { CustomerGuideItem, ReservationResponse, ReviewForm, ReviewResponse } from '../types'
 import { StatusNotice } from './StatusNotice'
+import './ReservationDetailPanel.css'
 
 type Props = {
   activeView: 'create' | 'search'
@@ -146,35 +147,71 @@ function ReservationCompleteCard({
     }
   }
 
+  const moveToPhotoSection = () => {
+    document.getElementById('reservation-photo-section')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }
+
   return (
-    <div className="completion-card" role="status" aria-live="polite">
-      <p className="eyebrow">Reservation Complete</p>
-      <h3>예약 접수가 완료되었습니다</h3>
-      <p className="completion-lead">아래 두 정보는 예약 조회, 수정 요청, 취소 요청에 필요합니다.</p>
-      <div className="lookup-credential-grid" aria-label="예약 조회 정보">
-        <div className="reservation-number-box">
+    <div className="completion-card completion-receipt" role="status" aria-live="polite">
+      <div className="completion-receipt-heading">
+        <p className="eyebrow">예약 접수 완료</p>
+        <h3>예약이 정상적으로 접수되었습니다</h3>
+        <p className="completion-lead">예약번호와 연락처로 언제든지 진행 상황을 확인할 수 있습니다.</p>
+      </div>
+
+      <div className="completion-summary-grid" aria-label="예약 완료 요약">
+        <div className="reservation-number-box highlight">
           <span>예약번호</span>
           <strong>{reservation.id}</strong>
+          <small>조회할 때 꼭 필요합니다</small>
+        </div>
+        <div className="reservation-number-box">
+          <span>현재 상태</span>
+          <strong>{reservation.statusLabel}</strong>
+          <small>
+            {reservation.moveDate} {reservation.moveTime.slice(0, 5)}
+          </small>
         </div>
         <div className="reservation-number-box">
           <span>조회 연락처</span>
           <strong className="phone-value">{lookupPhone || '미입력'}</strong>
+          <small>신청 때 입력한 번호입니다</small>
         </div>
       </div>
-      <div className="completion-actions">
+
+      <div className="completion-actions" aria-label="예약 완료 후 다음 행동">
         <button className="submit-button secondary" type="button" onClick={() => void copyLookupCredentials()}>
           조회 정보 복사
         </button>
         <button className="submit-button secondary" type="button" onClick={onShowSearchForm}>
-          조회 화면으로 이동
+          내 예약 조회하기
+        </button>
+        <button className="submit-button secondary" type="button" onClick={moveToPhotoSection}>
+          짐 사진 올리기
         </button>
       </div>
       {copyMessage && <p className="copy-message">{copyMessage}</p>}
-      <ol>
-        <li>관리자가 예약 정보를 확인합니다.</li>
-        <li>상담 후 견적 안내가 진행됩니다.</li>
-        <li>견적 동의 후 예약이 확정됩니다.</li>
-      </ol>
+
+      <div className="completion-flow" aria-label="예약 이후 진행 순서">
+        <article>
+          <span>1</span>
+          <strong>관리자 확인</strong>
+          <p>입력한 일정과 주소를 확인합니다.</p>
+        </article>
+        <article>
+          <span>2</span>
+          <strong>상담 및 견적 안내</strong>
+          <p>필요한 경우 연락 후 견적을 안내합니다.</p>
+        </article>
+        <article>
+          <span>3</span>
+          <strong>견적 동의 후 확정</strong>
+          <p>견적을 확인하고 동의하면 예약이 확정됩니다.</p>
+        </article>
+      </div>
     </div>
   )
 }
@@ -421,7 +458,7 @@ function PhotoSection({
   onUploadPhotos: (event: FormEvent<HTMLFormElement>) => void
 }) {
   return (
-    <div className="photo-section">
+    <div id="reservation-photo-section" className="photo-section">
       <h3>짐 사진</h3>
       {reservation.photos.length > 0 ? (
         <div className="photo-grid">
