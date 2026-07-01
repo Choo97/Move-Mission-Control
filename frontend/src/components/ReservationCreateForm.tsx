@@ -141,6 +141,28 @@ export function ReservationCreateForm({
     : isLoadingAvailability
       ? '예약 가능 시간을 확인하고 있습니다.'
       : availabilityMessage
+  const getCalendarDayStatus = (day: CalendarDay) => {
+    if (day.disabled) {
+      return '지난 날짜'
+    }
+
+    if (day.dateValue !== form.moveDate) {
+      return '시간 확인'
+    }
+
+    if (isLoadingAvailability) {
+      return '확인 중'
+    }
+
+    return availableTimes.length > 0 ? '예약 가능' : '마감'
+  }
+  const getCalendarDayClassName = (day: CalendarDay) =>
+    [
+      form.moveDate === day.dateValue ? 'selected' : '',
+      form.moveDate === day.dateValue && !isLoadingAvailability && availableTimes.length === 0 ? 'unavailable' : '',
+    ]
+      .filter(Boolean)
+      .join(' ')
   const steps: { key: FormStep; label: string; description: string }[] = [
     { key: 'customer', label: '고객 정보', description: '이름과 연락처를 입력합니다.' },
     { key: 'schedule', label: '이사 일정', description: '날짜와 가능한 시간을 선택합니다.' },
@@ -347,14 +369,14 @@ export function ReservationCreateForm({
                     <button
                       key={day.dateValue}
                       type="button"
-                      className={form.moveDate === day.dateValue ? 'selected' : ''}
+                      className={getCalendarDayClassName(day)}
                       data-date={day.dateValue}
                       disabled={day.disabled}
                       aria-pressed={form.moveDate === day.dateValue}
                       onClick={() => selectMoveDate(day.dateValue)}
                     >
                       <strong>{day.day}</strong>
-                      <span>{form.moveDate === day.dateValue ? '선택됨' : day.disabled ? '지난 날짜' : '예약 가능'}</span>
+                      <span>{getCalendarDayStatus(day)}</span>
                     </button>
                   ) : (
                     <span key={`blank-${index}`} className="blank" />

@@ -88,6 +88,7 @@
 
 .reservation-calendar-grid button:hover:not(:disabled) {
   border-color: #75a4e3;
+  color: #172033;
   background: #f3f8ff;
 }
 
@@ -96,6 +97,27 @@
   color: #ffffff;
   background: #0756d8;
   box-shadow: 0 10px 22px rgba(7, 86, 216, 0.18);
+}
+
+.reservation-calendar-grid button.selected:hover:not(:disabled),
+.reservation-calendar-grid button.selected:focus-visible {
+  border-color: #0648b7;
+  color: #ffffff;
+  background: #0648b7;
+}
+
+.reservation-calendar-grid button.selected.unavailable {
+  border-color: #334155;
+  color: #ffffff;
+  background: #334155;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.16);
+}
+
+.reservation-calendar-grid button.selected.unavailable:hover:not(:disabled),
+.reservation-calendar-grid button.selected.unavailable:focus-visible {
+  border-color: #1f2937;
+  color: #ffffff;
+  background: #1f2937;
 }
 
 .reservation-calendar-grid button:disabled {
