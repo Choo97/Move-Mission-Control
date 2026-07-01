@@ -62,6 +62,8 @@ class AdminReservationControllerTest {
         Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
 
         mockMvc.perform(get("/admin/reservations/{id}", reservation.getId())
+                        .header("X-Forwarded-For", "198.51.100.24, 10.0.0.1")
+                        .header("User-Agent", "AdminMvcTest/1.0")
                         .with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/reservation-detail"))
@@ -76,6 +78,15 @@ class AdminReservationControllerTest {
                         "auditLogs",
                         "statuses"
                 ));
+
+        assertThat(adminAuditLogService.findByReservationId(reservation.getId()))
+                .singleElement()
+                .satisfies(auditLog -> {
+                    assertThat(auditLog.getAction()).isEqualTo("예약 상세 조회");
+                    assertThat(auditLog.getCreatedBy()).isEqualTo("admin");
+                    assertThat(auditLog.getIpAddress()).isEqualTo("198.51.100.24");
+                    assertThat(auditLog.getUserAgent()).isEqualTo("AdminMvcTest/1.0");
+                });
     }
 
     @Test

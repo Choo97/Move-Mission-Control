@@ -31,6 +31,12 @@ public class AdminAuditLog {
     @Column(nullable = false, length = 50)
     private String createdBy;
 
+    @Column(length = 45)
+    private String ipAddress;
+
+    @Column(length = 255)
+    private String userAgent;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
@@ -38,10 +44,17 @@ public class AdminAuditLog {
     }
 
     public AdminAuditLog(Reservation reservation, String action, String detail, String createdBy) {
+        this(reservation, action, detail, createdBy, null, null);
+    }
+
+    public AdminAuditLog(Reservation reservation, String action, String detail, String createdBy,
+                         String ipAddress, String userAgent) {
         this.reservation = reservation;
         this.action = action;
         this.detail = detail;
         this.createdBy = createdBy;
+        this.ipAddress = ipAddress;
+        this.userAgent = userAgent;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -63,6 +76,14 @@ public class AdminAuditLog {
 
     public String getCreatedBy() {
         return createdBy;
+    }
+
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
+    public String getUserAgent() {
+        return userAgent;
     }
 
     public LocalDateTime getCreatedAt() {

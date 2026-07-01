@@ -1035,6 +1035,9 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
                         <span>
                           {formatDateTime(auditLog.createdAt)} · {auditLog.createdBy}
                         </span>
+                        <span>
+                          IP {auditLog.ipAddress || 'unknown'} · User-Agent {auditLog.userAgent || 'unknown'}
+                        </span>
                         <p>{auditLog.detail}</p>
                       </li>
                     ))}

@@ -10,6 +10,7 @@ import com.moving.reservation.reservation.ReservationSort;
 import com.moving.reservation.reservation.ReservationStatus;
 import com.moving.reservation.reservation.ReservationSummary;
 import com.moving.reservation.review.ReviewService;
+import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -201,9 +202,18 @@ public class AdminReservationController {
     @GetMapping("/{id}")
     public String detail(@PathVariable Long id,
                          @RequestParam(required = false) String returnQuery,
+                         Principal principal,
+                         HttpServletRequest request,
                          Model model) {
         Reservation reservation = reservationService.get(id);
         String backToListUrl = listRedirectUrl(returnQuery);
+        AdminAuditClientInfo clientInfo = AdminAuditClientInfo.from(request);
+        adminAuditLogService.recordReservationDetailView(
+                reservation,
+                principal == null ? null : principal.getName(),
+                clientInfo.ipAddress(),
+                clientInfo.userAgent()
+        );
 
         model.addAttribute("reservation", reservation);
         model.addAttribute("returnQuery", backToListUrl);

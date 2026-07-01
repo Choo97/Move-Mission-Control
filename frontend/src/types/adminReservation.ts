@@ -136,6 +136,8 @@ export type AdminAuditLogResponse = {
   action: string
   detail: string
   createdBy: string
+  ipAddress: string
+  userAgent: string
   createdAt: string
 }
 

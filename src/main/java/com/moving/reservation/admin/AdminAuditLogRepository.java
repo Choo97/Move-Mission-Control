@@ -18,6 +18,8 @@ public interface AdminAuditLogRepository extends JpaRepository<AdminAuditLog, Lo
               and (:keyword is null
                     or lower(auditLog.action) like concat('%', :keyword, '%')
                     or lower(auditLog.detail) like concat('%', :keyword, '%')
+                    or lower(auditLog.ipAddress) like concat('%', :keyword, '%')
+                    or lower(auditLog.userAgent) like concat('%', :keyword, '%')
                     or lower(reservation.customerName) like concat('%', :keyword, '%')
                     or reservation.phone like concat('%', :keyword, '%'))
               and (:startAt is null or auditLog.createdAt >= :startAt)

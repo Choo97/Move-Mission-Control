@@ -60,6 +60,29 @@ class AdminAuditLogServiceTest {
     }
 
     @Test
+    void 예약상세_조회_감사로그는_접근정보를_함께_저장한다() {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+        String longUserAgent = "Browser".repeat(50);
+
+        adminAuditLogService.recordReservationDetailView(
+                reservation,
+                "admin",
+                "203.0.113.10",
+                longUserAgent
+        );
+
+        assertThat(adminAuditLogService.findByReservationId(reservation.getId()))
+                .singleElement()
+                .satisfies(auditLog -> {
+                    assertThat(auditLog.getAction()).isEqualTo("예약 상세 조회");
+                    assertThat(auditLog.getDetail()).contains("개인정보");
+                    assertThat(auditLog.getCreatedBy()).isEqualTo("admin");
+                    assertThat(auditLog.getIpAddress()).isEqualTo("203.0.113.10");
+                    assertThat(auditLog.getUserAgent()).hasSize(255);
+                });
+    }
+
+    @Test
     void 작업명_작성자_키워드_기간으로_감사로그를_검색한다() {
         Reservation firstReservation = reservationService.create(reservationCreateRequest("010-1111-1111"));
         Reservation secondReservation = reservationService.create(reservationCreateRequest("010-2222-2222"));

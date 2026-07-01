@@ -8,10 +8,11 @@ import com.moving.reservation.reservation.ReservationSummary;
 import com.moving.reservation.notification.CustomerNotificationService;
 import com.moving.reservation.notification.EmailNotificationSendResult;
 import com.moving.reservation.notification.SmsNotificationSendResult;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
-import java.security.Principal;
-import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -82,8 +83,17 @@ public class AdminReservationApiController {
     }
 
     @GetMapping("/{id}")
-    public AdminReservationDetailResponse detail(@PathVariable Long id) {
+    public AdminReservationDetailResponse detail(@PathVariable Long id,
+                                                 Principal principal,
+                                                 HttpServletRequest request) {
         Reservation reservation = reservationService.get(id);
+        AdminAuditClientInfo clientInfo = AdminAuditClientInfo.from(request);
+        adminAuditLogService.recordReservationDetailView(
+                reservation,
+                principal == null ? null : principal.getName(),
+                clientInfo.ipAddress(),
+                clientInfo.userAgent()
+        );
 
         return detailResponse(reservation);
     }

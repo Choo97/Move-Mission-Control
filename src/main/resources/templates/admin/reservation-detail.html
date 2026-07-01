@@ -504,7 +504,7 @@
         <div class="section-title">
             <p class="eyebrow">Admin Audit</p>
             <h2>관리자 작업 감사 로그</h2>
-            <p>견적, 거리, 메모, 이메일 발송처럼 관리자가 처리한 주요 작업을 기록합니다.</p>
+            <p>견적, 거리, 메모, 이메일 발송과 개인정보가 포함된 상세 조회를 기록합니다.</p>
         </div>
 
         <p class="empty" th:if="${auditLogs.isEmpty()}">아직 관리자 작업 감사 로그가 없습니다.</p>
@@ -516,6 +516,10 @@
                     <span th:text="${auditLog.detail}">견적 금액을 저장했습니다.</span>
                     <span th:text="${auditLog.createdBy + ' / ' + #temporals.format(auditLog.createdAt, 'yyyy-MM-dd HH:mm')}">
                         admin / 2026-06-04 17:00
+                    </span>
+                    <span th:text="${'IP ' + (#strings.isEmpty(auditLog.ipAddress) ? 'unknown' : auditLog.ipAddress)
+                            + ' / User-Agent ' + (#strings.isEmpty(auditLog.userAgent) ? 'unknown' : auditLog.userAgent)}">
+                        IP 127.0.0.1 / User-Agent Mozilla
                     </span>
                 </div>
             </li>

@@ -111,6 +111,8 @@ class AdminReservationApiControllerTest {
         reservationService.updateAdminMemo(reservation.getId(), "관리자 확인 메모", "admin");
 
         mockMvc.perform(get("/api/admin/reservations/{id}", reservation.getId())
+                        .header("X-Forwarded-For", "203.0.113.20, 10.0.0.1")
+                        .header("User-Agent", "AdminReactTest/1.0")
                         .with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(reservation.getId()))
@@ -133,7 +135,10 @@ class AdminReservationApiControllerTest {
                 .andExpect(jsonPath("$.notifications.length()").value(3))
                 .andExpect(jsonPath("$.notifications[0].type").value("STATUS_CHANGED"))
                 .andExpect(jsonPath("$.notifications[0].status").value("READY"))
-                .andExpect(jsonPath("$.auditLogs").isArray());
+                .andExpect(jsonPath("$.auditLogs[0].action").value("예약 상세 조회"))
+                .andExpect(jsonPath("$.auditLogs[0].createdBy").value("admin"))
+                .andExpect(jsonPath("$.auditLogs[0].ipAddress").value("203.0.113.20"))
+                .andExpect(jsonPath("$.auditLogs[0].userAgent").value("AdminReactTest/1.0"));
     }
 
     @Test
