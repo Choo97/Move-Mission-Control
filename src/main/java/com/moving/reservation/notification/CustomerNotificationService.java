@@ -69,7 +69,11 @@ public class CustomerNotificationService {
     }
 
     public List<CustomerNotification> search(NotificationChannel channel, NotificationStatus status, String keyword) {
-        return customerNotificationRepository.search(channel, status, normalizeKeyword(keyword));
+        String normalizedKeyword = normalizeKeyword(keyword);
+
+        return customerNotificationRepository.search(channel, status).stream()
+                .filter(notification -> matchesKeyword(notification, normalizedKeyword))
+                .toList();
     }
 
     public List<CustomerNotification> findActionRequired(int limit) {
@@ -199,7 +203,25 @@ public class CustomerNotificationService {
             return null;
         }
 
-        return trimmedKeyword.toLowerCase();
+        return trimmedKeyword.toLowerCase(Locale.ROOT);
+    }
+
+    private boolean matchesKeyword(CustomerNotification notification, String keyword) {
+        if (keyword == null) {
+            return true;
+        }
+
+        Reservation reservation = notification.getReservation();
+
+        return containsKeyword(reservation.getCustomerName(), keyword)
+                || containsKeyword(reservation.getPhone(), keyword)
+                || containsKeyword(reservation.getEmail(), keyword)
+                || containsKeyword(notification.getRecipientContact(), keyword)
+                || containsKeyword(notification.getMessage(), keyword);
+    }
+
+    private boolean containsKeyword(String value, String keyword) {
+        return value != null && value.toLowerCase(Locale.ROOT).contains(keyword);
     }
 
     private int notificationStatusPriority(NotificationStatus status) {

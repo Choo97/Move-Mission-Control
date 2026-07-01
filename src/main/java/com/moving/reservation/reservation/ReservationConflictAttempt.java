@@ -1,6 +1,8 @@
 package com.moving.reservation.reservation;
 
+import com.moving.reservation.privacy.SensitiveStringConverter;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,10 +18,12 @@ public class ReservationConflictAttempt {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 50)
+    @Convert(converter = SensitiveStringConverter.class)
+    @Column(nullable = false, length = 500)
     private String customerName;
 
-    @Column(nullable = false, length = 30)
+    @Convert(converter = SensitiveStringConverter.class)
+    @Column(nullable = false, length = 500)
     private String phone;
 
     @Column(nullable = false)

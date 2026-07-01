@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import com.moving.reservation.coupon.CouponService;
 import com.moving.reservation.availability.AvailabilityService;
 import com.moving.reservation.notification.CustomerNotificationService;
+import com.moving.reservation.privacy.PrivacyHashService;
 import com.moving.reservation.review.ReviewService;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -39,7 +40,8 @@ class ReservationScheduleConflictUnitTest {
                 true,
                 mock(CustomerNotificationService.class),
                 5,
-                10
+                10,
+                mock(PrivacyHashService.class)
         );
 
         assertThatThrownBy(() -> reservationService.create(request))

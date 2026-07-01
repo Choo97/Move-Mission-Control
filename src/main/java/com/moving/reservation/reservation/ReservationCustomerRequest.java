@@ -1,6 +1,8 @@
 package com.moving.reservation.reservation;
 
+import com.moving.reservation.privacy.SensitiveStringConverter;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -33,17 +35,20 @@ public class ReservationCustomerRequest {
     @Column(nullable = false, length = 30)
     private CustomerRequestStatus status;
 
-    @Column(length = 120)
+    @Convert(converter = SensitiveStringConverter.class)
+    @Column(length = 500)
     private String email;
 
     private LocalDate moveDate;
 
     private LocalTime moveTime;
 
-    @Column(length = 200)
+    @Convert(converter = SensitiveStringConverter.class)
+    @Column(length = 1000)
     private String fromAddress;
 
-    @Column(length = 200)
+    @Convert(converter = SensitiveStringConverter.class)
+    @Column(length = 1000)
     private String toAddress;
 
     private Integer fromFloor;
@@ -54,13 +59,16 @@ public class ReservationCustomerRequest {
 
     private boolean toLadderTruck;
 
-    @Column(length = 1000)
+    @Convert(converter = SensitiveStringConverter.class)
+    @Column(length = 5000)
     private String memo;
 
-    @Column(nullable = false, length = 2000)
+    @Convert(converter = SensitiveStringConverter.class)
+    @Column(nullable = false, length = 10000)
     private String detail;
 
-    @Column(length = 1000)
+    @Convert(converter = SensitiveStringConverter.class)
+    @Column(length = 5000)
     private String rejectionReason;
 
     @Column(nullable = false, length = 50)

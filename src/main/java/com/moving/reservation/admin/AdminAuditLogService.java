@@ -4,6 +4,7 @@ import com.moving.reservation.reservation.Reservation;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,13 +31,16 @@ public class AdminAuditLogService {
 
     public List<AdminAuditLog> search(String action, String createdBy, String keyword,
                                       LocalDate startDate, LocalDate endDate) {
+        String normalizedKeyword = normalizeLike(keyword);
+
         return adminAuditLogRepository.search(
                 normalizeExact(action),
                 normalizeLike(createdBy),
-                normalizeLike(keyword),
                 startDate == null ? null : startDate.atStartOfDay(),
                 endDate == null ? null : endDate.plusDays(1).atStartOfDay()
-        );
+        ).stream()
+                .filter(auditLog -> matchesKeyword(auditLog, normalizedKeyword))
+                .toList();
     }
 
     public List<String> findActions() {
@@ -111,6 +115,26 @@ public class AdminAuditLogService {
             return null;
         }
 
-        return value.trim().toLowerCase();
+        return value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private boolean matchesKeyword(AdminAuditLog auditLog, String keyword) {
+        if (keyword == null) {
+            return true;
+        }
+
+        Reservation reservation = auditLog.getReservation();
+
+        return containsKeyword(auditLog.getAction(), keyword)
+                || containsKeyword(auditLog.getDetail(), keyword)
+                || containsKeyword(auditLog.getIpAddress(), keyword)
+                || containsKeyword(auditLog.getUserAgent(), keyword)
+                || (reservation != null
+                && (containsKeyword(reservation.getCustomerName(), keyword)
+                || containsKeyword(reservation.getPhone(), keyword)));
+    }
+
+    private boolean containsKeyword(String value, String keyword) {
+        return value != null && value.toLowerCase(Locale.ROOT).contains(keyword);
     }
 }

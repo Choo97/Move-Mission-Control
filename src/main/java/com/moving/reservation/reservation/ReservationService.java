@@ -4,11 +4,14 @@ import com.moving.reservation.availability.AvailabilityService;
 import com.moving.reservation.coupon.Coupon;
 import com.moving.reservation.coupon.CouponService;
 import com.moving.reservation.notification.CustomerNotificationService;
+import com.moving.reservation.privacy.PrivacyHashService;
 import com.moving.reservation.review.ReviewService;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -44,6 +47,7 @@ public class ReservationService {
     private final CustomerNotificationService customerNotificationService;
     private final int maxPhotoFilesPerRequest;
     private final int maxPhotoFilesPerReservation;
+    private final PrivacyHashService privacyHashService;
 
     public ReservationService(ReservationRepository reservationRepository,
                               ReservationStatusHistoryRepository statusHistoryRepository,
@@ -59,7 +63,8 @@ public class ReservationService {
                               @Value("${reservation.schedule-conflict.enabled:true}") boolean scheduleConflictEnabled,
                               CustomerNotificationService customerNotificationService,
                               @Value("${upload.reservation-photo.max-files-per-request:5}") int maxPhotoFilesPerRequest,
-                              @Value("${upload.reservation-photo.max-files-per-reservation:10}") int maxPhotoFilesPerReservation) {
+                              @Value("${upload.reservation-photo.max-files-per-reservation:10}") int maxPhotoFilesPerReservation,
+                              PrivacyHashService privacyHashService) {
         this.reservationRepository = reservationRepository;
         this.statusHistoryRepository = statusHistoryRepository;
         this.reservationPhotoRepository = reservationPhotoRepository;
@@ -75,6 +80,7 @@ public class ReservationService {
         this.customerNotificationService = customerNotificationService;
         this.maxPhotoFilesPerRequest = maxPhotoFilesPerRequest;
         this.maxPhotoFilesPerReservation = maxPhotoFilesPerReservation;
+        this.privacyHashService = privacyHashService;
     }
 
     @Transactional(noRollbackFor = ReservationScheduleConflictException.class)
@@ -93,6 +99,7 @@ public class ReservationService {
         uploadFiles.forEach(reservationPhotoStorage::validate);
 
         Reservation reservation = request.toEntity();
+        reservation.updatePhoneHash(privacyHashService.phoneHash(reservation.getPhone()));
         reservation.applyBaseEstimate(estimateCalculator.calculate(
                 request.getMoveType(),
                 request.isFromElevator(),
@@ -132,8 +139,11 @@ public class ReservationService {
     }
 
     public Reservation search(ReservationSearchRequest request) {
-        return reservationRepository.findByIdAndPhone(request.getReservationId(), request.getPhone())
-                .orElseThrow(() -> new IllegalArgumentException("예약 번호와 연락처가 일치하는 예약을 찾을 수 없습니다."));
+        return findByIdAndPhone(
+                request.getReservationId(),
+                request.getPhone(),
+                "예약 번호와 연락처가 일치하는 예약을 찾을 수 없습니다."
+        );
     }
 
     public List<Reservation> findAll() {
@@ -172,15 +182,17 @@ public class ReservationService {
                                     Boolean needsDistance,
                                     Boolean attentionRequired,
                                     ReservationSort sort) {
+        String normalizedKeyword = normalizeKeyword(keyword);
+
         return reservationRepository.search(
                         status,
-                        normalizeKeyword(keyword),
                         startDate,
                         endDate,
                         needsDistance,
                         attentionRequired,
                         ATTENTION_REQUIRED_STATUSES
                 ).stream()
+                .filter(reservation -> matchesKeyword(reservation, normalizedKeyword))
                 .sorted(comparator(sort))
                 .toList();
     }
@@ -226,8 +238,7 @@ public class ReservationService {
 
     @Transactional
     public List<ReservationPhoto> addPhotos(Long id, String phone, List<MultipartFile> itemPhotos) {
-        Reservation reservation = reservationRepository.findByIdAndPhone(id, phone)
-                .orElseThrow(() -> new IllegalArgumentException("예약 번호와 연락처가 일치하지 않습니다."));
+        Reservation reservation = findByIdAndPhone(id, phone, "예약 번호와 연락처가 일치하지 않습니다.");
 
         if (!reservation.isEditable()) {
             throw new IllegalArgumentException("현재 상태에서는 짐 사진을 업로드할 수 없습니다.");
@@ -349,8 +360,7 @@ public class ReservationService {
 
     @Transactional
     public void requestCancel(Long id, String phone) {
-        Reservation reservation = reservationRepository.findByIdAndPhone(id, phone)
-                .orElseThrow(() -> new IllegalArgumentException("예약 번호와 연락처가 일치하지 않습니다."));
+        Reservation reservation = findByIdAndPhone(id, phone, "예약 번호와 연락처가 일치하지 않습니다.");
 
         if (!reservation.isCancelable()) {
             throw new IllegalArgumentException("현재 상태에서는 예약을 취소할 수 없습니다.");
@@ -377,8 +387,7 @@ public class ReservationService {
 
     @Transactional
     public void acceptEstimate(Long id, String phone) {
-        Reservation reservation = reservationRepository.findByIdAndPhone(id, phone)
-                .orElseThrow(() -> new IllegalArgumentException("예약 번호와 연락처가 일치하지 않습니다."));
+        Reservation reservation = findByIdAndPhone(id, phone, "예약 번호와 연락처가 일치하지 않습니다.");
         acceptEstimate(reservation);
     }
 
@@ -403,8 +412,7 @@ public class ReservationService {
 
     @Transactional
     public void requestUpdateDetails(Long id, ReservationUpdateRequest request) {
-        Reservation reservation = reservationRepository.findByIdAndPhone(id, request.getPhone())
-                .orElseThrow(() -> new IllegalArgumentException("예약 번호와 연락처가 일치하지 않습니다."));
+        Reservation reservation = findByIdAndPhone(id, request.getPhone(), "예약 번호와 연락처가 일치하지 않습니다.");
 
         if (!reservation.isEditable()) {
             throw new IllegalArgumentException("현재 상태에서는 예약을 수정할 수 없습니다.");
@@ -631,6 +639,38 @@ public class ReservationService {
         return customerRequestRepository.countByStatus(CustomerRequestStatus.PENDING);
     }
 
+    private Reservation findByIdAndPhone(Long id, String phone, String notFoundMessage) {
+        String phoneHash = privacyHashService.phoneHash(phone);
+
+        if (phoneHash != null) {
+            Optional<Reservation> reservation = reservationRepository.findByIdAndPhoneHash(id, phoneHash);
+
+            if (reservation.isPresent()) {
+                return reservation.get();
+            }
+        }
+
+        return reservationRepository.findById(id)
+                .filter(reservation -> privacyHashService.matchesPhone(reservation.getPhone(), phone))
+                .orElseThrow(() -> new IllegalArgumentException(notFoundMessage));
+    }
+
+    private boolean matchesKeyword(Reservation reservation, String keyword) {
+        if (keyword == null) {
+            return true;
+        }
+
+        return containsKeyword(reservation.getCustomerName(), keyword)
+                || containsKeyword(reservation.getPhone(), keyword)
+                || containsKeyword(reservation.getEmail(), keyword)
+                || containsKeyword(reservation.getFromAddress(), keyword)
+                || containsKeyword(reservation.getToAddress(), keyword);
+    }
+
+    private boolean containsKeyword(String value, String keyword) {
+        return value != null && value.toLowerCase(Locale.ROOT).contains(keyword);
+    }
+
     private String normalizeKeyword(String keyword) {
         if (keyword == null) {
             return null;
@@ -641,7 +681,7 @@ public class ReservationService {
             return null;
         }
 
-        return trimmedKeyword.toLowerCase();
+        return trimmedKeyword.toLowerCase(Locale.ROOT);
     }
 
     private Comparator<Reservation> comparator(ReservationSort sort) {

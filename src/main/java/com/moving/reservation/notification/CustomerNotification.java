@@ -1,7 +1,9 @@
 package com.moving.reservation.notification;
 
+import com.moving.reservation.privacy.SensitiveStringConverter;
 import com.moving.reservation.reservation.Reservation;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -36,15 +38,18 @@ public class CustomerNotification {
     @Column(nullable = false, length = 30)
     private NotificationStatus status;
 
-    @Column(nullable = false, length = 120)
+    @Convert(converter = SensitiveStringConverter.class)
+    @Column(nullable = false, length = 500)
     private String recipientPhone;
 
-    @Column(length = 500)
+    @Convert(converter = SensitiveStringConverter.class)
+    @Column(length = 2500)
     private String failureReason;
 
     private LocalDateTime sentAt;
 
-    @Column(nullable = false, length = 1000)
+    @Convert(converter = SensitiveStringConverter.class)
+    @Column(nullable = false, length = 5000)
     private String message;
 
     @Column(nullable = false)

@@ -53,6 +53,10 @@ notification:
     service-id: ${SMS_SERVICE_ID:}
 
 privacy:
+  crypto:
+    secret: ${PRIVACY_CRYPTO_SECRET:move-mission-local-privacy-secret}
+  hash:
+    secret: ${PRIVACY_HASH_SECRET:move-mission-local-privacy-hash-secret}
   retention:
     conflict-attempt-days: ${PRIVACY_CONFLICT_ATTEMPT_RETENTION_DAYS:30}
     cleanup-cron: "${PRIVACY_RETENTION_CLEANUP_CRON:0 0 3 * * *}"

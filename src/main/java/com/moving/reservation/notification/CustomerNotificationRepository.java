@@ -33,14 +33,8 @@ public interface CustomerNotificationRepository extends JpaRepository<CustomerNo
             join fetch notification.reservation reservation
             where (:channel is null or notification.channel = :channel)
               and (:status is null or notification.status = :status)
-              and (:keyword is null
-                or lower(reservation.customerName) like concat('%', :keyword, '%')
-                or reservation.phone like concat('%', :keyword, '%')
-                or lower(coalesce(reservation.email, '')) like concat('%', :keyword, '%')
-                or lower(notification.recipientPhone) like concat('%', :keyword, '%'))
             order by notification.createdAt desc
             """)
     List<CustomerNotification> search(@Param("channel") NotificationChannel channel,
-                                      @Param("status") NotificationStatus status,
-                                      @Param("keyword") String keyword);
+                                      @Param("status") NotificationStatus status);
 }

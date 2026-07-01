@@ -1,5 +1,6 @@
 package com.moving.reservation.review;
 
+import com.moving.reservation.privacy.PrivacyHashService;
 import com.moving.reservation.reservation.Reservation;
 import com.moving.reservation.reservation.ReservationRepository;
 import com.moving.reservation.reservation.ReservationStatus;
@@ -16,10 +17,14 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final ReservationRepository reservationRepository;
+    private final PrivacyHashService privacyHashService;
 
-    public ReviewService(ReviewRepository reviewRepository, ReservationRepository reservationRepository) {
+    public ReviewService(ReviewRepository reviewRepository,
+                         ReservationRepository reservationRepository,
+                         PrivacyHashService privacyHashService) {
         this.reviewRepository = reviewRepository;
         this.reservationRepository = reservationRepository;
+        this.privacyHashService = privacyHashService;
     }
 
     public Optional<Review> findByReservationId(Long reservationId) {
@@ -74,8 +79,7 @@ public class ReviewService {
 
     @Transactional
     public Review create(ReviewCreateRequest request) {
-        Reservation reservation = reservationRepository.findByIdAndPhone(request.getReservationId(), request.getPhone())
-                .orElseThrow(() -> new IllegalArgumentException("예약 번호와 연락처가 일치하지 않습니다."));
+        Reservation reservation = findReservationByCustomerPhone(request.getReservationId(), request.getPhone());
 
         if (reservation.getStatus() != ReservationStatus.COMPLETED) {
             throw new IllegalArgumentException("완료된 예약만 리뷰를 작성할 수 있습니다.");
@@ -95,6 +99,22 @@ public class ReviewService {
     private Review get(Long id) {
         return reviewRepository.findByIdWithReservation(id)
                 .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
+    }
+
+    private Reservation findReservationByCustomerPhone(Long reservationId, String phone) {
+        String phoneHash = privacyHashService.phoneHash(phone);
+
+        if (phoneHash != null) {
+            Optional<Reservation> reservation = reservationRepository.findByIdAndPhoneHash(reservationId, phoneHash);
+
+            if (reservation.isPresent()) {
+                return reservation.get();
+            }
+        }
+
+        return reservationRepository.findById(reservationId)
+                .filter(reservation -> privacyHashService.matchesPhone(reservation.getPhone(), phone))
+                .orElseThrow(() -> new IllegalArgumentException("예약 번호와 연락처가 일치하지 않습니다."));
     }
 
     private String normalizeReply(String reply) {

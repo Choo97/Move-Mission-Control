@@ -24,6 +24,10 @@ notification:
     admin-to:
 
 privacy:
+  crypto:
+    secret: test-privacy-crypto-secret
+  hash:
+    secret: test-privacy-hash-secret
   retention:
     conflict-attempt-days: 30
     cleanup-cron: "0 0 3 * * *"

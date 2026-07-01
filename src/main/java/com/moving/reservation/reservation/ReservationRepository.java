@@ -18,11 +18,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             select reservation
             from Reservation reservation
             where (:status is null or reservation.status = :status)
-              and (
-                :keyword is null
-                or lower(reservation.customerName) like concat('%', :keyword, '%')
-                or reservation.phone like concat('%', :keyword, '%')
-              )
               and (:startDate is null or reservation.moveDate >= :startDate)
               and (:endDate is null or reservation.moveDate <= :endDate)
               and (:needsDistance is null or :needsDistance = false or reservation.distanceKm is null)
@@ -30,14 +25,13 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             order by reservation.moveDate asc, reservation.moveTime asc
             """)
     List<Reservation> search(@Param("status") ReservationStatus status,
-                             @Param("keyword") String keyword,
                              @Param("startDate") LocalDate startDate,
                              @Param("endDate") LocalDate endDate,
                              @Param("needsDistance") Boolean needsDistance,
                              @Param("attentionRequired") Boolean attentionRequired,
                              @Param("attentionRequiredStatuses") Collection<ReservationStatus> attentionRequiredStatuses);
 
-    Optional<Reservation> findByIdAndPhone(Long id, String phone);
+    Optional<Reservation> findByIdAndPhoneHash(Long id, String phoneHash);
 
     List<Reservation> findByMoveDateAndStatusNot(LocalDate moveDate, ReservationStatus status);
 

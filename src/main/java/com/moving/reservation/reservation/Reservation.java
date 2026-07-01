@@ -2,7 +2,9 @@ package com.moving.reservation.reservation;
 
 import com.moving.reservation.coupon.Coupon;
 import com.moving.reservation.coupon.DiscountType;
+import com.moving.reservation.privacy.SensitiveStringConverter;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -22,13 +24,19 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 50)
+    @Convert(converter = SensitiveStringConverter.class)
+    @Column(nullable = false, length = 500)
     private String customerName;
 
-    @Column(nullable = false, length = 30)
+    @Convert(converter = SensitiveStringConverter.class)
+    @Column(nullable = false, length = 500)
     private String phone;
 
-    @Column(length = 120)
+    @Column(length = 64)
+    private String phoneHash;
+
+    @Convert(converter = SensitiveStringConverter.class)
+    @Column(length = 500)
     private String email;
 
     @Column(nullable = false)
@@ -37,10 +45,12 @@ public class Reservation {
     @Column(nullable = false)
     private LocalTime moveTime;
 
-    @Column(nullable = false, length = 200)
+    @Convert(converter = SensitiveStringConverter.class)
+    @Column(nullable = false, length = 1000)
     private String fromAddress;
 
-    @Column(nullable = false, length = 200)
+    @Convert(converter = SensitiveStringConverter.class)
+    @Column(nullable = false, length = 1000)
     private String toAddress;
 
     @Enumerated(EnumType.STRING)
@@ -67,10 +77,12 @@ public class Reservation {
 
     private Integer distanceKm;
 
-    @Column(length = 1000)
+    @Convert(converter = SensitiveStringConverter.class)
+    @Column(length = 5000)
     private String memo;
 
-    @Column(length = 1000)
+    @Convert(converter = SensitiveStringConverter.class)
+    @Column(length = 5000)
     private String adminMemo;
 
     @Column(length = 50)
@@ -163,6 +175,10 @@ public class Reservation {
     public void updateAdminMemo(String adminMemo, String adminMemoUpdatedBy) {
         this.adminMemo = adminMemo;
         this.adminMemoUpdatedBy = adminMemoUpdatedBy;
+    }
+
+    public void updatePhoneHash(String phoneHash) {
+        this.phoneHash = phoneHash;
     }
 
     public boolean isCancelable() {
@@ -284,6 +300,10 @@ public class Reservation {
 
     public String getPhone() {
         return phone;
+    }
+
+    public String getPhoneHash() {
+        return phoneHash;
     }
 
     public String getEmail() {
