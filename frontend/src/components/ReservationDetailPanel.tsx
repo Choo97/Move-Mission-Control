@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { ChangeEvent, Dispatch, FormEvent, SetStateAction } from 'react'
+import type { ChangeEvent, Dispatch, FormEvent, ReactNode, SetStateAction } from 'react'
 import { API_BASE_URL } from '../reservationData'
 import type { CustomerGuideItem, ReservationResponse, ReviewForm, ReviewResponse } from '../types'
 import { StatusNotice } from './StatusNotice'
@@ -34,6 +34,28 @@ type Props = {
 const photoUrl = (fileUrl: string) =>
   fileUrl.startsWith('http') ? fileUrl : `${API_BASE_URL}${fileUrl}`
 
+type DetailNavItem = {
+  id: string
+  label: string
+}
+
+function getCustomerActionAvailability(reservation: ReservationResponse, actionMessage: string) {
+  const hasPendingRequest = reservation.customerRequests.some((request) => request.status === 'PENDING')
+  const canRequestEdit = reservation.editable && !hasPendingRequest
+  const canRequestCancel = reservation.cancelable && !hasPendingRequest
+  const canUseSupportActions = canRequestEdit || canRequestCancel
+  const hasPrimaryEstimateAction = reservation.estimateAcceptable
+
+  return {
+    canRequestCancel,
+    canRequestEdit,
+    canUseSupportActions,
+    hasPendingRequest,
+    hasPrimaryEstimateAction,
+    shouldRender: Boolean(actionMessage || hasPendingRequest || canUseSupportActions || hasPrimaryEstimateAction),
+  }
+}
+
 export function ReservationDetailPanel({
   activeView,
   reservation,
@@ -59,6 +81,53 @@ export function ReservationDetailPanel({
   onSubmitReview,
   onShowSearchForm,
 }: Props) {
+  const [openDetailSections, setOpenDetailSections] = useState<Record<string, boolean>>({})
+  const actionAvailability = reservation ? getCustomerActionAvailability(reservation, actionMessage) : null
+  const detailNavItems: DetailNavItem[] = []
+
+  if (reservation) {
+    detailNavItems.push(
+      { id: 'reservation-summary-section', label: '요약' },
+      { id: 'reservation-progress-section', label: '진행' },
+    )
+
+    if (reservation.customerRequests.length > 0) {
+      detailNavItems.push({ id: 'reservation-request-section', label: '요청' })
+    }
+
+    if (reservation.estimateLines.length > 0) {
+      detailNavItems.push({ id: 'reservation-estimate-section', label: '견적' })
+    }
+
+    detailNavItems.push(
+      { id: 'reservation-photo-section', label: '사진' },
+      { id: 'reservation-review-section', label: '리뷰' },
+    )
+
+    if (actionAvailability?.shouldRender) {
+      detailNavItems.push({ id: 'reservation-action-section', label: '다음 행동' })
+    }
+  }
+
+  const isDetailSectionOpen = (sectionId: string, defaultOpen: boolean) =>
+    openDetailSections[sectionId] ?? defaultOpen
+
+  const setDetailSectionOpen = (sectionId: string, isOpen: boolean) => {
+    setOpenDetailSections((current) =>
+      current[sectionId] === isOpen ? current : { ...current, [sectionId]: isOpen },
+    )
+  }
+
+  const openAndScrollToDetailSection = (sectionId: string) => {
+    setOpenDetailSections((current) => ({ ...current, [sectionId]: true }))
+    window.setTimeout(() => {
+      document.getElementById(sectionId)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+    }, 0)
+  }
+
   return (
     <aside className="status-panel">
       <h2>{activeView === 'create' ? '접수 결과' : '예약 상세'}</h2>
@@ -71,42 +140,122 @@ export function ReservationDetailPanel({
               onShowSearchForm={onShowSearchForm}
             />
           )}
-          {activeView === 'search' && <ReservationLookupHeader reservation={reservation} />}
-          <strong>예약 #{reservation.id}</strong>
-          <ReservationSummary reservation={reservation} />
-          <ReservationProgress reservation={reservation} />
-          <CustomerStatusGuide
-            guides={customerGuides}
-            isLoading={isLoadingCustomerGuides}
-            errorMessage={customerGuideErrorMessage}
-          />
-          <ReservationStateBadges reservation={reservation} />
-          <CustomerRequestSection reservation={reservation} />
-          <EstimateLines reservation={reservation} />
-          <PhotoSection
-            reservation={reservation}
-            photoFiles={photoFiles}
-            isUploadingPhotos={isUploadingPhotos}
-            onSelectPhotoFiles={onSelectPhotoFiles}
-            onUploadPhotos={onUploadPhotos}
-          />
-          <ReviewSection
-            reservation={reservation}
-            reviewForm={reviewForm}
-            submittedReview={submittedReview}
-            isSubmittingReview={isSubmittingReview}
-            onReviewFormChange={onReviewFormChange}
-            onSubmitReview={onSubmitReview}
-          />
-          <CustomerActions
-            reservation={reservation}
-            actionMessage={actionMessage}
-            isCanceling={isCanceling}
-            isAcceptingEstimate={isAcceptingEstimate}
-            onStartEdit={onStartEdit}
-            onCancelReservation={onCancelReservation}
-            onAcceptEstimate={onAcceptEstimate}
-          />
+          <ReservationDetailQuickNav items={detailNavItems} onNavigate={openAndScrollToDetailSection} />
+
+          <DetailSection
+            id="reservation-summary-section"
+            title={`예약 #${reservation.id}`}
+            description="일정, 주소, 금액을 먼저 확인합니다."
+            className="detail-section--summary"
+            isOpen={isDetailSectionOpen('reservation-summary-section', true)}
+            onOpenChange={(isOpen) => setDetailSectionOpen('reservation-summary-section', isOpen)}
+          >
+            {activeView === 'search' && <ReservationLookupHeader reservation={reservation} />}
+            <ReservationSummary reservation={reservation} />
+            <ReservationStateBadges reservation={reservation} />
+          </DetailSection>
+
+          <DetailSection
+            id="reservation-progress-section"
+            title="진행 단계"
+            description="현재 예약이 어디까지 진행됐는지 확인합니다."
+            className="detail-section--progress"
+            isOpen={isDetailSectionOpen('reservation-progress-section', true)}
+            onOpenChange={(isOpen) => setDetailSectionOpen('reservation-progress-section', isOpen)}
+          >
+            <ReservationProgress reservation={reservation} showHeading={false} />
+            <CustomerStatusGuide
+              guides={customerGuides}
+              isLoading={isLoadingCustomerGuides}
+              errorMessage={customerGuideErrorMessage}
+              showHeading={false}
+            />
+          </DetailSection>
+
+          {reservation.customerRequests.length > 0 && (
+            <DetailSection
+              id="reservation-request-section"
+              title="요청 처리 현황"
+              description="수정 또는 취소 요청이 어떻게 처리되고 있는지 확인합니다."
+              className="detail-section--request"
+              isOpen={isDetailSectionOpen('reservation-request-section', true)}
+              onOpenChange={(isOpen) => setDetailSectionOpen('reservation-request-section', isOpen)}
+            >
+              <CustomerRequestSection reservation={reservation} showHeading={false} />
+            </DetailSection>
+          )}
+
+          {reservation.estimateLines.length > 0 && (
+            <DetailSection
+              id="reservation-estimate-section"
+              title="견적 내역"
+              description="기본가와 추가 항목을 나눠서 확인합니다."
+              className="detail-section--estimate"
+              isOpen={isDetailSectionOpen('reservation-estimate-section', reservation.estimateAcceptable)}
+              onOpenChange={(isOpen) => setDetailSectionOpen('reservation-estimate-section', isOpen)}
+            >
+              <EstimateLines reservation={reservation} showHeading={false} />
+            </DetailSection>
+          )}
+
+          <DetailSection
+            id="reservation-photo-section"
+            title="짐 사진"
+            description="짐 규모를 보여주는 사진을 확인하거나 추가합니다."
+            className="detail-section--photo"
+            isOpen={isDetailSectionOpen('reservation-photo-section', isNewlyCreated)}
+            onOpenChange={(isOpen) => setDetailSectionOpen('reservation-photo-section', isOpen)}
+          >
+            <PhotoSection
+              reservation={reservation}
+              photoFiles={photoFiles}
+              isUploadingPhotos={isUploadingPhotos}
+              onSelectPhotoFiles={onSelectPhotoFiles}
+              onUploadPhotos={onUploadPhotos}
+              showHeading={false}
+            />
+          </DetailSection>
+
+          <DetailSection
+            id="reservation-review-section"
+            title="고객 리뷰"
+            description="이사가 완료된 뒤 리뷰를 남길 수 있습니다."
+            className="detail-section--review"
+            isOpen={isDetailSectionOpen('reservation-review-section', false)}
+            onOpenChange={(isOpen) => setDetailSectionOpen('reservation-review-section', isOpen)}
+          >
+            <ReviewSection
+              reservation={reservation}
+              reviewForm={reviewForm}
+              submittedReview={submittedReview}
+              isSubmittingReview={isSubmittingReview}
+              onReviewFormChange={onReviewFormChange}
+              onSubmitReview={onSubmitReview}
+              showHeading={false}
+            />
+          </DetailSection>
+
+          {actionAvailability?.shouldRender && (
+            <DetailSection
+              id="reservation-action-section"
+              title="다음 행동"
+              description="견적 동의, 수정 요청, 취소 요청을 처리합니다."
+              className="detail-section--action"
+              isOpen={isDetailSectionOpen('reservation-action-section', true)}
+              onOpenChange={(isOpen) => setDetailSectionOpen('reservation-action-section', isOpen)}
+            >
+              <CustomerActions
+                reservation={reservation}
+                actionMessage={actionMessage}
+                availability={actionAvailability}
+                isCanceling={isCanceling}
+                isAcceptingEstimate={isAcceptingEstimate}
+                onStartEdit={onStartEdit}
+                onCancelReservation={onCancelReservation}
+                onAcceptEstimate={onAcceptEstimate}
+              />
+            </DetailSection>
+          )}
         </div>
       ) : (
         <StatusNotice
@@ -124,6 +273,62 @@ export function ReservationDetailPanel({
         />
       )}
     </aside>
+  )
+}
+
+function ReservationDetailQuickNav({
+  items,
+  onNavigate,
+}: {
+  items: DetailNavItem[]
+  onNavigate: (sectionId: string) => void
+}) {
+  return (
+    <nav className="detail-quick-nav" aria-label="예약 상세 빠른 이동">
+      <span>빠른 이동</span>
+      <div>
+        {items.map((item) => (
+          <button key={item.id} type="button" onClick={() => onNavigate(item.id)}>
+            {item.label}
+          </button>
+        ))}
+      </div>
+    </nav>
+  )
+}
+
+function DetailSection({
+  id,
+  title,
+  description,
+  className,
+  isOpen,
+  onOpenChange,
+  children,
+}: {
+  id: string
+  title: string
+  description: string
+  className: string
+  isOpen: boolean
+  onOpenChange: (isOpen: boolean) => void
+  children: ReactNode
+}) {
+  return (
+    <details
+      id={id}
+      className={`detail-section ${className}`}
+      open={isOpen}
+      onToggle={(event) => onOpenChange(event.currentTarget.open)}
+    >
+      <summary>
+        <span>
+          <strong>{title}</strong>
+          <small>{description}</small>
+        </span>
+      </summary>
+      <div className="detail-section-body">{children}</div>
+    </details>
   )
 }
 
@@ -296,11 +501,17 @@ const progressSteps = [
   { status: 'COMPLETED', label: '완료' },
 ]
 
-function ReservationProgress({ reservation }: { reservation: ReservationResponse }) {
+function ReservationProgress({
+  reservation,
+  showHeading = true,
+}: {
+  reservation: ReservationResponse
+  showHeading?: boolean
+}) {
   if (reservation.status === 'CANCELED') {
     return (
       <div className="progress-section canceled">
-        <h3>진행 단계</h3>
+        {showHeading && <h3>진행 단계</h3>}
         <p>예약이 취소되었습니다.</p>
       </div>
     )
@@ -310,7 +521,7 @@ function ReservationProgress({ reservation }: { reservation: ReservationResponse
 
   return (
     <div className="progress-section">
-      <h3>진행 단계</h3>
+      {showHeading && <h3>진행 단계</h3>}
       <ol className="progress-steps" aria-label="예약 진행 단계">
         {progressSteps.map((step, index) => {
           const isDone = currentIndex >= 0 && index < currentIndex
@@ -336,15 +547,17 @@ function CustomerStatusGuide({
   guides,
   isLoading,
   errorMessage,
+  showHeading = true,
 }: {
   guides: CustomerGuideItem[]
   isLoading: boolean
   errorMessage: string
+  showHeading?: boolean
 }) {
   if (isLoading) {
     return (
       <div className="status-guide muted">
-        <h3>고객 안내</h3>
+        {showHeading && <h3>고객 안내</h3>}
         <p>고객 안내를 불러오는 중입니다.</p>
       </div>
     )
@@ -353,7 +566,7 @@ function CustomerStatusGuide({
   if (errorMessage) {
     return (
       <div className="status-guide warning">
-        <h3>고객 안내</h3>
+        {showHeading && <h3>고객 안내</h3>}
         <p>{errorMessage}</p>
       </div>
     )
@@ -365,7 +578,7 @@ function CustomerStatusGuide({
 
   return (
     <div className="status-guide">
-      <h3>고객 안내</h3>
+      {showHeading && <h3>고객 안내</h3>}
       <ul>
         {guides.map((guide) => (
           <li key={`${guide.title}-${guide.description}`}>
@@ -384,15 +597,21 @@ function ReservationStateBadges({ reservation }: { reservation: ReservationRespo
   return (
     <div className="action-state">
       {hasPendingRequest && <span>요청 처리 대기</span>}
-      {reservation.editable && <span>수정 가능</span>}
-      {reservation.cancelable && <span>취소 가능</span>}
-      {reservation.estimateAcceptable && <span>견적 동의 가능</span>}
+      {reservation.editable && <span>정보 변경 요청 가능</span>}
+      {reservation.cancelable && !reservation.editable && <span>예약 문의 가능</span>}
+      {reservation.estimateAcceptable && <span>견적 확인 필요</span>}
       {reservation.estimateAccepted && <span>견적 동의 완료</span>}
     </div>
   )
 }
 
-function CustomerRequestSection({ reservation }: { reservation: ReservationResponse }) {
+function CustomerRequestSection({
+  reservation,
+  showHeading = true,
+}: {
+  reservation: ReservationResponse
+  showHeading?: boolean
+}) {
   if (reservation.customerRequests.length === 0) {
     return null
   }
@@ -401,7 +620,7 @@ function CustomerRequestSection({ reservation }: { reservation: ReservationRespo
 
   return (
     <div className="customer-request-section">
-      <h3>요청 처리 현황</h3>
+      {showHeading && <h3>요청 처리 현황</h3>}
       {pendingRequestCount > 0 && (
         <div className="pending-request-guide">
           <strong>관리자 확인 중입니다</strong>
@@ -424,14 +643,20 @@ function CustomerRequestSection({ reservation }: { reservation: ReservationRespo
   )
 }
 
-function EstimateLines({ reservation }: { reservation: ReservationResponse }) {
+function EstimateLines({
+  reservation,
+  showHeading = true,
+}: {
+  reservation: ReservationResponse
+  showHeading?: boolean
+}) {
   if (reservation.estimateLines.length === 0) {
     return null
   }
 
   return (
     <div className="estimate-lines">
-      <h3>견적 내역</h3>
+      {showHeading && <h3>견적 내역</h3>}
       <dl>
         {reservation.estimateLines.map((line) => (
           <div key={line.label}>
@@ -450,16 +675,18 @@ function PhotoSection({
   isUploadingPhotos,
   onSelectPhotoFiles,
   onUploadPhotos,
+  showHeading = true,
 }: {
   reservation: ReservationResponse
   photoFiles: File[]
   isUploadingPhotos: boolean
   onSelectPhotoFiles: (event: ChangeEvent<HTMLInputElement>) => void
   onUploadPhotos: (event: FormEvent<HTMLFormElement>) => void
+  showHeading?: boolean
 }) {
   return (
-    <div id="reservation-photo-section" className="photo-section">
-      <h3>짐 사진</h3>
+    <div className="photo-section">
+      {showHeading && <h3>짐 사진</h3>}
       {reservation.photos.length > 0 ? (
         <div className="photo-grid">
           {reservation.photos.map((photo) => (
@@ -510,6 +737,7 @@ function ReviewSection({
   isSubmittingReview,
   onReviewFormChange,
   onSubmitReview,
+  showHeading = true,
 }: {
   reservation: ReservationResponse
   reviewForm: ReviewForm
@@ -517,6 +745,7 @@ function ReviewSection({
   isSubmittingReview: boolean
   onReviewFormChange: Dispatch<SetStateAction<ReviewForm>>
   onSubmitReview: (event: FormEvent<HTMLFormElement>) => void
+  showHeading?: boolean
 }) {
   if (reservation.status !== 'COMPLETED') {
     const message =
@@ -526,7 +755,7 @@ function ReviewSection({
 
     return (
       <div className="review-section">
-        <h3>고객 리뷰</h3>
+        {showHeading && <h3>고객 리뷰</h3>}
         <p className="review-notice">{message}</p>
       </div>
     )
@@ -534,7 +763,7 @@ function ReviewSection({
 
   return (
     <div className="review-section">
-      <h3>고객 리뷰</h3>
+      {showHeading && <h3>고객 리뷰</h3>}
       {submittedReview ? (
         <div className="review-complete">
           <strong>{'★'.repeat(submittedReview.rating)}</strong>
@@ -578,6 +807,7 @@ function ReviewSection({
 function CustomerActions({
   reservation,
   actionMessage,
+  availability,
   isCanceling,
   isAcceptingEstimate,
   onStartEdit,
@@ -586,49 +816,87 @@ function CustomerActions({
 }: {
   reservation: ReservationResponse
   actionMessage: string
+  availability?: ReturnType<typeof getCustomerActionAvailability>
   isCanceling: boolean
   isAcceptingEstimate: boolean
   onStartEdit: () => void
   onCancelReservation: () => void
   onAcceptEstimate: () => void
 }) {
-  const hasPendingRequest = reservation.customerRequests.some((request) => request.status === 'PENDING')
-  const canRequestEdit = reservation.editable && !hasPendingRequest
-  const canRequestCancel = reservation.cancelable && !hasPendingRequest
+  const {
+    canRequestCancel,
+    canRequestEdit,
+    canUseSupportActions,
+    hasPendingRequest,
+    hasPrimaryEstimateAction,
+    shouldRender,
+  } = availability ?? getCustomerActionAvailability(reservation, actionMessage)
+  const title = hasPrimaryEstimateAction ? '견적을 확인하고 예약을 확정해 주세요' : '예약 진행 상황을 확인해 주세요'
+  const description = hasPrimaryEstimateAction
+    ? '안내된 견적이 괜찮다면 동의 후 예약이 확정됩니다. 일정이나 주소가 바뀐 경우에는 먼저 수정 요청을 남겨 주세요.'
+    : '관리자가 예약 정보를 확인한 뒤 상담과 견적 안내를 진행합니다. 정보가 바뀌었을 때만 요청을 남기면 됩니다.'
 
-  if (!actionMessage && !hasPendingRequest && !canRequestEdit && !canRequestCancel && !reservation.estimateAcceptable) {
+  if (!shouldRender) {
     return null
   }
 
   return (
     <div className="customer-actions">
-      <h3>다음에 할 수 있는 일</h3>
+      <div className="customer-actions-heading">
+        <span>다음 단계</span>
+        <h3>{title}</h3>
+        <p>{description}</p>
+      </div>
       {actionMessage && <p className="message info">{actionMessage}</p>}
       {hasPendingRequest && (
         <p className="message info">처리 대기 중인 고객 요청이 있어 관리자 확인 전까지 추가 수정/취소 요청은 제한됩니다.</p>
       )}
-      <div className="button-row customer-action-grid">
-        {reservation.estimateAcceptable && (
+
+      {hasPrimaryEstimateAction && (
+        <div className="estimate-confirm-card">
+          <div>
+            <span>안내 견적</span>
+            <strong>{reservation.finalEstimatedPrice.toLocaleString()}원</strong>
+            <p>견적에 동의하면 예약이 확정되고, 이후 진행 안내를 받을 수 있습니다.</p>
+          </div>
           <button
             className="submit-button primary-action"
             type="button"
             disabled={isAcceptingEstimate}
             onClick={onAcceptEstimate}
           >
-            {isAcceptingEstimate ? '견적 동의 처리 중' : '견적 동의'}
+            {isAcceptingEstimate ? '견적 동의 처리 중' : '견적 동의하고 예약 확정'}
           </button>
-        )}
-        {canRequestEdit && (
-          <button className="submit-button secondary" type="button" onClick={onStartEdit}>
-            예약 수정 요청
-          </button>
-        )}
-        {canRequestCancel && (
-          <button className="submit-button danger" type="button" disabled={isCanceling} onClick={onCancelReservation}>
-            {isCanceling ? '취소 요청 중' : '예약 취소 요청'}
-          </button>
-        )}
-      </div>
+        </div>
+      )}
+
+      {canUseSupportActions && (
+        <div className="reservation-support-actions">
+          <div className="support-actions-heading">
+            <strong>예약 정보가 바뀌었나요?</strong>
+            <p>날짜, 주소, 요청사항 변경은 취소보다 수정 요청을 먼저 권장합니다.</p>
+          </div>
+          <div className="support-action-list">
+            {canRequestEdit && (
+              <button className="support-action-button" type="button" onClick={onStartEdit}>
+                <strong>예약 수정 요청</strong>
+                <span>일정, 주소, 요청사항을 바꿔야 할 때</span>
+              </button>
+            )}
+            {canRequestCancel && (
+              <button
+                className="support-action-button quiet-danger"
+                type="button"
+                disabled={isCanceling}
+                onClick={onCancelReservation}
+              >
+                <strong>{isCanceling ? '취소 요청 중' : '예약 취소가 필요해요'}</strong>
+                <span>이사를 진행하기 어려운 경우에만 선택</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

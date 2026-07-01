@@ -96,13 +96,213 @@
   overflow-wrap: anywhere;
 }
 
+.detail-quick-nav {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  padding: 12px;
+  background: #f8fbff;
+}
+
+.detail-quick-nav > span {
+  flex: 0 0 auto;
+  color: #30445f;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.detail-quick-nav div {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.detail-quick-nav button {
+  border: 1px solid #cfe0f3;
+  border-radius: 999px;
+  padding: 7px 11px;
+  color: #1f5ea8;
+  background: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.detail-quick-nav button:hover {
+  border-color: #1f5ea8;
+  color: #ffffff;
+  background: #1f5ea8;
+}
+
+.detail-section {
+  min-width: 0;
+  border: 1px solid #dce6f2;
+  border-radius: 8px;
+  background: #ffffff;
+  scroll-margin-top: 18px;
+  overflow: hidden;
+}
+
+.workspace-with-detail .detail-section--summary,
+.workspace-with-detail .detail-section--request,
+.workspace-with-detail .detail-section--estimate,
+.workspace-with-detail .detail-section--action {
+  grid-column: 1 / -1;
+}
+
+.workspace-with-detail .detail-section--progress,
+.workspace-with-detail .detail-section--photo {
+  grid-column: 1;
+}
+
+.workspace-with-detail .detail-section--review {
+  grid-column: 2;
+}
+
+.detail-section summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px;
+  background: #ffffff;
+  list-style: none;
+  cursor: pointer;
+}
+
+.detail-section summary::-webkit-details-marker {
+  display: none;
+}
+
+.detail-section summary::after {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  color: #1f5ea8;
+  background: #e5f0fb;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+  content: "+";
+}
+
+.detail-section[open] summary {
+  background: #f8fbff;
+}
+
+.detail-section[open] summary::after {
+  color: #ffffff;
+  background: #1f5ea8;
+  content: "-";
+}
+
+.detail-section summary strong {
+  display: block;
+  margin: 0;
+  color: #172033;
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.detail-section summary small {
+  display: block;
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.detail-section-body {
+  display: grid;
+  gap: 14px;
+  border-top: 1px solid #dce6f2;
+  padding: 14px;
+}
+
+.detail-section-body .lookup-result-card,
+.detail-section-body .progress-section,
+.detail-section-body .status-guide,
+.detail-section-body .customer-request-section,
+.detail-section-body .estimate-lines,
+.detail-section-body .photo-section,
+.detail-section-body .review-section,
+.detail-section-body .customer-actions {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.workspace-with-detail .detail-section--summary .lookup-result-card {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 0;
+}
+
+.workspace-with-detail .detail-section--summary .detail-section-body > dl,
+.workspace-with-detail .detail-section--estimate .estimate-lines dl {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 18px;
+}
+
+.workspace-with-detail .detail-section--summary .detail-section-body > dl div,
+.workspace-with-detail .detail-section--estimate .estimate-lines dl div {
+  min-width: 0;
+}
+
+.workspace-with-detail .detail-section--summary .detail-section-body > dl dd,
+.workspace-with-detail .detail-section--estimate .estimate-lines dl dd {
+  overflow-wrap: anywhere;
+}
+
+.workspace-with-detail .detail-section--photo .photo-grid {
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+}
+
 @media (max-width: 860px) {
   .completion-summary-grid .reservation-number-box {
     min-height: auto;
   }
+
+  .workspace-with-detail .detail-section--progress,
+  .workspace-with-detail .detail-section--photo,
+  .workspace-with-detail .detail-section--review {
+    grid-column: auto;
+  }
+
+  .workspace-with-detail .detail-section--summary .lookup-result-card,
+  .workspace-with-detail .detail-section--summary .detail-section-body > dl,
+  .workspace-with-detail .detail-section--estimate .estimate-lines dl {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 520px) {
+  .detail-quick-nav {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .detail-quick-nav div {
+    justify-content: flex-start;
+  }
+
+  .detail-section summary {
+    align-items: start;
+  }
+
   .completion-receipt h3 {
     font-size: 20px;
   }
