@@ -447,7 +447,7 @@ class ReservationApiControllerTest {
                 "photos",
                 "boxes.jpg",
                 "image/jpeg",
-                "photo".getBytes()
+                jpegBytes()
         );
 
         MvcResult result = mockMvc.perform(multipart("/api/reservations/{id}/photos", reservation.getId())
@@ -463,7 +463,7 @@ class ReservationApiControllerTest {
 
         mockMvc.perform(get(fileUrl))
                 .andExpect(status().isOk())
-                .andExpect(content().bytes("photo".getBytes()));
+                .andExpect(content().bytes(jpegBytes()));
     }
 
     @Test
@@ -473,7 +473,7 @@ class ReservationApiControllerTest {
                 "photos",
                 "boxes.jpg",
                 "image/jpeg",
-                "photo".getBytes()
+                jpegBytes()
         );
 
         mockMvc.perform(multipart("/api/reservations/{id}/photos", reservation.getId())
@@ -509,7 +509,7 @@ class ReservationApiControllerTest {
                 "photos",
                 "boxes.jpg",
                 "image/jpeg",
-                "photo".getBytes()
+                jpegBytes()
         );
 
         mockMvc.perform(multipart("/api/reservations/{id}/photos", reservation.getId())
@@ -525,7 +525,7 @@ class ReservationApiControllerTest {
                 "photos",
                 "boxes.jpg",
                 "image/jpeg",
-                "photo".getBytes()
+                jpegBytes()
         );
 
         mockMvc.perform(multipart("/api/reservations/{id}/photos", reservation.getId())
@@ -544,6 +544,71 @@ class ReservationApiControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.photos[0].originalFilename").value("boxes.jpg"))
                 .andExpect(jsonPath("$.photos[0].fileUrl").isString());
+    }
+
+    @Test
+    void 짐사진업로드_API는_이미지로_위장한_파일이면_400을_응답한다() throws Exception {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+        MockMultipartFile photo = new MockMultipartFile(
+                "photos",
+                "boxes.jpg",
+                "image/jpeg",
+                "<html></html>".getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/reservations/{id}/photos", reservation.getId())
+                        .file(photo)
+                        .param("phone", "010-1234-5678"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("파일 내용이 이미지 형식과 일치하지 않습니다."));
+    }
+
+    @Test
+    void 짐사진업로드_API는_한번에_너무_많은_파일이면_400을_응답한다() throws Exception {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+
+        mockMvc.perform(multipart("/api/reservations/{id}/photos", reservation.getId())
+                        .file(photo("boxes-1.jpg"))
+                        .file(photo("boxes-2.jpg"))
+                        .file(photo("boxes-3.jpg"))
+                        .file(photo("boxes-4.jpg"))
+                        .file(photo("boxes-5.jpg"))
+                        .file(photo("boxes-6.jpg"))
+                        .param("phone", "010-1234-5678"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("짐 사진은 한 번에 최대 5장까지 업로드할 수 있습니다."));
+    }
+
+    @Test
+    void 짐사진업로드_API는_예약당_최대개수를_넘으면_400을_응답한다() throws Exception {
+        Reservation reservation = reservationService.create(reservationCreateRequest("010-1234-5678"));
+
+        mockMvc.perform(multipart("/api/reservations/{id}/photos", reservation.getId())
+                        .file(photo("boxes-1.jpg"))
+                        .file(photo("boxes-2.jpg"))
+                        .file(photo("boxes-3.jpg"))
+                        .file(photo("boxes-4.jpg"))
+                        .file(photo("boxes-5.jpg"))
+                        .param("phone", "010-1234-5678"))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(multipart("/api/reservations/{id}/photos", reservation.getId())
+                        .file(photo("boxes-6.jpg"))
+                        .file(photo("boxes-7.jpg"))
+                        .file(photo("boxes-8.jpg"))
+                        .file(photo("boxes-9.jpg"))
+                        .file(photo("boxes-10.jpg"))
+                        .param("phone", "010-1234-5678"))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(multipart("/api/reservations/{id}/photos", reservation.getId())
+                        .file(photo("boxes-11.jpg"))
+                        .param("phone", "010-1234-5678"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("짐 사진은 예약당 최대 10장까지 업로드할 수 있습니다."));
     }
 
     @Test
@@ -583,5 +648,18 @@ class ReservationApiControllerTest {
         request.setToFloor(5);
         request.setMemo("API 조회 테스트 예약입니다.");
         return request;
+    }
+
+    private MockMultipartFile photo(String filename) {
+        return new MockMultipartFile(
+                "photos",
+                filename,
+                "image/jpeg",
+                jpegBytes()
+        );
+    }
+
+    private byte[] jpegBytes() {
+        return new byte[]{(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, 0x00};
     }
 }

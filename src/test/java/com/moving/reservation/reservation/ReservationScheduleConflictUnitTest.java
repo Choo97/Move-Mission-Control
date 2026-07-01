@@ -37,7 +37,9 @@ class ReservationScheduleConflictUnitTest {
                 conflictAttemptService,
                 availabilityService,
                 true,
-                mock(CustomerNotificationService.class)
+                mock(CustomerNotificationService.class),
+                5,
+                10
         );
 
         assertThatThrownBy(() -> reservationService.create(request))

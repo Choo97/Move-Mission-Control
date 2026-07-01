@@ -35,6 +35,9 @@ reservation:
 upload:
   reservation-photo:
     directory: target/test-uploads/reservation-photos
+    max-file-size-bytes: 10485760
+    max-files-per-request: 5
+    max-files-per-reservation: 10
 
 app:
   cors:

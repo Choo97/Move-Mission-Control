@@ -42,6 +42,8 @@ public class ReservationService {
     private final AvailabilityService availabilityService;
     private final boolean scheduleConflictEnabled;
     private final CustomerNotificationService customerNotificationService;
+    private final int maxPhotoFilesPerRequest;
+    private final int maxPhotoFilesPerReservation;
 
     public ReservationService(ReservationRepository reservationRepository,
                               ReservationStatusHistoryRepository statusHistoryRepository,
@@ -55,7 +57,9 @@ public class ReservationService {
                               ReservationConflictAttemptService conflictAttemptService,
                               AvailabilityService availabilityService,
                               @Value("${reservation.schedule-conflict.enabled:true}") boolean scheduleConflictEnabled,
-                              CustomerNotificationService customerNotificationService) {
+                              CustomerNotificationService customerNotificationService,
+                              @Value("${upload.reservation-photo.max-files-per-request:5}") int maxPhotoFilesPerRequest,
+                              @Value("${upload.reservation-photo.max-files-per-reservation:10}") int maxPhotoFilesPerReservation) {
         this.reservationRepository = reservationRepository;
         this.statusHistoryRepository = statusHistoryRepository;
         this.reservationPhotoRepository = reservationPhotoRepository;
@@ -69,6 +73,8 @@ public class ReservationService {
         this.availabilityService = availabilityService;
         this.scheduleConflictEnabled = scheduleConflictEnabled;
         this.customerNotificationService = customerNotificationService;
+        this.maxPhotoFilesPerRequest = maxPhotoFilesPerRequest;
+        this.maxPhotoFilesPerReservation = maxPhotoFilesPerReservation;
     }
 
     @Transactional(noRollbackFor = ReservationScheduleConflictException.class)
@@ -81,6 +87,10 @@ public class ReservationService {
                 throw exception;
             }
         }
+
+        List<MultipartFile> uploadFiles = uploadablePhotoFiles(request.getItemPhotos());
+        validatePhotoUploadLimit(uploadFiles, 0);
+        uploadFiles.forEach(reservationPhotoStorage::validate);
 
         Reservation reservation = request.toEntity();
         reservation.applyBaseEstimate(estimateCalculator.calculate(
@@ -103,8 +113,7 @@ public class ReservationService {
         reservationRepository.save(reservation);
         customerNotificationService.prepareReservationCreated(reservation);
 
-        request.getItemPhotos().stream()
-                .filter(itemPhoto -> itemPhoto != null && !itemPhoto.isEmpty())
+        uploadFiles.stream()
                 .map(reservationPhotoStorage::store)
                 .map(storedPhoto -> new ReservationPhoto(
                         reservation,
@@ -224,13 +233,15 @@ public class ReservationService {
             throw new IllegalArgumentException("현재 상태에서는 짐 사진을 업로드할 수 없습니다.");
         }
 
-        List<MultipartFile> uploadFiles = itemPhotos == null ? List.of() : itemPhotos.stream()
-                .filter(itemPhoto -> itemPhoto != null && !itemPhoto.isEmpty())
-                .toList();
+        List<MultipartFile> uploadFiles = uploadablePhotoFiles(itemPhotos);
 
         if (uploadFiles.isEmpty()) {
             throw new IllegalArgumentException("업로드할 짐 사진을 선택해 주세요.");
         }
+
+        long existingPhotoCount = reservationPhotoRepository.countByReservationId(reservation.getId());
+        validatePhotoUploadLimit(uploadFiles, existingPhotoCount);
+        uploadFiles.forEach(reservationPhotoStorage::validate);
 
         return uploadFiles.stream()
                 .map(reservationPhotoStorage::store)
@@ -242,6 +253,26 @@ public class ReservationService {
                 ))
                 .map(reservationPhotoRepository::save)
                 .toList();
+    }
+
+    private List<MultipartFile> uploadablePhotoFiles(List<MultipartFile> itemPhotos) {
+        return itemPhotos == null ? List.of() : itemPhotos.stream()
+                .filter(itemPhoto -> itemPhoto != null && !itemPhoto.isEmpty())
+                .toList();
+    }
+
+    private void validatePhotoUploadLimit(List<MultipartFile> uploadFiles, long existingPhotoCount) {
+        if (uploadFiles.isEmpty()) {
+            return;
+        }
+
+        if (uploadFiles.size() > maxPhotoFilesPerRequest) {
+            throw new IllegalArgumentException("짐 사진은 한 번에 최대 " + maxPhotoFilesPerRequest + "장까지 업로드할 수 있습니다.");
+        }
+
+        if (existingPhotoCount + uploadFiles.size() > maxPhotoFilesPerReservation) {
+            throw new IllegalArgumentException("짐 사진은 예약당 최대 " + maxPhotoFilesPerReservation + "장까지 업로드할 수 있습니다.");
+        }
     }
 
     public List<ReservationCustomerActionHistory> findCustomerActionHistories(Long reservationId) {

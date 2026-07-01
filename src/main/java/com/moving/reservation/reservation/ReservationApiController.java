@@ -178,7 +178,7 @@ public class ReservationApiController {
 
     @Operation(
             summary = "짐 사진 업로드",
-            description = "예약 번호와 연락처를 확인한 뒤 고객이 이삿짐 사진을 업로드합니다. jpg, jpeg, png, webp 파일을 사용할 수 있습니다."
+            description = "예약 번호와 연락처를 확인한 뒤 고객이 이삿짐 사진을 업로드합니다. jpg, jpeg, png, webp 파일을 사용할 수 있으며 파일 형식, 용량, 업로드 개수를 검증합니다."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "짐 사진 업로드 성공"),

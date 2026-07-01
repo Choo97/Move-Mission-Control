@@ -86,7 +86,7 @@ class ReservationServiceTest {
                 "itemPhotos",
                 "boxes.png",
                 "image/png",
-                "photo".getBytes()
+                pngBytes()
         )));
 
         Reservation createdReservation = reservationService.create(request);
@@ -385,5 +385,9 @@ class ReservationServiceTest {
         request.setToLadderTruck(true);
         request.setMemo("수정된 테스트 예약입니다.");
         return request;
+    }
+
+    private byte[] pngBytes() {
+        return new byte[]{(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A};
     }
 }
