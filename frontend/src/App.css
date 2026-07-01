@@ -3185,6 +3185,87 @@ h3 {
   grid-column: 1;
 }
 
+.workspace.workspace-with-detail {
+  grid-template-columns: minmax(280px, 0.38fr) minmax(0, 1fr);
+}
+
+.workspace-with-detail .status-panel {
+  grid-column: 2;
+}
+
+.workspace-with-detail .result {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.workspace-with-detail .result > strong,
+.workspace-with-detail .completion-card,
+.workspace-with-detail .lookup-result-card,
+.workspace-with-detail .result > dl,
+.workspace-with-detail .action-state,
+.workspace-with-detail .customer-request-section,
+.workspace-with-detail .estimate-lines,
+.workspace-with-detail .customer-actions {
+  grid-column: 1 / -1;
+}
+
+.workspace-with-detail .result > strong {
+  margin-bottom: 0;
+}
+
+.workspace-with-detail .lookup-result-card {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 0;
+}
+
+.workspace-with-detail .result > dl,
+.workspace-with-detail .estimate-lines dl {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 18px;
+}
+
+.workspace-with-detail .result > dl div,
+.workspace-with-detail .estimate-lines dl div {
+  min-width: 0;
+}
+
+.workspace-with-detail .result > dl dd,
+.workspace-with-detail .estimate-lines dl dd {
+  overflow-wrap: anywhere;
+}
+
+.workspace-with-detail .progress-section,
+.workspace-with-detail .status-guide,
+.workspace-with-detail .photo-section,
+.workspace-with-detail .review-section {
+  margin-top: 0;
+}
+
+.workspace-with-detail .progress-section,
+.workspace-with-detail .photo-section {
+  grid-column: 1;
+}
+
+.workspace-with-detail .status-guide,
+.workspace-with-detail .review-section {
+  grid-column: 2;
+}
+
+.workspace-with-detail .photo-grid {
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+}
+
+.workspace-with-detail .completion-summary-grid,
+.workspace-with-detail .completion-receipt .completion-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.workspace-with-detail .completion-flow {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .section-heading {
   display: flex;
   align-items: end;
@@ -4198,6 +4279,34 @@ dd {
   .edit-form {
     grid-column: auto;
     grid-row: auto;
+  }
+
+  .workspace.workspace-with-detail,
+  .workspace-with-detail .result,
+  .workspace-with-detail .lookup-result-card,
+  .workspace-with-detail .result > dl,
+  .workspace-with-detail .estimate-lines dl,
+  .workspace-with-detail .completion-summary-grid,
+  .workspace-with-detail .completion-receipt .completion-actions,
+  .workspace-with-detail .completion-flow {
+    grid-template-columns: 1fr;
+  }
+
+  .workspace-with-detail .result > strong,
+  .workspace-with-detail .completion-card,
+  .workspace-with-detail .lookup-result-card,
+  .workspace-with-detail .result > dl,
+  .workspace-with-detail .status-panel,
+  .workspace-with-detail .edit-form,
+  .workspace-with-detail .progress-section,
+  .workspace-with-detail .status-guide,
+  .workspace-with-detail .action-state,
+  .workspace-with-detail .customer-request-section,
+  .workspace-with-detail .estimate-lines,
+  .workspace-with-detail .photo-section,
+  .workspace-with-detail .review-section,
+  .workspace-with-detail .customer-actions {
+    grid-column: auto;
   }
 
   .button-row {

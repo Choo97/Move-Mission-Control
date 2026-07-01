@@ -515,7 +515,7 @@ function App() {
           />
         )}
 
-        <section id="reservation-form" className="workspace">
+        <section id="reservation-form" className={`workspace${reservation ? ' workspace-with-detail' : ''}`}>
           {activeView === 'create' ? (
           <ReservationCreateForm
             form={form}
