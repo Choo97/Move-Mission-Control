@@ -3,6 +3,7 @@
   gap: 16px;
   border-color: #9fc4ed;
   background: linear-gradient(180deg, #eef6ff 0%, #ffffff 100%);
+  overflow: hidden;
 }
 
 .completion-receipt-heading {
@@ -25,11 +26,12 @@
 
 .completion-summary-grid {
   display: grid;
-  grid-template-columns: minmax(150px, 0.95fr) repeat(2, minmax(120px, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
 }
 
 .completion-summary-grid .reservation-number-box {
+  min-width: 0;
   min-height: 116px;
 }
 
@@ -43,21 +45,23 @@
   font-size: 12px;
   font-weight: 800;
   line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .completion-receipt .completion-actions {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .completion-flow {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
 }
 
 .completion-flow article {
   display: grid;
   gap: 8px;
+  min-width: 0;
   border: 1px solid #d6e3f2;
   border-radius: 8px;
   padding: 13px;
@@ -80,6 +84,7 @@
   color: #06152f;
   font-size: 14px;
   line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .completion-flow p {
@@ -88,15 +93,10 @@
   font-size: 12px;
   font-weight: 800;
   line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 860px) {
-  .completion-summary-grid,
-  .completion-receipt .completion-actions,
-  .completion-flow {
-    grid-template-columns: 1fr;
-  }
-
   .completion-summary-grid .reservation-number-box {
     min-height: auto;
   }
