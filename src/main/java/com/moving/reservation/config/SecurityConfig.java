@@ -41,6 +41,7 @@ public class SecurityConfig {
             new AntPathRequestMatcher("/api/admin/reservations/*/estimate", "PATCH"),
             new AntPathRequestMatcher("/api/admin/reservations/*/distance", "PATCH"),
             new AntPathRequestMatcher("/api/admin/reservations/*/memo", "PATCH"),
+            new AntPathRequestMatcher("/api/admin/operating-policy", "PUT"),
             new AntPathRequestMatcher("/api/admin/operating-schedules/*", "PUT"),
             new AntPathRequestMatcher("/api/admin/holidays", "POST"),
             new AntPathRequestMatcher("/api/admin/holidays/*", "DELETE"),
@@ -138,7 +139,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource(CorsProperties corsProperties) {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(corsProperties.getAllowedOrigins());
-        configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);

@@ -15,6 +15,7 @@ import type {
   AdminSessionResponse,
   AdminSmsSendResponse,
   OperatingHolidayResponse,
+  OperatingPolicyResponse,
   OperatingScheduleResponse,
   ReservationStatus,
 } from '../types'
@@ -86,6 +87,23 @@ export async function updateOperatingSchedule(
   })
   if (!response.ok) await throwApiError(response, '요일별 운영시간 저장에 실패했습니다.')
   return response.json() as Promise<OperatingScheduleResponse>
+}
+
+export async function getOperatingPolicy() {
+  const response = await fetch(`${API_BASE_URL}/api/admin/operating-policy`, { credentials: 'include' })
+  if (!response.ok) await throwApiError(response, '운영 정책을 불러오지 못했습니다.')
+  return response.json() as Promise<OperatingPolicyResponse>
+}
+
+export async function updateOperatingPolicy(policy: OperatingPolicyResponse) {
+  const response = await fetch(`${API_BASE_URL}/api/admin/operating-policy`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(policy),
+  })
+  if (!response.ok) await throwApiError(response, '운영 정책 저장에 실패했습니다.')
+  return response.json() as Promise<OperatingPolicyResponse>
 }
 
 export async function getOperatingHolidays() {

@@ -27,6 +27,7 @@ export type { AdminFaqResponse, AdminFaqSaveRequest, FaqResponse } from './types
 export type {
   AvailabilityResponse,
   OperatingHolidayResponse,
+  OperatingPolicyResponse,
   OperatingScheduleResponse,
 } from './types/availability'
 export type {

@@ -20,3 +20,9 @@ export type OperatingHolidayResponse = {
   holidayDate: string
   reason: string
 }
+
+export type OperatingPolicyResponse = {
+  minAdvanceDays: number
+  maxAdvanceDays: number
+  maxDailyReservations: number
+}

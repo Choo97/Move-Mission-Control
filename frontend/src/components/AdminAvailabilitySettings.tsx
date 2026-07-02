@@ -3,24 +3,28 @@ import {
   addOperatingHoliday,
   deleteOperatingHoliday,
   getOperatingHolidays,
+  getOperatingPolicy,
   getOperatingSchedules,
+  updateOperatingPolicy,
   updateOperatingSchedule,
 } from '../api/adminApi'
 import { getErrorMessage } from '../api/apiError'
-import type { OperatingHolidayResponse, OperatingScheduleResponse } from '../types'
+import type { OperatingHolidayResponse, OperatingPolicyResponse, OperatingScheduleResponse } from '../types'
 
 export function AdminAvailabilitySettings() {
   const [schedules, setSchedules] = useState<OperatingScheduleResponse[]>([])
   const [holidays, setHolidays] = useState<OperatingHolidayResponse[]>([])
+  const [policy, setPolicy] = useState<OperatingPolicyResponse | null>(null)
   const [holidayDate, setHolidayDate] = useState('')
   const [holidayReason, setHolidayReason] = useState('')
   const [message, setMessage] = useState('')
 
   useEffect(() => {
-    void Promise.all([getOperatingSchedules(), getOperatingHolidays()])
-      .then(([nextSchedules, nextHolidays]) => {
+    void Promise.all([getOperatingSchedules(), getOperatingHolidays(), getOperatingPolicy()])
+      .then(([nextSchedules, nextHolidays, nextPolicy]) => {
         setSchedules(nextSchedules)
         setHolidays(nextHolidays)
+        setPolicy(nextPolicy)
       })
       .catch((error) => setMessage(getErrorMessage(error, '운영 일정을 불러오지 못했습니다.')))
   }, [])
@@ -39,6 +43,21 @@ export function AdminAvailabilitySettings() {
       setMessage(`${updated.dayLabel} 운영시간을 저장했습니다.`)
     } catch (error) {
       setMessage(getErrorMessage(error, '운영시간 저장에 실패했습니다.'))
+    }
+  }
+
+  const changePolicy = (key: keyof OperatingPolicyResponse, value: number) =>
+    setPolicy((current) => (current ? { ...current, [key]: value } : current))
+
+  const savePolicy = async () => {
+    if (!policy) return
+    setMessage('')
+    try {
+      const updated = await updateOperatingPolicy(policy)
+      setPolicy(updated)
+      setMessage('운영 정책을 저장했습니다.')
+    } catch (error) {
+      setMessage(getErrorMessage(error, '운영 정책 저장에 실패했습니다.'))
     }
   }
 
@@ -71,6 +90,31 @@ export function AdminAvailabilitySettings() {
     <section className="admin-availability-settings">
       <div className="admin-section-heading">
         <div><p className="eyebrow">Availability</p><h3>예약 가능 시간표</h3></div>
+      </div>
+      <div className="holiday-editor">
+        <h4>운영 정책</h4>
+        {policy ? (
+          <div className="holiday-form">
+            <label>
+              예약 시작(일 후)
+              <input type="number" min={0} max={30} value={policy.minAdvanceDays}
+                onChange={(event) => changePolicy('minAdvanceDays', Number(event.target.value))} />
+            </label>
+            <label>
+              예약 종료(일 후)
+              <input type="number" min={1} max={365} value={policy.maxAdvanceDays}
+                onChange={(event) => changePolicy('maxAdvanceDays', Number(event.target.value))} />
+            </label>
+            <label>
+              하루 최대(건)
+              <input type="number" min={1} max={50} value={policy.maxDailyReservations}
+                onChange={(event) => changePolicy('maxDailyReservations', Number(event.target.value))} />
+            </label>
+            <button type="button" onClick={() => void savePolicy()}>저장</button>
+          </div>
+        ) : (
+          <p>운영 정책을 불러오는 중입니다.</p>
+        )}
       </div>
       <div className="operating-schedule-list">
         {schedules.map((schedule) => (

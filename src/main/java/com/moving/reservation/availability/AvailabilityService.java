@@ -20,13 +20,16 @@ public class AvailabilityService {
 
     private final OperatingScheduleRepository scheduleRepository;
     private final OperatingHolidayRepository holidayRepository;
+    private final OperatingPolicyRepository policyRepository;
     private final ReservationRepository reservationRepository;
 
     public AvailabilityService(OperatingScheduleRepository scheduleRepository,
                                OperatingHolidayRepository holidayRepository,
+                               OperatingPolicyRepository policyRepository,
                                ReservationRepository reservationRepository) {
         this.scheduleRepository = scheduleRepository;
         this.holidayRepository = holidayRepository;
+        this.policyRepository = policyRepository;
         this.reservationRepository = reservationRepository;
     }
 
@@ -35,6 +38,17 @@ public class AvailabilityService {
     }
 
     private AvailabilityResponse availability(LocalDate date, Long excludedReservationId) {
+        OperatingPolicy policy = policy();
+        LocalDate earliestDate = LocalDate.now().plusDays(policy.getMinAdvanceDays());
+        if (date.isBefore(earliestDate)) {
+            return new AvailabilityResponse(date, true, "예약 가능 시작일 전", List.of());
+        }
+
+        LocalDate latestDate = LocalDate.now().plusDays(policy.getMaxAdvanceDays());
+        if (date.isAfter(latestDate)) {
+            return new AvailabilityResponse(date, true, "예약 가능 기간 초과", List.of());
+        }
+
         OperatingHoliday holiday = holidayRepository.findByHolidayDate(date).orElse(null);
         if (holiday != null) {
             return new AvailabilityResponse(date, true, holiday.getReason(), List.of());
@@ -45,9 +59,15 @@ public class AvailabilityService {
             return new AvailabilityResponse(date, true, "정기 휴무일", List.of());
         }
 
-        Set<LocalTime> reservedTimes = new HashSet<>(reservationRepository
+        List<Reservation> activeReservations = reservationRepository
                 .findByMoveDateAndStatusNot(date, ReservationStatus.CANCELED).stream()
                 .filter(reservation -> !reservation.getId().equals(excludedReservationId))
+                .toList();
+        if (activeReservations.size() >= policy.getMaxDailyReservations()) {
+            return new AvailabilityResponse(date, true, "하루 최대 예약 건수 도달", List.of());
+        }
+
+        Set<LocalTime> reservedTimes = new HashSet<>(activeReservations.stream()
                 .map(Reservation::getMoveTime)
                 .toList());
         List<LocalTime> availableTimes = java.util.stream.Stream.iterate(
@@ -81,6 +101,11 @@ public class AvailabilityService {
                 .toList();
     }
 
+    public OperatingPolicy policy() {
+        return policyRepository.findById(OperatingPolicy.DEFAULT_ID)
+                .orElse(OperatingPolicy.defaults());
+    }
+
     @Transactional
     public OperatingSchedule updateSchedule(Long id, OperatingScheduleUpdateRequest request) {
         if (!request.startTime().isBefore(request.endTime())) {
@@ -90,6 +115,18 @@ public class AvailabilityService {
                 .orElseThrow(() -> new IllegalArgumentException("요일별 운영시간을 찾을 수 없습니다."));
         schedule.update(request.open(), request.startTime(), request.endTime(), request.slotMinutes());
         return schedule;
+    }
+
+    @Transactional
+    public OperatingPolicy updatePolicy(OperatingPolicyRequest request) {
+        if (request.minAdvanceDays() > request.maxAdvanceDays()) {
+            throw new IllegalArgumentException("예약 가능 시작일은 종료일보다 작거나 같아야 합니다.");
+        }
+
+        OperatingPolicy policy = policyRepository.findById(OperatingPolicy.DEFAULT_ID)
+                .orElseGet(() -> policyRepository.save(OperatingPolicy.defaults()));
+        policy.update(request.minAdvanceDays(), request.maxAdvanceDays(), request.maxDailyReservations());
+        return policy;
     }
 
     public List<OperatingHoliday> holidays() {
@@ -120,6 +157,9 @@ public class AvailabilityService {
                         day, day != DayOfWeek.SUNDAY, LocalTime.of(9, 0), LocalTime.of(18, 0), 60
                 ));
             }
+        }
+        if (policyRepository.findById(OperatingPolicy.DEFAULT_ID).isEmpty()) {
+            policyRepository.save(OperatingPolicy.defaults());
         }
     }
 }

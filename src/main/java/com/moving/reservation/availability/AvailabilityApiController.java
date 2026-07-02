@@ -34,6 +34,16 @@ public class AvailabilityApiController {
         return availabilityService.schedules().stream().map(OperatingScheduleResponse::from).toList();
     }
 
+    @GetMapping("/api/admin/operating-policy")
+    public OperatingPolicyResponse policy() {
+        return OperatingPolicyResponse.from(availabilityService.policy());
+    }
+
+    @PutMapping("/api/admin/operating-policy")
+    public OperatingPolicyResponse updatePolicy(@Valid @RequestBody OperatingPolicyRequest request) {
+        return OperatingPolicyResponse.from(availabilityService.updatePolicy(request));
+    }
+
     @PutMapping("/api/admin/operating-schedules/{id}")
     public OperatingScheduleResponse updateSchedule(@PathVariable Long id,
                                                     @Valid @RequestBody OperatingScheduleUpdateRequest request) {
