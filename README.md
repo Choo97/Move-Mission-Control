@@ -115,6 +115,7 @@ OpenAPI JSON   http://localhost:8081/v3/api-docs
 | [docs/API.md](docs/API.md) | 고객 예약, 사진 업로드, 리뷰 작성 REST API |
 | [docs/RUNNING.md](docs/RUNNING.md) | 실행 방법, 테스트, 환경변수, DB, 관리자 계정 |
 | [docs/DEPLOY_ENV.md](docs/DEPLOY_ENV.md) | 배포 환경변수, prod 프로필, 프론트/백엔드 주소 설정 |
+| [docs/DEPLOY_VERCEL_RAILWAY.md](docs/DEPLOY_VERCEL_RAILWAY.md) | Vercel/Railway 배포 구조, 사용자 작업 순서, 배포 후 확인 방법 |
 | [docs/TEST_SCENARIOS.md](docs/TEST_SCENARIOS.md) | 고객 예약부터 관리자 처리까지 전체 수동 테스트 흐름 |
 | [docs/PORTFOLIO_CASE_STUDY.md](docs/PORTFOLIO_CASE_STUDY.md) | 이력서 bullet, 면접 답변, 시연 흐름, 설계 판단 |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | 앞으로 개발할 기능과 우선순위 |

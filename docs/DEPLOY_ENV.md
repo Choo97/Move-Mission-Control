@@ -9,7 +9,8 @@
 | 이름 | 예시 | 설명 |
 | --- | --- | --- |
 | `SPRING_PROFILES_ACTIVE` | `prod` | 배포 설정 파일을 사용합니다. |
-| `SERVER_PORT` | `8080` | 백엔드 서버 포트입니다. |
+| `PORT` | Railway 자동 주입 | Railway가 외부 트래픽을 연결할 포트입니다. 직접 만들지 않아도 됩니다. |
+| `SERVER_PORT` | `8080` | Railway가 아닌 환경에서 사용할 백업 포트입니다. |
 | `SPRING_DATASOURCE_URL` | `jdbc:mysql://host:3306/movemission?serverTimezone=Asia/Seoul&characterEncoding=UTF-8` | 배포 DB 주소입니다. |
 | `SPRING_DATASOURCE_USERNAME` | `move_user` | 배포 DB 사용자입니다. |
 | `SPRING_DATASOURCE_PASSWORD` | `비공개` | 배포 DB 비밀번호입니다. |
@@ -55,3 +56,7 @@ SMS_PROVIDER=disabled
 - 프론트: `frontend/.env.production.example`
 
 실제 값이 들어간 `.env.production` 파일은 Git에 올리지 않습니다.
+
+## Vercel/Railway 배포 순서
+
+실제 배포 순서는 [docs/DEPLOY_VERCEL_RAILWAY.md](DEPLOY_VERCEL_RAILWAY.md)에 따로 정리했습니다.
