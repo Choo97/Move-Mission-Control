@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import './App.css'
+import landingMovingScene from './assets/landing-moving-scene.png'
 import { AdminAvailabilitySettings } from './components/AdminAvailabilitySettings'
 import { AdminFaqListView } from './components/AdminFaqListView'
 import { AdminLoginView } from './components/AdminLoginView'
@@ -312,7 +313,11 @@ function App() {
       return
     }
 
-    if (!window.confirm('예약 취소 요청을 접수하시겠습니까? 관리자 확인 후 처리됩니다.')) {
+    if (
+      !window.confirm(
+        '예약 취소 요청을 접수합니다. 일정이나 주소 변경이 필요하다면 취소하지 않고 예약 수정 요청을 이용해 주세요. 그래도 취소 요청을 접수하시겠습니까?',
+      )
+    ) {
       return
     }
 
@@ -449,56 +454,53 @@ function App() {
 
   return (
     <main className="app-shell">
-      <header className="top-bar">
-        <div className="brand-mark" aria-label="24nalpo">
-          <span>24</span>
-        </div>
-        <div className="brand-copy">
-          <p className="eyebrow">Moving Reservation Platform</p>
-          <h1>24nalpo</h1>
-        </div>
+      <header className="top-bar customer-top-bar">
+        <a className="brand-home" href="/" aria-label="24nalpo 홈">
+          24nalpo
+        </a>
+
+        <nav className="view-tabs" aria-label="고객 예약 메뉴">
+          <button
+            type="button"
+            className={activeView === 'create' ? 'active' : ''}
+            onClick={() => {
+              changeView('create')
+              setErrorMessage('')
+              setActionMessage('')
+              setCompletedReservationId(null)
+            }}
+          >
+            이사 예약
+          </button>
+          <button
+            type="button"
+            className={activeView === 'faq' ? 'active' : ''}
+            onClick={() => {
+              changeView('faq')
+              setActionMessage('')
+              setCompletedReservationId(null)
+            }}
+          >
+            이용 안내
+          </button>
+          <button
+            type="button"
+            className={activeView === 'search' ? 'active' : ''}
+            onClick={() => {
+              changeView('search')
+              setSearchErrorMessage('')
+              setActionMessage('')
+              setCompletedReservationId(null)
+            }}
+          >
+            예약 조회
+          </button>
+        </nav>
+
         <a className="admin-link" href="/admin/reservations">
           관리자
         </a>
       </header>
-
-      <nav className="view-tabs" aria-label="고객 예약 메뉴">
-        <button
-          type="button"
-          className={activeView === 'create' ? 'active' : ''}
-          onClick={() => {
-            changeView('create')
-            setErrorMessage('')
-            setActionMessage('')
-            setCompletedReservationId(null)
-          }}
-        >
-          이사 예약
-        </button>
-        <button
-          type="button"
-          className={activeView === 'faq' ? 'active' : ''}
-          onClick={() => {
-            changeView('faq')
-            setActionMessage('')
-            setCompletedReservationId(null)
-          }}
-        >
-          이용 안내
-        </button>
-        <button
-          type="button"
-          className={activeView === 'search' ? 'active' : ''}
-          onClick={() => {
-            changeView('search')
-            setSearchErrorMessage('')
-            setActionMessage('')
-            setCompletedReservationId(null)
-          }}
-        >
-          예약 조회
-        </button>
-      </nav>
 
       {activeView === 'faq' ? (
         <section className="workspace"><FaqView /></section>
@@ -616,102 +618,372 @@ function AdminConsoleNav({ activeView }: { activeView: 'reservations' | 'notific
   )
 }
 
+type LandingIconName =
+  | 'calendar'
+  | 'check'
+  | 'clipboard'
+  | 'clock'
+  | 'estimate'
+  | 'headset'
+  | 'home'
+  | 'mapPin'
+  | 'message'
+  | 'package'
+  | 'phone'
+  | 'upload'
+
+function ArrowIcon() {
+  return (
+    <svg aria-hidden="true" focusable="false" viewBox="0 0 20 20">
+      <path d="M4 10h10" />
+      <path d="m10 5 5 5-5 5" />
+    </svg>
+  )
+}
+
+function LandingIcon({ name }: { name: LandingIconName }) {
+  const icon = (() => {
+    switch (name) {
+      case 'calendar':
+        return (
+          <>
+            <rect x="4" y="5" width="16" height="15" rx="2" />
+            <path d="M8 3v4M16 3v4M4 10h16M8 14h.01M12 14h.01M16 14h.01" />
+          </>
+        )
+      case 'check':
+        return <path d="m5 12 4 4L19 6" />
+      case 'clipboard':
+        return (
+          <>
+            <path d="M9 4h6l1 3H8l1-3Z" />
+            <path d="M7 6H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-2" />
+            <path d="M8 13h8M8 17h5" />
+          </>
+        )
+      case 'clock':
+        return (
+          <>
+            <circle cx="12" cy="12" r="8" />
+            <path d="M12 7v5l3 2" />
+          </>
+        )
+      case 'estimate':
+        return (
+          <>
+            <path d="M6 3h9l3 3v15H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
+            <path d="M14 3v4h4M8 12h8M8 16h5" />
+          </>
+        )
+      case 'headset':
+        return (
+          <>
+            <path d="M4 13v-1a8 8 0 0 1 16 0v1" />
+            <path d="M4 13h3v5H5a1 1 0 0 1-1-1v-4ZM20 13h-3v5h2a1 1 0 0 0 1-1v-4Z" />
+            <path d="M17 18c0 2-2 3-5 3" />
+          </>
+        )
+      case 'home':
+        return (
+          <>
+            <path d="m4 11 8-7 8 7" />
+            <path d="M6 10v10h12V10M10 20v-6h4v6" />
+          </>
+        )
+      case 'mapPin':
+        return (
+          <>
+            <path d="M12 21s7-5 7-11a7 7 0 0 0-14 0c0 6 7 11 7 11Z" />
+            <circle cx="12" cy="10" r="2.5" />
+          </>
+        )
+      case 'message':
+        return (
+          <>
+            <path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" />
+            <path d="M8 10h8M8 14h5" />
+          </>
+        )
+      case 'package':
+        return (
+          <>
+            <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" />
+            <path d="m4.5 7.5 7.5 4.3 7.5-4.3M12 12v9" />
+          </>
+        )
+      case 'phone':
+        return (
+          <path d="M8 5 6 7c1 5 5 9 10 10l2-2-3-3-2 1c-2-1-3-2-4-4l1-2-2-2Z" />
+        )
+      case 'upload':
+        return (
+          <>
+            <path d="M12 16V4" />
+            <path d="m8 8 4-4 4 4" />
+            <path d="M5 16v3h14v-3" />
+          </>
+        )
+    }
+  })()
+
+  return (
+    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+      {icon}
+    </svg>
+  )
+}
+
 function LandingSections({ onReserveClick, onSearchClick, onFaqClick }: LandingProps) {
   return (
     <section className="landing-page" aria-label="24nalpo 서비스 소개">
-      <div className="hero-section">
+      <section className="hero-section" aria-labelledby="landing-hero-title">
         <div className="hero-copy">
-          <p className="eyebrow">Public Service Style Moving Platform</p>
-          <h2>간편하게 예약하고 편하게 이사하세요</h2>
+          <h2 id="landing-hero-title">
+            간편하게 <span className="text-blue">예약하고</span>
+            <br />
+            <span className="text-teal">편하게</span> 이사하세요
+          </h2>
           <p>
             출발지와 도착지, 이사 날짜만 입력하면 예약 접수가 가능합니다.
-            가능한 시간만 선택할 수 있어 처음 신청하는 고객도 빠르게 진행할 수 있습니다.
           </p>
           <div className="hero-actions">
             <button type="button" className="submit-button primary-action" onClick={onReserveClick}>
               이사 예약하기
+              <ArrowIcon />
             </button>
             <button type="button" className="submit-button secondary" onClick={onSearchClick}>
               예약 조회하기
+              <ArrowIcon />
             </button>
           </div>
         </div>
-        <div className="moving-visual" aria-hidden="true">
-          <div className="visual-card visual-card-map">
-            <span>START</span>
-            <strong>ROUTE</strong>
-            <span>HOME</span>
+
+        <div className="hero-showcase" aria-hidden="true">
+          <div className="reservation-preview-card">
+            <div className="preview-card-header">
+              <strong>예약 미리보기</strong>
+              <span>예약 접수</span>
+            </div>
+            <div className="route-summary">
+              <div>
+                <span className="route-dot start" />
+                <p>출발지</p>
+                <strong>서울 강남구 삼성로 123</strong>
+              </div>
+              <div>
+                <span className="route-dot end" />
+                <p>도착지</p>
+                <strong>경기 성남시 분당구 판교로 242</strong>
+              </div>
+            </div>
+            <div className="preview-meta-grid">
+              <div>
+                <span>이사 날짜</span>
+                <strong>2026.07.18</strong>
+              </div>
+              <div>
+                <span>요청 사항</span>
+                <strong>포장 이사</strong>
+              </div>
+            </div>
+            <div className="time-slot-strip">
+              <span>08:00</span>
+              <span className="selected">10:00</span>
+              <span>12:00</span>
+              <span>14:00</span>
+              <span>16:00</span>
+            </div>
           </div>
-          <div className="truck-body">
-            <div className="truck-cargo">
+
+          <div className="moving-media-card">
+            <div className="route-map-card">
+              <span className="map-toggle active">지도</span>
+              <span className="map-toggle">목록</span>
+              <svg className="route-line" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <path className="route-line-shadow" d="M 23 48 C 39 27 62 34 78 68" />
+                <path d="M 23 48 C 39 27 62 34 78 68" />
+              </svg>
+              <span className="map-pin start">
+                <LandingIcon name="mapPin" />
+              </span>
+              <span className="map-pin end">
+                <LandingIcon name="mapPin" />
+              </span>
+              <span className="map-city city-a">서울</span>
+              <span className="map-city city-b">성남</span>
+            </div>
+            <img src={landingMovingScene} alt="" />
+            <div className="photo-count">짐 사진 3 / 6</div>
+          </div>
+        </div>
+      </section>
+
+      <section className="workflow-section" aria-labelledby="workflow-title">
+        <h2 id="workflow-title">24nalpo로 이사 예약, 이렇게 간편합니다</h2>
+        <ol className="workflow-rail" aria-label="예약 진행 절차">
+          <li>
+            <span className="workflow-icon"><LandingIcon name="clipboard" /></span>
+            <div>
+              <strong>1. 이사 정보 입력</strong>
+              <p>출발지, 도착지, 날짜 선택</p>
+            </div>
+          </li>
+          <li>
+            <span className="workflow-icon"><LandingIcon name="calendar" /></span>
+            <div>
+              <strong>2. 시간대 선택</strong>
+              <p>가능한 시간대 확인 후 선택</p>
+            </div>
+          </li>
+          <li>
+            <span className="workflow-icon"><LandingIcon name="upload" /></span>
+            <div>
+              <strong>3. 정보 및 사진 업로드</strong>
+              <p>짐 정보와 사진을 업로드</p>
+            </div>
+          </li>
+          <li>
+            <span className="workflow-icon"><LandingIcon name="check" /></span>
+            <div>
+              <strong>4. 견적 확인 및 예약 완료</strong>
+              <p>견적 확인 후 예약 완료</p>
+            </div>
+          </li>
+        </ol>
+
+        <div className="availability-band">
+          <div className="calendar-preview" aria-hidden="true">
+            <div className="calendar-header">
+              <button type="button" tabIndex={-1} aria-label="이전 달">‹</button>
+              <strong>2026년 7월</strong>
+              <button type="button" tabIndex={-1} aria-label="다음 달">›</button>
+            </div>
+            <div className="calendar-grid">
+              {['일', '월', '화', '수', '목', '금', '토', '12', '13', '14', '15', '16', '17', '18'].map((item) => (
+                <span key={item} className={item === '18' ? 'selected' : ''}>
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="time-preview" aria-hidden="true">
+            <strong>2026년 7월 18일 (토)</strong>
+            <div className="time-grid">
+              <span>08:00 ~ 10:00</span>
+              <span className="available">10:00 ~ 12:00</span>
+              <span className="available">12:00 ~ 14:00</span>
+              <span>14:00 ~ 16:00</span>
+              <span className="available">16:00 ~ 18:00</span>
+              <span>18:00 ~ 20:00</span>
+            </div>
+          </div>
+          <div className="feature-list">
+            <h3>원하는 시간만, 빠르게 예약하세요</h3>
+            <p>
+              가능한 시간대만 확인하고 선택할 수 있어 불필요한 대기 없이 예약 접수를 마칠 수 있습니다.
+            </p>
+            <ul>
+              <li><LandingIcon name="clock" />가능 시간만 선택</li>
+              <li><LandingIcon name="clipboard" />예약 상태 조회</li>
+              <li><LandingIcon name="upload" />사진 업로드</li>
+              <li><LandingIcon name="estimate" />견적 동의</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section className="status-section" aria-labelledby="status-title">
+        <div className="status-copy">
+          <h2 id="status-title">예약 후에도 진행 상황을 놓치지 않습니다</h2>
+          <p>예약번호와 연락처로 상태를 조회하고, 필요한 자료를 바로 추가할 수 있습니다.</p>
+          <ol className="status-timeline" aria-label="예약 상태 흐름">
+            {['접수', '상담중', '견적안내', '확정', '완료'].map((label, index) => (
+              <li key={label} className={index === 0 ? 'current' : ''}>
+                <span>{index === 0 ? <LandingIcon name="check" /> : index + 1}</span>
+                <strong>{label}</strong>
+              </li>
+            ))}
+          </ol>
+          <div className="lookup-preview" aria-hidden="true">
+            <label>
+              예약번호
+              <span>예약번호 입력</span>
+            </label>
+            <label>
+              연락처
+              <span>- 없이 숫자만 입력</span>
+            </label>
+            <button type="button" tabIndex={-1}>내 예약 조회하기</button>
+          </div>
+          <button type="button" className="text-button status-link" onClick={onSearchClick}>
+            내 예약 조회하기
+            <ArrowIcon />
+          </button>
+        </div>
+
+        <div className="prep-panel">
+          <div>
+            <h3>이사를 위해 준비해주세요</h3>
+            <ul className="prep-checklist">
+              <li><LandingIcon name="check" />출발지와 도착지 주소</li>
+              <li><LandingIcon name="check" />층수와 엘리베이터 여부</li>
+              <li><LandingIcon name="check" />대형 가전과 파손 주의 물품</li>
+              <li><LandingIcon name="check" />주차와 진입 정보</li>
+            </ul>
+          </div>
+
+          <div className="upload-preview-card" aria-hidden="true">
+            <strong>자료 추가하기</strong>
+            <p>사진을 첨부하면 정확한 견적에 도움이 됩니다.</p>
+            <div className="upload-drop">
+              <LandingIcon name="upload" />
+              <span>사진을 드래그하거나 클릭하여 추가</span>
+            </div>
+            <div className="thumbnail-row">
               <span />
               <span />
               <span />
             </div>
-            <div className="truck-cab" />
-            <div className="truck-wheel first" />
-            <div className="truck-wheel second" />
+          </div>
+
+          <div className="estimate-preview-card" aria-hidden="true">
+            <strong>견적 안내</strong>
+            <div>
+              <span>견적이 준비되었습니다.</span>
+              <b>820,000원</b>
+            </div>
+            <button type="button" tabIndex={-1}>견적 확인하기</button>
           </div>
         </div>
-      </div>
-
-      <div className="feature-grid" aria-label="서비스 특징">
-        <article>
-          <span>01</span>
-          <h3>빠른 예약 접수</h3>
-          <p>온라인으로 간편하게 이사 예약을 신청할 수 있습니다.</p>
-        </article>
-        <article>
-          <span>02</span>
-          <h3>예약 가능 시간 확인</h3>
-          <p>운영 시간과 휴무일을 기준으로 가능한 시간만 선택합니다.</p>
-        </article>
-        <article>
-          <span>03</span>
-          <h3>예약 상태 조회</h3>
-          <p>예약번호와 연락처 인증으로 진행 상태를 확인합니다.</p>
-        </article>
-        <article>
-          <span>04</span>
-          <h3>사진 업로드</h3>
-          <p>이삿짐 사진을 등록해 더 정확한 상담을 받을 수 있습니다.</p>
-        </article>
-      </div>
-
-      <div className="process-section">
-        <div>
-          <p className="eyebrow">Reservation Process</p>
-          <h2>예약 진행 절차</h2>
-        </div>
-        <ol className="process-timeline">
-          <li><span>01</span><strong>예약 정보 입력</strong></li>
-          <li><span>02</span><strong>가능 시간 선택</strong></li>
-          <li><span>03</span><strong>예약 접수 완료</strong></li>
-          <li><span>04</span><strong>관리자 확인</strong></li>
-          <li><span>05</span><strong>견적 확인 및 진행</strong></li>
-        </ol>
-      </div>
-
-      <div className="notice-section">
-        <article>
-          <p className="eyebrow">Guide</p>
-          <h3>예약 전 확인사항</h3>
-          <p>출발지와 도착지 주소, 층수, 엘리베이터 여부를 미리 확인하면 접수가 빨라집니다.</p>
-        </article>
-        <article>
-          <p className="eyebrow">Checklist</p>
-          <h3>이사 준비 체크리스트</h3>
-          <p>깨지기 쉬운 짐, 대형 가전, 주차 정보는 요청사항에 남겨 주세요.</p>
-        </article>
-        <article>
-          <p className="eyebrow">Support</p>
-          <h3>자주 묻는 질문</h3>
-          <p>예약 조회, 사진 업로드, 견적 확인 방법은 FAQ에서 확인할 수 있습니다.</p>
-          <button type="button" className="text-button" onClick={onFaqClick}>FAQ 보기</button>
-        </article>
-      </div>
+      </section>
 
       <PublicReviewSection />
+
+      <section className="handoff-section" aria-labelledby="handoff-title">
+        <div>
+          <h2 id="handoff-title">지금 바로 이사 예약을 시작하세요</h2>
+          <p>필요한 정보만 차근차근 입력하면 예약 접수가 완료됩니다.</p>
+          <div className="hero-actions">
+            <button type="button" className="submit-button primary-action" onClick={onReserveClick}>
+              이사 예약하기
+              <ArrowIcon />
+            </button>
+            <button type="button" className="submit-button secondary" onClick={onFaqClick}>
+              이용 안내 보기
+              <ArrowIcon />
+            </button>
+          </div>
+        </div>
+        <aside className="support-panel" aria-label="문의 안내">
+          <LandingIcon name="headset" />
+          <h3>궁금한 점이 있으신가요?</h3>
+          <p>이사 예약, 진행 상황 등 무엇이든 편하게 문의해 주세요.</p>
+          <div>
+            <span><LandingIcon name="phone" />고객센터 준비중</span>
+            <span><LandingIcon name="message" />1:1 문의 준비중</span>
+          </div>
+        </aside>
+      </section>
     </section>
   )
 }
