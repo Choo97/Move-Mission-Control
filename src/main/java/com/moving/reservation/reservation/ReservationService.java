@@ -7,6 +7,7 @@ import com.moving.reservation.notification.CustomerNotificationService;
 import com.moving.reservation.privacy.PrivacyHashService;
 import com.moving.reservation.review.ReviewService;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -35,6 +36,7 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final ReservationStatusHistoryRepository statusHistoryRepository;
     private final ReservationPhotoRepository reservationPhotoRepository;
+    private final ReservationEstimateSnapshotLineRepository estimateSnapshotLineRepository;
     private final ReservationCustomerActionHistoryRepository customerActionHistoryRepository;
     private final ReservationCustomerRequestRepository customerRequestRepository;
     private final ReservationPhotoStorage reservationPhotoStorage;
@@ -52,6 +54,7 @@ public class ReservationService {
     public ReservationService(ReservationRepository reservationRepository,
                               ReservationStatusHistoryRepository statusHistoryRepository,
                               ReservationPhotoRepository reservationPhotoRepository,
+                              ReservationEstimateSnapshotLineRepository estimateSnapshotLineRepository,
                               ReservationCustomerActionHistoryRepository customerActionHistoryRepository,
                               ReservationCustomerRequestRepository customerRequestRepository,
                               ReservationPhotoStorage reservationPhotoStorage,
@@ -68,6 +71,7 @@ public class ReservationService {
         this.reservationRepository = reservationRepository;
         this.statusHistoryRepository = statusHistoryRepository;
         this.reservationPhotoRepository = reservationPhotoRepository;
+        this.estimateSnapshotLineRepository = estimateSnapshotLineRepository;
         this.customerActionHistoryRepository = customerActionHistoryRepository;
         this.customerRequestRepository = customerRequestRepository;
         this.reservationPhotoStorage = reservationPhotoStorage;
@@ -100,7 +104,7 @@ public class ReservationService {
 
         Reservation reservation = request.toEntity();
         reservation.updatePhoneHash(privacyHashService.phoneHash(reservation.getPhone()));
-        reservation.applyBaseEstimate(estimateCalculator.calculate(
+        List<ReservationEstimateLine> estimateLines = estimateCalculator.calculateLines(
                 request.getMoveType(),
                 request.isFromElevator(),
                 request.isToElevator(),
@@ -109,7 +113,8 @@ public class ReservationService {
                 request.isFromLadderTruck(),
                 request.isToLadderTruck(),
                 null
-        ));
+        );
+        reservation.applyBaseEstimate(sumEstimateLines(estimateLines));
 
         Coupon coupon = couponService.findActiveByCode(request.getCouponCode());
 
@@ -118,6 +123,7 @@ public class ReservationService {
         }
 
         reservationRepository.save(reservation);
+        replaceEstimateSnapshot(reservation, estimateLines);
         customerNotificationService.prepareReservationCreated(reservation);
 
         uploadFiles.stream()
@@ -295,6 +301,16 @@ public class ReservationService {
     }
 
     public List<ReservationEstimateLine> estimateLines(Reservation reservation) {
+        if (reservation.getId() != null) {
+            List<ReservationEstimateLine> snapshotLines = estimateSnapshotLineRepository
+                    .findByReservationIdOrderByLineOrderAsc(reservation.getId()).stream()
+                    .map(ReservationEstimateSnapshotLine::toEstimateLine)
+                    .toList();
+            if (!snapshotLines.isEmpty()) {
+                return snapshotLines;
+            }
+        }
+
         return estimateCalculator.calculateLines(
                 reservation.getMoveType(),
                 reservation.isFromElevator(),
@@ -549,7 +565,7 @@ public class ReservationService {
     }
 
     private void recalculateBaseEstimate(Reservation reservation) {
-        reservation.applyBaseEstimate(estimateCalculator.calculate(
+        List<ReservationEstimateLine> estimateLines = estimateCalculator.calculateLines(
                 reservation.getMoveType(),
                 reservation.isFromElevator(),
                 reservation.isToElevator(),
@@ -558,7 +574,32 @@ public class ReservationService {
                 reservation.isFromLadderTruck(),
                 reservation.isToLadderTruck(),
                 reservation.getDistanceKm()
-        ));
+        );
+        reservation.applyBaseEstimate(sumEstimateLines(estimateLines));
+        replaceEstimateSnapshot(reservation, estimateLines);
+    }
+
+    private int sumEstimateLines(List<ReservationEstimateLine> estimateLines) {
+        return estimateLines.stream()
+                .mapToInt(ReservationEstimateLine::amount)
+                .sum();
+    }
+
+    private void replaceEstimateSnapshot(Reservation reservation, List<ReservationEstimateLine> estimateLines) {
+        if (reservation.getId() == null) {
+            return;
+        }
+
+        estimateSnapshotLineRepository.deleteByReservationId(reservation.getId());
+        LocalDateTime capturedAt = LocalDateTime.now();
+        for (int index = 0; index < estimateLines.size(); index++) {
+            estimateSnapshotLineRepository.save(new ReservationEstimateSnapshotLine(
+                    reservation,
+                    index + 1,
+                    estimateLines.get(index),
+                    capturedAt
+            ));
+        }
     }
 
     private String customerUpdateChangeDetail(Reservation reservation, ReservationUpdateRequest request) {

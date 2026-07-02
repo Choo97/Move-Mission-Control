@@ -6,6 +6,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.moving.reservation.coupon.Coupon;
 import com.moving.reservation.coupon.CouponRepository;
 import com.moving.reservation.coupon.DiscountType;
+import com.moving.reservation.estimate.EstimateSettingKey;
+import com.moving.reservation.estimate.EstimateSettingRepository;
 import com.moving.reservation.notification.CustomerNotification;
 import com.moving.reservation.notification.CustomerNotificationRepository;
 import com.moving.reservation.notification.NotificationChannel;
@@ -40,6 +42,9 @@ class ReservationServiceTest {
 
     @Autowired
     private CouponRepository couponRepository;
+
+    @Autowired
+    private EstimateSettingRepository estimateSettingRepository;
 
     @Autowired
     private ReservationCustomerActionHistoryRepository customerActionHistoryRepository;
@@ -216,6 +221,38 @@ class ReservationServiceTest {
         assertThat(createdReservation.getEstimatedPrice()).isEqualTo(180000);
         assertThat(createdReservation.getDiscountAmount()).isEqualTo(18000);
         assertThat(createdReservation.getFinalEstimatedPrice()).isEqualTo(162000);
+    }
+
+    @Test
+    void 견적_산정내역은_예약생성시점의_정책값으로_저장된다() {
+        Reservation createdReservation = reservationService.create(reservationCreateRequest());
+
+        estimateSettingRepository.findBySettingKey(EstimateSettingKey.STUDIO_BASE)
+                .orElseThrow()
+                .updateAmount(250000);
+
+        List<ReservationEstimateLine> estimateLines = reservationService.estimateLines(createdReservation);
+
+        assertThat(estimateLines)
+                .extracting(ReservationEstimateLine::amount)
+                .containsExactly(180000, 0);
+    }
+
+    @Test
+    void 이동거리를_저장하면_견적_산정내역_스냅샷을_다시_저장한다() {
+        Reservation createdReservation = reservationService.create(reservationCreateRequest());
+
+        reservationService.updateDistance(createdReservation.getId(), 15);
+        estimateSettingRepository.findBySettingKey(EstimateSettingKey.DISTANCE_SURCHARGE_PER_KM)
+                .orElseThrow()
+                .updateAmount(20000);
+
+        List<ReservationEstimateLine> estimateLines = reservationService.estimateLines(createdReservation);
+
+        assertThat(createdReservation.getBaseEstimatedPrice()).isEqualTo(230000);
+        assertThat(estimateLines)
+                .extracting(ReservationEstimateLine::amount)
+                .containsExactly(180000, 50000);
     }
 
     @Test
