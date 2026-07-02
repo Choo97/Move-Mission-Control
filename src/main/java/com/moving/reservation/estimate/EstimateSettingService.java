@@ -33,12 +33,13 @@ public class EstimateSettingService {
     }
 
     @Transactional
-    public void update(Long id, int amount, String changedBy) {
+    public EstimateSetting update(Long id, int amount, String changedBy) {
         EstimateSetting estimateSetting = estimateSettingRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("견적 기준을 찾을 수 없습니다."));
+        validateAmount(estimateSetting.getSettingKey(), amount);
         int previousAmount = estimateSetting.getAmount();
         if (previousAmount == amount) {
-            return;
+            return estimateSetting;
         }
 
         estimateSetting.updateAmount(amount);
@@ -48,6 +49,7 @@ public class EstimateSettingService {
                 amount,
                 changedBy
         ));
+        return estimateSetting;
     }
 
     @Transactional
@@ -56,5 +58,19 @@ public class EstimateSettingService {
                 .filter(settingKey -> estimateSettingRepository.findBySettingKey(settingKey).isEmpty())
                 .map(EstimateSetting::new)
                 .forEach(estimateSettingRepository::save);
+    }
+
+    private void validateAmount(EstimateSettingKey settingKey, int amount) {
+        if (amount < 0) {
+            throw new IllegalArgumentException("견적 기준 값은 0 이상이어야 합니다.");
+        }
+
+        if (settingKey == EstimateSettingKey.INCLUDED_DISTANCE_KM && amount > 500) {
+            throw new IllegalArgumentException("기본 포함 이동 거리는 500km 이하로 입력해 주세요.");
+        }
+
+        if (settingKey != EstimateSettingKey.INCLUDED_DISTANCE_KM && amount > 10_000_000) {
+            throw new IllegalArgumentException("견적 기준 금액은 10,000,000원 이하로 입력해 주세요.");
+        }
     }
 }

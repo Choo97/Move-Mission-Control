@@ -31,6 +31,11 @@ export type {
   OperatingScheduleResponse,
 } from './types/availability'
 export type {
+  EstimateSettingHistoryResponse,
+  EstimateSettingPageResponse,
+  EstimateSettingResponse,
+} from './types/estimateSetting'
+export type {
   AdminReviewResponse,
   PublicReviewResponse,
   ReviewApiResponse,

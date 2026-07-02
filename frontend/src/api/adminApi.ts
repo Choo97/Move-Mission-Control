@@ -14,6 +14,7 @@ import type {
   AdminReservationPageResponse,
   AdminSessionResponse,
   AdminSmsSendResponse,
+  EstimateSettingPageResponse,
   OperatingHolidayResponse,
   OperatingPolicyResponse,
   OperatingScheduleResponse,
@@ -104,6 +105,23 @@ export async function updateOperatingPolicy(policy: OperatingPolicyResponse) {
   })
   if (!response.ok) await throwApiError(response, '운영 정책 저장에 실패했습니다.')
   return response.json() as Promise<OperatingPolicyResponse>
+}
+
+export async function getEstimateSettings() {
+  const response = await fetch(`${API_BASE_URL}/api/admin/estimate-settings`, { credentials: 'include' })
+  if (!response.ok) await throwApiError(response, '견적 정책을 불러오지 못했습니다.')
+  return response.json() as Promise<EstimateSettingPageResponse>
+}
+
+export async function updateEstimateSetting(settingId: number, amount: number) {
+  const response = await fetch(`${API_BASE_URL}/api/admin/estimate-settings/${settingId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ amount }),
+  })
+  if (!response.ok) await throwApiError(response, '견적 정책 저장에 실패했습니다.')
+  return response.json() as Promise<EstimateSettingPageResponse>
 }
 
 export async function getOperatingHolidays() {
