@@ -1,6 +1,8 @@
 import type { MoveType, ReservationEditForm, ReservationForm, ReservationResponse, ReviewForm } from './types'
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8081'
+const rawApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim()
+
+export const API_BASE_URL = (rawApiBaseUrl || 'http://localhost:8081').replace(/\/+$/, '')
 
 export const moveTypeOptions: Array<{ value: MoveType; label: string }> = [
   { value: 'STUDIO', label: '원룸' },

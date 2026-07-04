@@ -16,6 +16,17 @@ public class CorsProperties {
     }
 
     public void setAllowedOrigins(List<String> allowedOrigins) {
-        this.allowedOrigins = allowedOrigins;
+        if (allowedOrigins == null) {
+            this.allowedOrigins = List.of();
+            return;
+        }
+        this.allowedOrigins = allowedOrigins.stream()
+                .filter(origin -> origin != null && !origin.isBlank())
+                .map(CorsProperties::normalizeOrigin)
+                .toList();
+    }
+
+    private static String normalizeOrigin(String origin) {
+        return origin.trim().replaceAll("/+$", "");
     }
 }
