@@ -94,6 +94,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/reviews/public").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/api/reservations/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/customer-guides/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/service-policy").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/availability").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/faqs").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/admin/session/login").permitAll()

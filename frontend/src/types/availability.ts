@@ -21,8 +21,15 @@ export type OperatingHolidayResponse = {
   reason: string
 }
 
+export type ServiceMode = 'GENERAL' | 'NON_PROFIT'
+
 export type OperatingPolicyResponse = {
   minAdvanceDays: number
   maxAdvanceDays: number
   maxDailyReservations: number
+  serviceMode: ServiceMode
+}
+
+export type PublicOperatingPolicyResponse = {
+  serviceMode: ServiceMode
 }

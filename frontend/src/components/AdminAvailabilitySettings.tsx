@@ -58,7 +58,7 @@ export function AdminAvailabilitySettings() {
     }
   }
 
-  const changePolicy = (key: keyof OperatingPolicyResponse, value: number) =>
+  const changePolicy = <K extends keyof OperatingPolicyResponse>(key: K, value: OperatingPolicyResponse[K]) =>
     setPolicy((current) => (current ? { ...current, [key]: value } : current))
 
   const savePolicy = async () => {
@@ -125,6 +125,18 @@ export function AdminAvailabilitySettings() {
         <h4>운영 정책</h4>
         {policy ? (
           <div className="holiday-form">
+            <label>
+              서비스 운영 방식
+              <select
+                value={policy.serviceMode}
+                onChange={(event) =>
+                  changePolicy('serviceMode', event.target.value as OperatingPolicyResponse['serviceMode'])
+                }
+              >
+                <option value="GENERAL">일반 이사 예약</option>
+                <option value="NON_PROFIT">비영리 도움 요청</option>
+              </select>
+            </label>
             <label>
               예약 시작(일 후)
               <input type="number" min={0} max={30} value={policy.minAdvanceDays}

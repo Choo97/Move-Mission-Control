@@ -134,16 +134,19 @@ class AvailabilityServiceTest {
         OperatingPolicy policy = OperatingPolicy.defaults();
         when(policyRepository.findById(OperatingPolicy.DEFAULT_ID)).thenReturn(Optional.of(policy));
 
-        OperatingPolicy updated = availabilityService.updatePolicy(new OperatingPolicyRequest(1, 60, 6));
+        OperatingPolicy updated = availabilityService.updatePolicy(
+                new OperatingPolicyRequest(1, 60, 6, OperatingServiceMode.NON_PROFIT));
 
         assertThat(updated.getMinAdvanceDays()).isEqualTo(1);
         assertThat(updated.getMaxAdvanceDays()).isEqualTo(60);
         assertThat(updated.getMaxDailyReservations()).isEqualTo(6);
+        assertThat(updated.getServiceMode()).isEqualTo(OperatingServiceMode.NON_PROFIT);
     }
 
     @Test
     void 운영정책은_예약가능_시작일이_종료일보다_크면_저장할수없다() {
-        assertThatThrownBy(() -> availabilityService.updatePolicy(new OperatingPolicyRequest(10, 5, 6)))
+        assertThatThrownBy(() -> availabilityService.updatePolicy(
+                new OperatingPolicyRequest(10, 5, 6, OperatingServiceMode.GENERAL)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("예약 가능 시작일은 종료일보다 작거나 같아야 합니다.");
     }

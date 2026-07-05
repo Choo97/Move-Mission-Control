@@ -2,6 +2,8 @@ package com.moving.reservation.availability;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 
 @Entity
@@ -21,6 +23,9 @@ public class OperatingPolicy {
     @Column(nullable = false)
     private int maxDailyReservations;
 
+    @Enumerated(EnumType.STRING)
+    private OperatingServiceMode serviceMode = OperatingServiceMode.GENERAL;
+
     protected OperatingPolicy() {
     }
 
@@ -34,9 +39,15 @@ public class OperatingPolicy {
     }
 
     public void update(int minAdvanceDays, int maxAdvanceDays, int maxDailyReservations) {
+        update(minAdvanceDays, maxAdvanceDays, maxDailyReservations, getServiceMode());
+    }
+
+    public void update(int minAdvanceDays, int maxAdvanceDays, int maxDailyReservations,
+                       OperatingServiceMode serviceMode) {
         this.minAdvanceDays = minAdvanceDays;
         this.maxAdvanceDays = maxAdvanceDays;
         this.maxDailyReservations = maxDailyReservations;
+        this.serviceMode = serviceMode == null ? OperatingServiceMode.GENERAL : serviceMode;
     }
 
     public Long getId() {
@@ -53,5 +64,9 @@ public class OperatingPolicy {
 
     public int getMaxDailyReservations() {
         return maxDailyReservations;
+    }
+
+    public OperatingServiceMode getServiceMode() {
+        return serviceMode == null ? OperatingServiceMode.GENERAL : serviceMode;
     }
 }

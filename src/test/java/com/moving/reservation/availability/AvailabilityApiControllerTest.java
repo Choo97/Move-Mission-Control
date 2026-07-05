@@ -31,7 +31,17 @@ class AvailabilityApiControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.minAdvanceDays").isNumber())
                 .andExpect(jsonPath("$.maxAdvanceDays").isNumber())
-                .andExpect(jsonPath("$.maxDailyReservations").isNumber());
+                .andExpect(jsonPath("$.maxDailyReservations").isNumber())
+                .andExpect(jsonPath("$.serviceMode").value("GENERAL"));
+    }
+
+    @Test
+    void 공개_API는_운영모드만_응답한다() throws Exception {
+        mockMvc.perform(get("/api/service-policy"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.serviceMode").value("GENERAL"))
+                .andExpect(jsonPath("$.minAdvanceDays").doesNotExist())
+                .andExpect(jsonPath("$.maxDailyReservations").doesNotExist());
     }
 
     @Test
@@ -43,13 +53,15 @@ class AvailabilityApiControllerTest {
                                 {
                                   "minAdvanceDays": 1,
                                   "maxAdvanceDays": 60,
-                                  "maxDailyReservations": 6
+                                  "maxDailyReservations": 6,
+                                  "serviceMode": "NON_PROFIT"
                                 }
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.minAdvanceDays").value(1))
                 .andExpect(jsonPath("$.maxAdvanceDays").value(60))
-                .andExpect(jsonPath("$.maxDailyReservations").value(6));
+                .andExpect(jsonPath("$.maxDailyReservations").value(6))
+                .andExpect(jsonPath("$.serviceMode").value("NON_PROFIT"));
     }
 
     @Test

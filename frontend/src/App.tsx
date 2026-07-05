@@ -20,6 +20,7 @@ import {
   createReservation,
   createReview,
   getCustomerGuides,
+  getServicePolicy,
   searchReservation as searchReservationApi,
   updateReservation,
   uploadReservationPhotos,
@@ -39,6 +40,7 @@ import type {
   ReservationSearchForm,
   CustomerGuideItem,
   ReviewResponse,
+  ServiceMode,
 } from './types'
 
 type ActiveView = 'create' | 'search' | 'faq'
@@ -47,6 +49,7 @@ type LandingProps = {
   onReserveClick: () => void
   onSearchClick: () => void
   onFaqClick: () => void
+  serviceMode: ServiceMode
 }
 
 const getViewFromUrl = (): ActiveView => {
@@ -127,8 +130,30 @@ function App() {
   const [actionMessage, setActionMessage] = useState('')
   const [reservation, setReservation] = useState<ReservationResponse | null>(null)
   const [completedReservationId, setCompletedReservationId] = useState<number | null>(null)
+  const [serviceMode, setServiceMode] = useState<ServiceMode>('GENERAL')
 
   const today = useMemo(() => new Date().toISOString().slice(0, 10), [])
+  const isNonProfitMode = serviceMode === 'NON_PROFIT'
+
+  useEffect(() => {
+    let active = true
+
+    void getServicePolicy()
+      .then((policy) => {
+        if (active) {
+          setServiceMode(policy.serviceMode)
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setServiceMode('GENERAL')
+        }
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   useEffect(() => {
     const saveTimer = window.setTimeout(() => saveReservationDraft(form), 300)
@@ -470,7 +495,7 @@ function App() {
               setCompletedReservationId(null)
             }}
           >
-            이사 예약
+            {isNonProfitMode ? '도움 요청' : '이사 예약'}
           </button>
           <button
             type="button"
@@ -493,7 +518,7 @@ function App() {
               setCompletedReservationId(null)
             }}
           >
-            예약 조회
+            {isNonProfitMode ? '요청 조회' : '예약 조회'}
           </button>
         </nav>
 
@@ -520,6 +545,7 @@ function App() {
               changeView('faq')
               setActionMessage('')
             }}
+            serviceMode={serviceMode}
           />
         )}
 
@@ -532,6 +558,7 @@ function App() {
             isSubmitting={isSubmitting}
             onSubmit={submitReservation}
             onChange={updateField}
+            serviceMode={serviceMode}
           />
         ) : (
           <ReservationSearchFormView
@@ -587,11 +614,12 @@ function App() {
               document.getElementById('reservation-form')?.scrollIntoView({ behavior: 'smooth' })
             }, 0)
           }}
+          serviceMode={serviceMode}
         />
         </section>
         </>
       )}
-      <SiteFooter />
+      <SiteFooter serviceMode={serviceMode} />
     </main>
   )
 }
@@ -733,26 +761,30 @@ function LandingIcon({ name }: { name: LandingIconName }) {
   )
 }
 
-function LandingSections({ onReserveClick, onSearchClick, onFaqClick }: LandingProps) {
+function LandingSections({ onReserveClick, onSearchClick, onFaqClick, serviceMode }: LandingProps) {
+  const isNonProfitMode = serviceMode === 'NON_PROFIT'
+
   return (
     <section className="landing-page" aria-label="24nalpo 서비스 소개">
       <section className="hero-section" aria-labelledby="landing-hero-title">
         <div className="hero-copy">
           <h2 id="landing-hero-title">
-            간편하게 <span className="text-blue">예약하고</span>
+            간편하게 <span className="text-blue">{isNonProfitMode ? '요청하고' : '예약하고'}</span>
             <br />
-            <span className="text-teal">편하게</span> 이사하세요
+            <span className="text-teal">{isNonProfitMode ? '차분하게' : '편하게'}</span> 이사하세요
           </h2>
           <p>
-            출발지와 도착지, 이사 날짜만 입력하면 예약 접수가 가능합니다.
+            {isNonProfitMode
+              ? '출발지와 도착지, 이사 날짜를 입력하면 이사 도움 요청을 접수할 수 있습니다.'
+              : '출발지와 도착지, 이사 날짜만 입력하면 예약 접수가 가능합니다.'}
           </p>
           <div className="hero-actions">
             <button type="button" className="submit-button primary-action" onClick={onReserveClick}>
-              이사 예약하기
+              {isNonProfitMode ? '도움 요청하기' : '이사 예약하기'}
               <ArrowIcon />
             </button>
             <button type="button" className="submit-button secondary" onClick={onSearchClick}>
-              예약 조회하기
+              {isNonProfitMode ? '요청 조회하기' : '예약 조회하기'}
               <ArrowIcon />
             </button>
           </div>
@@ -762,7 +794,7 @@ function LandingSections({ onReserveClick, onSearchClick, onFaqClick }: LandingP
           <div className="reservation-preview-card">
             <div className="preview-card-header">
               <strong>예약 미리보기</strong>
-              <span>예약 접수</span>
+              <span>{isNonProfitMode ? '요청 접수' : '예약 접수'}</span>
             </div>
             <div className="route-summary">
               <div>
@@ -819,8 +851,10 @@ function LandingSections({ onReserveClick, onSearchClick, onFaqClick }: LandingP
       </section>
 
       <section className="workflow-section" aria-labelledby="workflow-title">
-        <h2 id="workflow-title">24nalpo로 이사 예약, 이렇게 간편합니다</h2>
-        <ol className="workflow-rail" aria-label="예약 진행 절차">
+        <h2 id="workflow-title">
+          {isNonProfitMode ? '24nalpo로 이사 도움 요청, 이렇게 간편합니다' : '24nalpo로 이사 예약, 이렇게 간편합니다'}
+        </h2>
+        <ol className="workflow-rail" aria-label={isNonProfitMode ? '도움 요청 진행 절차' : '예약 진행 절차'}>
           <li>
             <span className="workflow-icon"><LandingIcon name="clipboard" /></span>
             <div>
@@ -845,8 +879,8 @@ function LandingSections({ onReserveClick, onSearchClick, onFaqClick }: LandingP
           <li>
             <span className="workflow-icon"><LandingIcon name="check" /></span>
             <div>
-              <strong>4. 견적 확인 및 예약 완료</strong>
-              <p>견적 확인 후 예약 완료</p>
+              <strong>{isNonProfitMode ? '4. 지원 가능 여부 확인' : '4. 견적 확인 및 예약 완료'}</strong>
+              <p>{isNonProfitMode ? '관리자 확인 후 일정 조율' : '견적 확인 후 예약 완료'}</p>
             </div>
           </li>
         </ol>
@@ -878,15 +912,17 @@ function LandingSections({ onReserveClick, onSearchClick, onFaqClick }: LandingP
             </div>
           </div>
           <div className="feature-list">
-            <h3>원하는 시간만, 빠르게 예약하세요</h3>
+            <h3>{isNonProfitMode ? '가능한 시간에 맞춰 도움을 요청하세요' : '원하는 시간만, 빠르게 예약하세요'}</h3>
             <p>
-              가능한 시간대만 확인하고 선택할 수 있어 불필요한 대기 없이 예약 접수를 마칠 수 있습니다.
+              {isNonProfitMode
+                ? '가능한 시간대만 확인하고 선택할 수 있어 도움 요청 접수를 차분하게 마칠 수 있습니다.'
+                : '가능한 시간대만 확인하고 선택할 수 있어 불필요한 대기 없이 예약 접수를 마칠 수 있습니다.'}
             </p>
             <ul>
               <li><LandingIcon name="clock" />가능 시간만 선택</li>
-              <li><LandingIcon name="clipboard" />예약 상태 조회</li>
+              <li><LandingIcon name="clipboard" />{isNonProfitMode ? '요청 상태 조회' : '예약 상태 조회'}</li>
               <li><LandingIcon name="upload" />사진 업로드</li>
-              <li><LandingIcon name="estimate" />견적 동의</li>
+              <li><LandingIcon name="estimate" />{isNonProfitMode ? '지원 안내 확인' : '견적 동의'}</li>
             </ul>
           </div>
         </div>
@@ -894,10 +930,16 @@ function LandingSections({ onReserveClick, onSearchClick, onFaqClick }: LandingP
 
       <section className="status-section" aria-labelledby="status-title">
         <div className="status-copy">
-          <h2 id="status-title">예약 후에도 진행 상황을 놓치지 않습니다</h2>
-          <p>예약번호와 연락처로 상태를 조회하고, 필요한 자료를 바로 추가할 수 있습니다.</p>
-          <ol className="status-timeline" aria-label="예약 상태 흐름">
-            {['접수', '상담중', '견적안내', '확정', '완료'].map((label, index) => (
+          <h2 id="status-title">
+            {isNonProfitMode ? '요청 후에도 진행 상황을 놓치지 않습니다' : '예약 후에도 진행 상황을 놓치지 않습니다'}
+          </h2>
+          <p>
+            {isNonProfitMode
+              ? '조회번호와 연락처로 상태를 조회하고, 필요한 자료를 바로 추가할 수 있습니다.'
+              : '예약번호와 연락처로 상태를 조회하고, 필요한 자료를 바로 추가할 수 있습니다.'}
+          </p>
+          <ol className="status-timeline" aria-label={isNonProfitMode ? '도움 요청 상태 흐름' : '예약 상태 흐름'}>
+            {(isNonProfitMode ? ['접수', '검토중', '지원안내', '확정', '완료'] : ['접수', '상담중', '견적안내', '확정', '완료']).map((label, index) => (
               <li key={label} className={index === 0 ? 'current' : ''}>
                 <span>{index === 0 ? <LandingIcon name="check" /> : index + 1}</span>
                 <strong>{label}</strong>
@@ -906,17 +948,17 @@ function LandingSections({ onReserveClick, onSearchClick, onFaqClick }: LandingP
           </ol>
           <div className="lookup-preview" aria-hidden="true">
             <label>
-              예약번호
-              <span>예약번호 입력</span>
+              {isNonProfitMode ? '조회번호' : '예약번호'}
+              <span>{isNonProfitMode ? '조회번호 입력' : '예약번호 입력'}</span>
             </label>
             <label>
               연락처
               <span>- 없이 숫자만 입력</span>
             </label>
-            <button type="button" tabIndex={-1}>내 예약 조회하기</button>
+            <button type="button" tabIndex={-1}>{isNonProfitMode ? '내 요청 조회하기' : '내 예약 조회하기'}</button>
           </div>
           <button type="button" className="text-button status-link" onClick={onSearchClick}>
-            내 예약 조회하기
+            {isNonProfitMode ? '내 요청 조회하기' : '내 예약 조회하기'}
             <ArrowIcon />
           </button>
         </div>
@@ -934,7 +976,7 @@ function LandingSections({ onReserveClick, onSearchClick, onFaqClick }: LandingP
 
           <div className="upload-preview-card" aria-hidden="true">
             <strong>자료 추가하기</strong>
-            <p>사진을 첨부하면 정확한 견적에 도움이 됩니다.</p>
+            <p>{isNonProfitMode ? '사진을 첨부하면 필요한 도움을 파악하는 데 도움이 됩니다.' : '사진을 첨부하면 정확한 견적에 도움이 됩니다.'}</p>
             <div className="upload-drop">
               <LandingIcon name="upload" />
               <span>사진을 드래그하거나 클릭하여 추가</span>
@@ -947,12 +989,12 @@ function LandingSections({ onReserveClick, onSearchClick, onFaqClick }: LandingP
           </div>
 
           <div className="estimate-preview-card" aria-hidden="true">
-            <strong>견적 안내</strong>
+            <strong>{isNonProfitMode ? '지원 안내' : '견적 안내'}</strong>
             <div>
-              <span>견적이 준비되었습니다.</span>
-              <b>820,000원</b>
+              <span>{isNonProfitMode ? '지원 가능 여부를 확인 중입니다.' : '견적이 준비되었습니다.'}</span>
+              <b>{isNonProfitMode ? '확인 중' : '820,000원'}</b>
             </div>
-            <button type="button" tabIndex={-1}>견적 확인하기</button>
+            <button type="button" tabIndex={-1}>{isNonProfitMode ? '안내 확인하기' : '견적 확인하기'}</button>
           </div>
         </div>
       </section>
@@ -961,11 +1003,17 @@ function LandingSections({ onReserveClick, onSearchClick, onFaqClick }: LandingP
 
       <section className="handoff-section" aria-labelledby="handoff-title">
         <div>
-          <h2 id="handoff-title">지금 바로 이사 예약을 시작하세요</h2>
-          <p>필요한 정보만 차근차근 입력하면 예약 접수가 완료됩니다.</p>
+          <h2 id="handoff-title">
+            {isNonProfitMode ? '지금 바로 이사 도움 요청을 시작하세요' : '지금 바로 이사 예약을 시작하세요'}
+          </h2>
+          <p>
+            {isNonProfitMode
+              ? '필요한 정보만 차근차근 입력하면 도움 요청이 접수됩니다.'
+              : '필요한 정보만 차근차근 입력하면 예약 접수가 완료됩니다.'}
+          </p>
           <div className="hero-actions">
             <button type="button" className="submit-button primary-action" onClick={onReserveClick}>
-              이사 예약하기
+              {isNonProfitMode ? '도움 요청하기' : '이사 예약하기'}
               <ArrowIcon />
             </button>
             <button type="button" className="submit-button secondary" onClick={onFaqClick}>
@@ -977,7 +1025,7 @@ function LandingSections({ onReserveClick, onSearchClick, onFaqClick }: LandingP
         <aside className="support-panel" aria-label="문의 안내">
           <LandingIcon name="headset" />
           <h3>궁금한 점이 있으신가요?</h3>
-          <p>이사 예약, 진행 상황 등 무엇이든 편하게 문의해 주세요.</p>
+          <p>{isNonProfitMode ? '이사 도움 요청, 진행 상황 등 필요한 내용을 문의해 주세요.' : '이사 예약, 진행 상황 등 무엇이든 편하게 문의해 주세요.'}</p>
           <div>
             <span><LandingIcon name="phone" />고객센터 준비중</span>
             <span><LandingIcon name="message" />1:1 문의 준비중</span>
@@ -988,17 +1036,19 @@ function LandingSections({ onReserveClick, onSearchClick, onFaqClick }: LandingP
   )
 }
 
-function SiteFooter() {
+function SiteFooter({ serviceMode }: { serviceMode: ServiceMode }) {
+  const isNonProfitMode = serviceMode === 'NON_PROFIT'
+
   return (
     <footer className="site-footer" aria-label="서비스 정보">
       <div className="footer-summary">
         <div>
           <strong>24nalpo</strong>
-          <p>쉽고 빠른 이사 예약 접수 플랫폼</p>
+          <p>{isNonProfitMode ? '이사 도움 요청 접수 플랫폼' : '쉽고 빠른 이사 예약 접수 플랫폼'}</p>
         </div>
         <nav className="footer-links" aria-label="하단 메뉴">
           <a href="/?view=faq">FAQ</a>
-          <a href="/?view=search">예약 조회</a>
+          <a href="/?view=search">{isNonProfitMode ? '요청 조회' : '예약 조회'}</a>
           <span>개인정보처리방침 준비중</span>
           <span>이용약관 준비중</span>
         </nav>

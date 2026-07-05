@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { getAvailability } from '../api/customerApi'
 import { moveTypeOptions } from '../reservationData'
-import type { MoveType, ReservationForm } from '../types'
+import type { MoveType, ReservationForm, ServiceMode } from '../types'
 import './ReservationCreateForm.css'
 
 type FormStep = 'customer' | 'schedule' | 'address' | 'memo' | 'confirm'
@@ -20,6 +20,7 @@ type Props = {
   isSubmitting: boolean
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
   onChange: <K extends keyof ReservationForm>(key: K, value: ReservationForm[K]) => void
+  serviceMode: ServiceMode
 }
 
 const weekdayLabels = ['일', '월', '화', '수', '목', '금', '토']
@@ -78,7 +79,9 @@ export function ReservationCreateForm({
   isSubmitting,
   onSubmit,
   onChange,
+  serviceMode,
 }: Props) {
+  const isNonProfitMode = serviceMode === 'NON_PROFIT'
   const [availableTimes, setAvailableTimes] = useState<string[]>([])
   const [availabilityMessage, setAvailabilityMessage] = useState('날짜를 선택해 주세요.')
   const [isLoadingAvailability, setIsLoadingAvailability] = useState(Boolean(form.moveDate))
@@ -178,10 +181,14 @@ export function ReservationCreateForm({
     form.toLadderTruck ? '사다리차 요청' : '사다리차 미사용',
   ].join(' · ')
   const steps: { key: FormStep; label: string; description: string }[] = [
-    { key: 'customer', label: '고객 정보', description: '이름과 연락처를 입력합니다.' },
-    { key: 'schedule', label: '이사 일정', description: '날짜와 가능한 시간을 선택합니다.' },
+    { key: 'customer', label: isNonProfitMode ? '신청자 정보' : '고객 정보', description: '이름과 연락처를 입력합니다.' },
+    { key: 'schedule', label: isNonProfitMode ? '도움 일정' : '이사 일정', description: '날짜와 가능한 시간을 선택합니다.' },
     { key: 'address', label: '이사 주소', description: '출발지와 도착지를 입력합니다.' },
-    { key: 'memo', label: '추가 정보', description: '요청사항과 쿠폰을 확인합니다.' },
+    {
+      key: 'memo',
+      label: '추가 정보',
+      description: isNonProfitMode ? '도움 요청사항을 확인합니다.' : '요청사항과 쿠폰을 확인합니다.',
+    },
     { key: 'confirm', label: '최종 확인', description: '접수 전 내용을 확인합니다.' },
   ]
   const currentStepIndex = steps.findIndex((step) => step.key === currentStep)
@@ -189,10 +196,10 @@ export function ReservationCreateForm({
   const isLastStep = currentStepIndex === steps.length - 1
   const primaryButtonText = isLastStep
     ? isSubmitting
-      ? '예약 접수 중'
-      : '예약 접수하기'
+      ? isNonProfitMode ? '도움 요청 접수 중' : '예약 접수 중'
+      : isNonProfitMode ? '도움 요청 접수하기' : '예약 접수하기'
     : currentStep === 'memo'
-      ? '예약 내용 확인'
+      ? isNonProfitMode ? '요청 내용 확인' : '예약 내용 확인'
       : '다음'
 
   const validateCurrentStep = () => {
@@ -236,7 +243,7 @@ export function ReservationCreateForm({
 
     if (currentStep === 'confirm') {
       if (!form.customerName.trim() || !form.phone.trim()) {
-        return '고객 정보를 다시 확인해 주세요.'
+        return isNonProfitMode ? '신청자 정보를 다시 확인해 주세요.' : '고객 정보를 다시 확인해 주세요.'
       }
 
       if (!form.moveDate || !form.moveTime) {
@@ -310,8 +317,12 @@ export function ReservationCreateForm({
     <form className="reservation-form" onSubmit={submitStepForm}>
       <div className="section-heading">
         <div>
-          <h2>예약 정보</h2>
-          <p>단계별로 입력하면 접수 상태로 예약됩니다.</p>
+          <h2>{isNonProfitMode ? '도움 요청 정보' : '예약 정보'}</h2>
+          <p>
+            {isNonProfitMode
+              ? '단계별로 입력하면 도움 요청이 접수됩니다.'
+              : '단계별로 입력하면 접수 상태로 예약됩니다.'}
+          </p>
         </div>
         <span className="step-count">
           {currentStepIndex + 1} / {steps.length}
@@ -565,14 +576,16 @@ export function ReservationCreateForm({
                 placeholder="깨지기 쉬운 짐, 주차 정보 등을 적어주세요."
               />
             </label>
-            <label>
-              쿠폰 코드
-              <input
-                value={form.couponCode}
-                onChange={(event) => onChange('couponCode', event.target.value)}
-                placeholder="WELCOME10"
-              />
-            </label>
+            {!isNonProfitMode && (
+              <label>
+                쿠폰 코드
+                <input
+                  value={form.couponCode}
+                  onChange={(event) => onChange('couponCode', event.target.value)}
+                  placeholder="WELCOME10"
+                />
+              </label>
+            )}
           </div>
         </div>
       )}
@@ -581,13 +594,13 @@ export function ReservationCreateForm({
         <div className="step-panel reservation-confirm-panel">
           <div className="reservation-confirm-heading">
             <span>제출 전 확인</span>
-            <h3>예약 내용을 한 번 더 확인해 주세요</h3>
+            <h3>{isNonProfitMode ? '요청 내용을 한 번 더 확인해 주세요' : '예약 내용을 한 번 더 확인해 주세요'}</h3>
             <p>잘못 입력한 항목이 있으면 이전 버튼으로 돌아가 수정할 수 있습니다.</p>
           </div>
 
           <div className="reservation-confirm-grid">
             <section>
-              <h4>고객 정보</h4>
+              <h4>{isNonProfitMode ? '신청자 정보' : '고객 정보'}</h4>
               <dl>
                 <div>
                   <dt>이름</dt>
@@ -649,16 +662,20 @@ export function ReservationCreateForm({
                   <dt>요청사항</dt>
                   <dd>{formatOptionalText(form.memo)}</dd>
                 </div>
-                <div>
-                  <dt>쿠폰 코드</dt>
-                  <dd>{formatOptionalText(form.couponCode, '사용 안 함')}</dd>
-                </div>
+                {!isNonProfitMode && (
+                  <div>
+                    <dt>쿠폰 코드</dt>
+                    <dd>{formatOptionalText(form.couponCode, '사용 안 함')}</dd>
+                  </div>
+                )}
               </dl>
             </section>
           </div>
 
           <p className="reservation-confirm-note">
-            예약 접수 후에는 예약번호가 발급됩니다. 예약번호와 연락처로 진행 상황을 조회할 수 있습니다.
+            {isNonProfitMode
+              ? '도움 요청 접수 후에는 조회번호가 발급됩니다. 조회번호와 연락처로 진행 상황을 확인할 수 있습니다.'
+              : '예약 접수 후에는 예약번호가 발급됩니다. 예약번호와 연락처로 진행 상황을 조회할 수 있습니다.'}
           </p>
         </div>
       )}

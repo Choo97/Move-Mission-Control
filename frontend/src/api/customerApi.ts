@@ -10,6 +10,7 @@ import type {
   ReservationResponse,
   ReservationSearchForm,
   PublicReviewResponse,
+  PublicOperatingPolicyResponse,
   ReviewForm,
   ReviewResponse,
 } from '../types'
@@ -28,6 +29,11 @@ async function readJson<T>(response: Response, fallbackMessage: string): Promise
 export async function getAvailability(date: string) {
   const response = await fetch(`${API_BASE_URL}/api/availability?date=${encodeURIComponent(date)}`)
   return readJson<AvailabilityResponse>(response, '예약 가능 시간을 불러오지 못했습니다.')
+}
+
+export async function getServicePolicy() {
+  const response = await fetch(`${API_BASE_URL}/api/service-policy`)
+  return readJson<PublicOperatingPolicyResponse>(response, '서비스 운영 방식을 불러오지 못했습니다.')
 }
 
 export async function createReservation(form: ReservationForm) {

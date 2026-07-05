@@ -125,7 +125,12 @@ public class AvailabilityService {
 
         OperatingPolicy policy = policyRepository.findById(OperatingPolicy.DEFAULT_ID)
                 .orElseGet(() -> policyRepository.save(OperatingPolicy.defaults()));
-        policy.update(request.minAdvanceDays(), request.maxAdvanceDays(), request.maxDailyReservations());
+        policy.update(
+                request.minAdvanceDays(),
+                request.maxAdvanceDays(),
+                request.maxDailyReservations(),
+                request.serviceMode()
+        );
         return policy;
     }
 

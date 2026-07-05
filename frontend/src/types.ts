@@ -29,6 +29,8 @@ export type {
   OperatingHolidayResponse,
   OperatingPolicyResponse,
   OperatingScheduleResponse,
+  PublicOperatingPolicyResponse,
+  ServiceMode,
 } from './types/availability'
 export type {
   EstimateSettingHistoryResponse,

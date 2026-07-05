@@ -29,6 +29,11 @@ public class AvailabilityApiController {
         return availabilityService.availability(date);
     }
 
+    @GetMapping("/api/service-policy")
+    public PublicOperatingPolicyResponse publicPolicy() {
+        return PublicOperatingPolicyResponse.from(availabilityService.policy());
+    }
+
     @GetMapping("/api/admin/operating-schedules")
     public List<OperatingScheduleResponse> schedules() {
         return availabilityService.schedules().stream().map(OperatingScheduleResponse::from).toList();

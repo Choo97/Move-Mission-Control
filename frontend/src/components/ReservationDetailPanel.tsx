@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { ChangeEvent, Dispatch, FormEvent, ReactNode, SetStateAction } from 'react'
 import { API_BASE_URL } from '../reservationData'
-import type { CustomerGuideItem, ReservationResponse, ReviewForm, ReviewResponse } from '../types'
+import type { CustomerGuideItem, ReservationResponse, ReviewForm, ReviewResponse, ServiceMode } from '../types'
 import { StatusNotice } from './StatusNotice'
 import './ReservationDetailPanel.css'
 
@@ -29,6 +29,7 @@ type Props = {
   onReviewFormChange: Dispatch<SetStateAction<ReviewForm>>
   onSubmitReview: (event: FormEvent<HTMLFormElement>) => void
   onShowSearchForm: () => void
+  serviceMode: ServiceMode
 }
 
 const photoUrl = (fileUrl: string) =>
@@ -39,12 +40,16 @@ type DetailNavItem = {
   label: string
 }
 
-function getCustomerActionAvailability(reservation: ReservationResponse, actionMessage: string) {
+function getCustomerActionAvailability(
+  reservation: ReservationResponse,
+  actionMessage: string,
+  isNonProfitMode = false,
+) {
   const hasPendingRequest = reservation.customerRequests.some((request) => request.status === 'PENDING')
   const canRequestEdit = reservation.editable && !hasPendingRequest
   const canRequestCancel = reservation.cancelable && !hasPendingRequest
   const canUseSupportActions = canRequestEdit || canRequestCancel
-  const hasPrimaryEstimateAction = reservation.estimateAcceptable
+  const hasPrimaryEstimateAction = !isNonProfitMode && reservation.estimateAcceptable
 
   return {
     canRequestCancel,
@@ -80,9 +85,13 @@ export function ReservationDetailPanel({
   onReviewFormChange,
   onSubmitReview,
   onShowSearchForm,
+  serviceMode,
 }: Props) {
+  const isNonProfitMode = serviceMode === 'NON_PROFIT'
   const [openDetailSections, setOpenDetailSections] = useState<Record<string, boolean>>({})
-  const actionAvailability = reservation ? getCustomerActionAvailability(reservation, actionMessage) : null
+  const actionAvailability = reservation
+    ? getCustomerActionAvailability(reservation, actionMessage, isNonProfitMode)
+    : null
   const detailNavItems: DetailNavItem[] = []
 
   if (reservation) {
@@ -95,13 +104,13 @@ export function ReservationDetailPanel({
       detailNavItems.push({ id: 'reservation-request-section', label: '요청' })
     }
 
-    if (reservation.estimateLines.length > 0) {
+    if (!isNonProfitMode && reservation.estimateLines.length > 0) {
       detailNavItems.push({ id: 'reservation-estimate-section', label: '견적' })
     }
 
     detailNavItems.push(
       { id: 'reservation-photo-section', label: '사진' },
-      { id: 'reservation-review-section', label: '리뷰' },
+      { id: 'reservation-review-section', label: isNonProfitMode ? '후기' : '리뷰' },
     )
 
     if (actionAvailability?.shouldRender) {
@@ -130,7 +139,7 @@ export function ReservationDetailPanel({
 
   return (
     <aside className="status-panel">
-      <h2>{activeView === 'create' ? '접수 결과' : '예약 상세'}</h2>
+      <h2>{activeView === 'create' ? '접수 결과' : isNonProfitMode ? '요청 상세' : '예약 상세'}</h2>
       {reservation ? (
         <div className="result">
           {isNewlyCreated && (
@@ -138,21 +147,24 @@ export function ReservationDetailPanel({
               reservation={reservation}
               lookupPhone={lookupPhone}
               onShowSearchForm={onShowSearchForm}
+              isNonProfitMode={isNonProfitMode}
             />
           )}
           <ReservationDetailQuickNav items={detailNavItems} onNavigate={openAndScrollToDetailSection} />
 
           <DetailSection
             id="reservation-summary-section"
-            title={`예약 #${reservation.id}`}
-            description="일정, 주소, 금액을 먼저 확인합니다."
+            title={`${isNonProfitMode ? '요청' : '예약'} #${reservation.id}`}
+            description={isNonProfitMode ? '일정, 주소, 진행 상태를 먼저 확인합니다.' : '일정, 주소, 금액을 먼저 확인합니다.'}
             className="detail-section--summary"
             isOpen={isDetailSectionOpen('reservation-summary-section', true)}
             onOpenChange={(isOpen) => setDetailSectionOpen('reservation-summary-section', isOpen)}
           >
-            {activeView === 'search' && <ReservationLookupHeader reservation={reservation} />}
-            <ReservationSummary reservation={reservation} />
-            <ReservationStateBadges reservation={reservation} />
+            {activeView === 'search' && (
+              <ReservationLookupHeader reservation={reservation} isNonProfitMode={isNonProfitMode} />
+            )}
+            <ReservationSummary reservation={reservation} isNonProfitMode={isNonProfitMode} />
+            <ReservationStateBadges reservation={reservation} isNonProfitMode={isNonProfitMode} />
           </DetailSection>
 
           <DetailSection
@@ -163,7 +175,7 @@ export function ReservationDetailPanel({
             isOpen={isDetailSectionOpen('reservation-progress-section', true)}
             onOpenChange={(isOpen) => setDetailSectionOpen('reservation-progress-section', isOpen)}
           >
-            <ReservationProgress reservation={reservation} showHeading={false} />
+            <ReservationProgress reservation={reservation} showHeading={false} isNonProfitMode={isNonProfitMode} />
             <CustomerStatusGuide
               guides={customerGuides}
               isLoading={isLoadingCustomerGuides}
@@ -185,7 +197,7 @@ export function ReservationDetailPanel({
             </DetailSection>
           )}
 
-          {reservation.estimateLines.length > 0 && (
+          {!isNonProfitMode && reservation.estimateLines.length > 0 && (
             <DetailSection
               id="reservation-estimate-section"
               title="견적 내역"
@@ -218,8 +230,8 @@ export function ReservationDetailPanel({
 
           <DetailSection
             id="reservation-review-section"
-            title="고객 리뷰"
-            description="이사가 완료된 뒤 리뷰를 남길 수 있습니다."
+            title={isNonProfitMode ? '이용 후기' : '고객 리뷰'}
+            description={isNonProfitMode ? '도움이 완료된 뒤 후기를 남길 수 있습니다.' : '이사가 완료된 뒤 리뷰를 남길 수 있습니다.'}
             className="detail-section--review"
             isOpen={isDetailSectionOpen('reservation-review-section', false)}
             onOpenChange={(isOpen) => setDetailSectionOpen('reservation-review-section', isOpen)}
@@ -232,6 +244,7 @@ export function ReservationDetailPanel({
               onReviewFormChange={onReviewFormChange}
               onSubmitReview={onSubmitReview}
               showHeading={false}
+              isNonProfitMode={isNonProfitMode}
             />
           </DetailSection>
 
@@ -239,7 +252,7 @@ export function ReservationDetailPanel({
             <DetailSection
               id="reservation-action-section"
               title="다음 행동"
-              description="견적 동의, 수정 요청, 취소 요청을 처리합니다."
+              description={isNonProfitMode ? '수정 요청이나 취소 요청을 처리합니다.' : '견적 동의, 수정 요청, 취소 요청을 처리합니다.'}
               className="detail-section--action"
               isOpen={isDetailSectionOpen('reservation-action-section', true)}
               onOpenChange={(isOpen) => setDetailSectionOpen('reservation-action-section', isOpen)}
@@ -253,6 +266,7 @@ export function ReservationDetailPanel({
                 onStartEdit={onStartEdit}
                 onCancelReservation={onCancelReservation}
                 onAcceptEstimate={onAcceptEstimate}
+                isNonProfitMode={isNonProfitMode}
               />
             </DetailSection>
           )}
@@ -262,13 +276,23 @@ export function ReservationDetailPanel({
           title={activeView === 'create' ? '아직 접수된 예약이 없습니다' : '아직 조회된 예약이 없습니다'}
           description={
             activeView === 'create'
-              ? '예약 신청을 완료하면 예약번호와 접수 결과가 이곳에 표시됩니다.'
-              : '예약번호와 연락처를 입력하면 예약 상태와 견적 정보를 확인할 수 있습니다.'
+              ? isNonProfitMode
+                ? '도움 요청을 완료하면 조회번호와 접수 결과가 이곳에 표시됩니다.'
+                : '예약 신청을 완료하면 예약번호와 접수 결과가 이곳에 표시됩니다.'
+              : isNonProfitMode
+                ? '조회번호와 연락처를 입력하면 요청 상태를 확인할 수 있습니다.'
+                : '예약번호와 연락처를 입력하면 예약 상태와 견적 정보를 확인할 수 있습니다.'
           }
           actions={
             activeView === 'create'
-              ? ['필수 정보를 입력한 뒤 예약을 제출해 주세요.', '예약번호는 이후 조회에 필요하니 따로 보관해 주세요.']
-              : ['예약 완료 화면에서 받은 예약번호를 준비해 주세요.', '신청 때 입력한 연락처를 그대로 입력해 주세요.']
+              ? [
+                  isNonProfitMode ? '필수 정보를 입력한 뒤 도움 요청을 제출해 주세요.' : '필수 정보를 입력한 뒤 예약을 제출해 주세요.',
+                  isNonProfitMode ? '조회번호는 이후 확인에 필요하니 따로 보관해 주세요.' : '예약번호는 이후 조회에 필요하니 따로 보관해 주세요.',
+                ]
+              : [
+                  isNonProfitMode ? '접수 완료 화면에서 받은 조회번호를 준비해 주세요.' : '예약 완료 화면에서 받은 예약번호를 준비해 주세요.',
+                  '신청 때 입력한 연락처를 그대로 입력해 주세요.',
+                ]
           }
         />
       )}
@@ -336,17 +360,19 @@ function ReservationCompleteCard({
   reservation,
   lookupPhone,
   onShowSearchForm,
+  isNonProfitMode,
 }: {
   reservation: ReservationResponse
   lookupPhone: string
   onShowSearchForm: () => void
+  isNonProfitMode: boolean
 }) {
   const [copyMessage, setCopyMessage] = useState('')
 
   const copyLookupCredentials = async () => {
     try {
-      await navigator.clipboard.writeText(`예약번호: ${reservation.id}\n연락처: ${lookupPhone}`)
-      setCopyMessage('예약 조회 정보를 복사했습니다.')
+      await navigator.clipboard.writeText(`${isNonProfitMode ? '조회번호' : '예약번호'}: ${reservation.id}\n연락처: ${lookupPhone}`)
+      setCopyMessage(`${isNonProfitMode ? '요청 조회' : '예약 조회'} 정보를 복사했습니다.`)
     } catch {
       setCopyMessage('복사가 어렵다면 예약번호와 연락처를 직접 저장해 주세요.')
     }
@@ -362,14 +388,18 @@ function ReservationCompleteCard({
   return (
     <div className="completion-card completion-receipt" role="status" aria-live="polite">
       <div className="completion-receipt-heading">
-        <p className="eyebrow">예약 접수 완료</p>
-        <h3>예약이 정상적으로 접수되었습니다</h3>
-        <p className="completion-lead">예약번호와 연락처로 언제든지 진행 상황을 확인할 수 있습니다.</p>
+        <p className="eyebrow">{isNonProfitMode ? '도움 요청 접수 완료' : '예약 접수 완료'}</p>
+        <h3>{isNonProfitMode ? '도움 요청이 정상적으로 접수되었습니다' : '예약이 정상적으로 접수되었습니다'}</h3>
+        <p className="completion-lead">
+          {isNonProfitMode
+            ? '조회번호와 연락처로 언제든지 진행 상황을 확인할 수 있습니다.'
+            : '예약번호와 연락처로 언제든지 진행 상황을 확인할 수 있습니다.'}
+        </p>
       </div>
 
       <div className="completion-summary-grid" aria-label="예약 완료 요약">
         <div className="reservation-number-box highlight">
-          <span>예약번호</span>
+          <span>{isNonProfitMode ? '조회번호' : '예약번호'}</span>
           <strong>{reservation.id}</strong>
           <small>조회할 때 꼭 필요합니다</small>
         </div>
@@ -387,12 +417,12 @@ function ReservationCompleteCard({
         </div>
       </div>
 
-      <div className="completion-actions" aria-label="예약 완료 후 다음 행동">
+      <div className="completion-actions" aria-label={isNonProfitMode ? '도움 요청 완료 후 다음 행동' : '예약 완료 후 다음 행동'}>
         <button className="submit-button secondary" type="button" onClick={() => void copyLookupCredentials()}>
           조회 정보 복사
         </button>
         <button className="submit-button secondary" type="button" onClick={onShowSearchForm}>
-          내 예약 조회하기
+          {isNonProfitMode ? '내 요청 조회하기' : '내 예약 조회하기'}
         </button>
         <button className="submit-button secondary" type="button" onClick={moveToPhotoSection}>
           짐 사진 올리기
@@ -408,20 +438,26 @@ function ReservationCompleteCard({
         </article>
         <article>
           <span>2</span>
-          <strong>상담 및 견적 안내</strong>
-          <p>필요한 경우 연락 후 견적을 안내합니다.</p>
+          <strong>{isNonProfitMode ? '지원 가능 여부 안내' : '상담 및 견적 안내'}</strong>
+          <p>{isNonProfitMode ? '필요한 경우 연락 후 도움 가능 여부를 안내합니다.' : '필요한 경우 연락 후 견적을 안내합니다.'}</p>
         </article>
         <article>
           <span>3</span>
-          <strong>견적 동의 후 확정</strong>
-          <p>견적을 확인하고 동의하면 예약이 확정됩니다.</p>
+          <strong>{isNonProfitMode ? '일정 확정' : '견적 동의 후 확정'}</strong>
+          <p>{isNonProfitMode ? '일정이 맞으면 도움 일정이 확정됩니다.' : '견적을 확인하고 동의하면 예약이 확정됩니다.'}</p>
         </article>
       </div>
     </div>
   )
 }
 
-function ReservationLookupHeader({ reservation }: { reservation: ReservationResponse }) {
+function ReservationLookupHeader({
+  reservation,
+  isNonProfitMode,
+}: {
+  reservation: ReservationResponse
+  isNonProfitMode: boolean
+}) {
   return (
     <div className="lookup-result-card">
       <div>
@@ -434,19 +470,27 @@ function ReservationLookupHeader({ reservation }: { reservation: ReservationResp
           {reservation.moveDate} {reservation.moveTime}
         </strong>
       </div>
-      <div>
-        <span>예상 금액</span>
-        <strong>{reservation.finalEstimatedPrice.toLocaleString()}원</strong>
-      </div>
+      {!isNonProfitMode && (
+        <div>
+          <span>예상 금액</span>
+          <strong>{reservation.finalEstimatedPrice.toLocaleString()}원</strong>
+        </div>
+      )}
     </div>
   )
 }
 
-function ReservationSummary({ reservation }: { reservation: ReservationResponse }) {
+function ReservationSummary({
+  reservation,
+  isNonProfitMode,
+}: {
+  reservation: ReservationResponse
+  isNonProfitMode: boolean
+}) {
   return (
     <dl>
       <div>
-        <dt>고객</dt>
+        <dt>{isNonProfitMode ? '신청자' : '고객'}</dt>
         <dd>{reservation.customerName}</dd>
       </div>
       <div>
@@ -475,19 +519,23 @@ function ReservationSummary({ reservation }: { reservation: ReservationResponse 
         <dt>거리</dt>
         <dd>{reservation.distanceKm === null ? '확인 전' : `${reservation.distanceKm}km`}</dd>
       </div>
-      <div>
-        <dt>할인</dt>
-        <dd>{reservation.discountAmount.toLocaleString()}원</dd>
-      </div>
-      <div>
-        <dt>예상금액</dt>
-        <dd>{reservation.finalEstimatedPrice.toLocaleString()}원</dd>
-      </div>
-      {reservation.acceptedEstimatePrice !== null && (
-        <div>
-          <dt>동의금액</dt>
-          <dd>{reservation.acceptedEstimatePrice.toLocaleString()}원</dd>
-        </div>
+      {!isNonProfitMode && (
+        <>
+          <div>
+            <dt>할인</dt>
+            <dd>{reservation.discountAmount.toLocaleString()}원</dd>
+          </div>
+          <div>
+            <dt>예상금액</dt>
+            <dd>{reservation.finalEstimatedPrice.toLocaleString()}원</dd>
+          </div>
+          {reservation.acceptedEstimatePrice !== null && (
+            <div>
+              <dt>동의금액</dt>
+              <dd>{reservation.acceptedEstimatePrice.toLocaleString()}원</dd>
+            </div>
+          )}
+        </>
       )}
     </dl>
   )
@@ -504,9 +552,11 @@ const progressSteps = [
 function ReservationProgress({
   reservation,
   showHeading = true,
+  isNonProfitMode = false,
 }: {
   reservation: ReservationResponse
   showHeading?: boolean
+  isNonProfitMode?: boolean
 }) {
   if (reservation.status === 'CANCELED') {
     return (
@@ -522,7 +572,7 @@ function ReservationProgress({
   return (
     <div className="progress-section">
       {showHeading && <h3>진행 단계</h3>}
-      <ol className="progress-steps" aria-label="예약 진행 단계">
+      <ol className="progress-steps" aria-label={isNonProfitMode ? '도움 요청 진행 단계' : '예약 진행 단계'}>
         {progressSteps.map((step, index) => {
           const isDone = currentIndex >= 0 && index < currentIndex
           const isCurrent = currentIndex === index
@@ -534,7 +584,7 @@ function ReservationProgress({
               aria-current={isCurrent ? 'step' : undefined}
             >
               <span>{index + 1}</span>
-              <strong>{step.label}</strong>
+              <strong>{isNonProfitMode && step.status === 'ESTIMATE_SENT' ? '지원안내' : step.label}</strong>
             </li>
           )
         })}
@@ -591,7 +641,13 @@ function CustomerStatusGuide({
   )
 }
 
-function ReservationStateBadges({ reservation }: { reservation: ReservationResponse }) {
+function ReservationStateBadges({
+  reservation,
+  isNonProfitMode,
+}: {
+  reservation: ReservationResponse
+  isNonProfitMode: boolean
+}) {
   const hasPendingRequest = reservation.customerRequests.some((request) => request.status === 'PENDING')
 
   return (
@@ -599,8 +655,8 @@ function ReservationStateBadges({ reservation }: { reservation: ReservationRespo
       {hasPendingRequest && <span>요청 처리 대기</span>}
       {reservation.editable && <span>정보 변경 요청 가능</span>}
       {reservation.cancelable && !reservation.editable && <span>예약 문의 가능</span>}
-      {reservation.estimateAcceptable && <span>견적 확인 필요</span>}
-      {reservation.estimateAccepted && <span>견적 동의 완료</span>}
+      {!isNonProfitMode && reservation.estimateAcceptable && <span>견적 확인 필요</span>}
+      {!isNonProfitMode && reservation.estimateAccepted && <span>견적 동의 완료</span>}
     </div>
   )
 }
@@ -738,6 +794,7 @@ function ReviewSection({
   onReviewFormChange,
   onSubmitReview,
   showHeading = true,
+  isNonProfitMode = false,
 }: {
   reservation: ReservationResponse
   reviewForm: ReviewForm
@@ -746,16 +803,17 @@ function ReviewSection({
   onReviewFormChange: Dispatch<SetStateAction<ReviewForm>>
   onSubmitReview: (event: FormEvent<HTMLFormElement>) => void
   showHeading?: boolean
+  isNonProfitMode?: boolean
 }) {
   if (reservation.status !== 'COMPLETED') {
     const message =
       reservation.status === 'CANCELED'
-        ? '취소된 예약은 리뷰를 작성할 수 없습니다.'
-        : '이사가 완료된 뒤 리뷰를 작성할 수 있습니다.'
+        ? isNonProfitMode ? '취소된 요청은 후기를 작성할 수 없습니다.' : '취소된 예약은 리뷰를 작성할 수 없습니다.'
+        : isNonProfitMode ? '도움이 완료된 뒤 후기를 작성할 수 있습니다.' : '이사가 완료된 뒤 리뷰를 작성할 수 있습니다.'
 
     return (
       <div className="review-section">
-        {showHeading && <h3>고객 리뷰</h3>}
+        {showHeading && <h3>{isNonProfitMode ? '이용 후기' : '고객 리뷰'}</h3>}
         <p className="review-notice">{message}</p>
       </div>
     )
@@ -763,7 +821,7 @@ function ReviewSection({
 
   return (
     <div className="review-section">
-      {showHeading && <h3>고객 리뷰</h3>}
+      {showHeading && <h3>{isNonProfitMode ? '이용 후기' : '고객 리뷰'}</h3>}
       {submittedReview ? (
         <div className="review-complete">
           <strong>{'★'.repeat(submittedReview.rating)}</strong>
@@ -791,12 +849,12 @@ function ReviewSection({
             <textarea
               value={reviewForm.content}
               onChange={(event) => onReviewFormChange((current) => ({ ...current, content: event.target.value }))}
-              placeholder="서비스 이용 후 느낀 점을 남겨주세요."
+              placeholder={isNonProfitMode ? '도움을 받은 뒤 느낀 점을 남겨주세요.' : '서비스 이용 후 느낀 점을 남겨주세요.'}
               required
             />
           </label>
           <button className="submit-button secondary" type="submit" disabled={isSubmittingReview}>
-            {isSubmittingReview ? '리뷰 등록 중' : '리뷰 등록'}
+            {isSubmittingReview ? (isNonProfitMode ? '후기 등록 중' : '리뷰 등록 중') : (isNonProfitMode ? '후기 등록' : '리뷰 등록')}
           </button>
         </form>
       )}
@@ -813,6 +871,7 @@ function CustomerActions({
   onStartEdit,
   onCancelReservation,
   onAcceptEstimate,
+  isNonProfitMode = false,
 }: {
   reservation: ReservationResponse
   actionMessage: string
@@ -822,6 +881,7 @@ function CustomerActions({
   onStartEdit: () => void
   onCancelReservation: () => void
   onAcceptEstimate: () => void
+  isNonProfitMode?: boolean
 }) {
   const {
     canRequestCancel,
@@ -831,10 +891,14 @@ function CustomerActions({
     hasPrimaryEstimateAction,
     shouldRender,
   } = availability ?? getCustomerActionAvailability(reservation, actionMessage)
-  const title = hasPrimaryEstimateAction ? '견적을 확인하고 예약을 확정해 주세요' : '예약 진행 상황을 확인해 주세요'
+  const title = hasPrimaryEstimateAction
+    ? '견적을 확인하고 예약을 확정해 주세요'
+    : isNonProfitMode ? '도움 요청 진행 상황을 확인해 주세요' : '예약 진행 상황을 확인해 주세요'
   const description = hasPrimaryEstimateAction
     ? '안내된 견적이 괜찮다면 동의 후 예약이 확정됩니다. 일정이나 주소가 바뀐 경우에는 먼저 수정 요청을 남겨 주세요.'
-    : '관리자가 예약 정보를 확인한 뒤 상담과 견적 안내를 진행합니다. 정보가 바뀌었을 때만 요청을 남기면 됩니다.'
+    : isNonProfitMode
+      ? '관리자가 요청 정보를 확인한 뒤 지원 가능 여부와 일정을 안내합니다. 정보가 바뀌었을 때만 요청을 남기면 됩니다.'
+      : '관리자가 예약 정보를 확인한 뒤 상담과 견적 안내를 진행합니다. 정보가 바뀌었을 때만 요청을 남기면 됩니다.'
 
   if (!shouldRender) {
     return null
@@ -873,13 +937,13 @@ function CustomerActions({
       {canUseSupportActions && (
         <div className="reservation-support-actions">
           <div className="support-actions-heading">
-            <strong>예약 정보가 바뀌었나요?</strong>
+            <strong>{isNonProfitMode ? '요청 정보가 바뀌었나요?' : '예약 정보가 바뀌었나요?'}</strong>
             <p>날짜, 주소, 요청사항 변경은 취소보다 수정 요청을 먼저 권장합니다.</p>
           </div>
           <div className="support-action-list">
             {canRequestEdit && (
               <button className="support-action-button" type="button" onClick={onStartEdit}>
-                <strong>예약 수정 요청</strong>
+                <strong>{isNonProfitMode ? '요청 수정' : '예약 수정 요청'}</strong>
                 <span>일정, 주소, 요청사항을 바꿔야 할 때</span>
               </button>
             )}
@@ -890,7 +954,7 @@ function CustomerActions({
                 disabled={isCanceling}
                 onClick={onCancelReservation}
               >
-                <strong>{isCanceling ? '취소 요청 중' : '예약 취소가 필요해요'}</strong>
+                <strong>{isCanceling ? '취소 요청 중' : isNonProfitMode ? '요청 취소가 필요해요' : '예약 취소가 필요해요'}</strong>
                 <span>이사를 진행하기 어려운 경우에만 선택</span>
               </button>
             )}
