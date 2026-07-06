@@ -3,6 +3,7 @@ target/
 .vscode/
 *.iml
 *.log
+*.err
 .env
 .env.production
 .env.deploy

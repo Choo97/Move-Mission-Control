@@ -17,7 +17,57 @@ import type {
   OperatingHolidayResponse,
   OperatingPolicyResponse,
   OperatingScheduleResponse,
+  ServiceMode,
 } from '../types'
+
+const serviceModeComparisonRows = [
+  { label: '예약 버튼', general: '이사 예약하기', nonProfit: '이사 도움 요청하기' },
+  { label: '사용자 명칭', general: '고객', nonProfit: '신청자' },
+  { label: '견적 금액', general: '표시', nonProfit: '표시 안 함' },
+  { label: '쿠폰/할인', general: '표시', nonProfit: '표시 안 함' },
+  { label: '결제', general: '사용 안 함', nonProfit: '표시 안 함' },
+  { label: '리뷰', general: '리뷰', nonProfit: '감사 메시지 또는 이용 후기' },
+]
+
+const serviceModeLabel = (serviceMode: ServiceMode) =>
+  serviceMode === 'NON_PROFIT' ? '비영리 도움 요청' : '일반 이사 예약'
+
+function ServiceModeGuide({ selectedMode }: { selectedMode: ServiceMode | null }) {
+  return (
+    <div className="service-mode-guide" aria-label="서비스 운영 방식별 고객 화면 적용 내용">
+      <div className="service-mode-guide-heading">
+        <strong>
+          {selectedMode ? `현재 선택: ${serviceModeLabel(selectedMode)}` : '고객 화면 적용 내용'}
+        </strong>
+        <span>
+          {selectedMode
+            ? '저장하면 고객 화면에 아래 기준으로 적용됩니다.'
+            : '운영 정책을 불러오면 현재 선택 모드가 강조됩니다.'}
+        </span>
+      </div>
+      <div className="service-mode-table-wrap">
+        <table className="service-mode-table">
+          <thead>
+            <tr>
+              <th scope="col">항목</th>
+              <th scope="col" className={selectedMode === 'GENERAL' ? 'selected' : ''}>일반 모드</th>
+              <th scope="col" className={selectedMode === 'NON_PROFIT' ? 'selected' : ''}>비영리 모드</th>
+            </tr>
+          </thead>
+          <tbody>
+            {serviceModeComparisonRows.map((row) => (
+              <tr key={row.label}>
+                <th scope="row">{row.label}</th>
+                <td className={selectedMode === 'GENERAL' ? 'selected' : ''}>{row.general}</td>
+                <td className={selectedMode === 'NON_PROFIT' ? 'selected' : ''}>{row.nonProfit}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
 
 export function AdminAvailabilitySettings() {
   const [schedules, setSchedules] = useState<OperatingScheduleResponse[]>([])
@@ -28,6 +78,8 @@ export function AdminAvailabilitySettings() {
   const [holidayDate, setHolidayDate] = useState('')
   const [holidayReason, setHolidayReason] = useState('')
   const [message, setMessage] = useState('')
+  const [isPolicyLoading, setIsPolicyLoading] = useState(true)
+  const [policyErrorMessage, setPolicyErrorMessage] = useState('')
 
   useEffect(() => {
     void Promise.allSettled([getOperatingSchedules(), getOperatingHolidays(), getOperatingPolicy(), getEstimateSettings()])
@@ -48,8 +100,11 @@ export function AdminAvailabilitySettings() {
 
         if (policyResult.status === 'fulfilled') {
           setPolicy(policyResult.value)
+          setPolicyErrorMessage('')
         } else {
-          failedMessages.push(getErrorMessage(policyResult.reason, '운영 정책을 불러오지 못했습니다.'))
+          const policyError = getErrorMessage(policyResult.reason, '운영 정책을 불러오지 못했습니다.')
+          setPolicyErrorMessage(policyError)
+          failedMessages.push(policyError)
         }
 
         if (estimateResult.status === 'fulfilled') {
@@ -62,8 +117,14 @@ export function AdminAvailabilitySettings() {
         if (failedMessages.length > 0) {
           setMessage([...new Set(failedMessages)].join(' '))
         }
+        setIsPolicyLoading(false)
       })
-      .catch((error) => setMessage(getErrorMessage(error, '운영 일정을 불러오지 못했습니다.')))
+      .catch((error) => {
+        const fallbackMessage = getErrorMessage(error, '운영 일정을 불러오지 못했습니다.')
+        setPolicyErrorMessage(fallbackMessage)
+        setMessage(fallbackMessage)
+        setIsPolicyLoading(false)
+      })
   }, [])
 
   const changeSchedule = <K extends keyof OperatingScheduleResponse>(
@@ -149,38 +210,48 @@ export function AdminAvailabilitySettings() {
       <div className="holiday-editor">
         <h4>운영 정책</h4>
         {policy ? (
-          <div className="holiday-form">
-            <label>
-              서비스 운영 방식
-              <select
-                value={policy.serviceMode}
-                onChange={(event) =>
-                  changePolicy('serviceMode', event.target.value as OperatingPolicyResponse['serviceMode'])
-                }
-              >
-                <option value="GENERAL">일반 이사 예약</option>
-                <option value="NON_PROFIT">비영리 도움 요청</option>
-              </select>
-            </label>
-            <label>
-              예약 시작(일 후)
-              <input type="number" min={0} max={30} value={policy.minAdvanceDays}
-                onChange={(event) => changePolicy('minAdvanceDays', Number(event.target.value))} />
-            </label>
-            <label>
-              예약 종료(일 후)
-              <input type="number" min={1} max={365} value={policy.maxAdvanceDays}
-                onChange={(event) => changePolicy('maxAdvanceDays', Number(event.target.value))} />
-            </label>
-            <label>
-              하루 최대(건)
-              <input type="number" min={1} max={50} value={policy.maxDailyReservations}
-                onChange={(event) => changePolicy('maxDailyReservations', Number(event.target.value))} />
-            </label>
-            <button type="button" onClick={() => void savePolicy()}>운영 정책 저장</button>
-          </div>
+          <>
+            <div className="holiday-form">
+              <label>
+                서비스 운영 방식
+                <select
+                  value={policy.serviceMode}
+                  onChange={(event) =>
+                    changePolicy('serviceMode', event.target.value as OperatingPolicyResponse['serviceMode'])
+                  }
+                >
+                  <option value="GENERAL">일반 이사 예약</option>
+                  <option value="NON_PROFIT">비영리 도움 요청</option>
+                </select>
+              </label>
+              <label>
+                예약 시작(일 후)
+                <input type="number" min={0} max={30} value={policy.minAdvanceDays}
+                  onChange={(event) => changePolicy('minAdvanceDays', Number(event.target.value))} />
+              </label>
+              <label>
+                예약 종료(일 후)
+                <input type="number" min={1} max={365} value={policy.maxAdvanceDays}
+                  onChange={(event) => changePolicy('maxAdvanceDays', Number(event.target.value))} />
+              </label>
+              <label>
+                하루 최대(건)
+                <input type="number" min={1} max={50} value={policy.maxDailyReservations}
+                  onChange={(event) => changePolicy('maxDailyReservations', Number(event.target.value))} />
+              </label>
+              <button type="button" onClick={() => void savePolicy()}>운영 정책 저장</button>
+            </div>
+            <ServiceModeGuide selectedMode={policy.serviceMode} />
+          </>
         ) : (
-          <p>운영 정책을 불러오는 중입니다.</p>
+          <>
+            <p className="message info">
+              {isPolicyLoading
+                ? '운영 정책을 불러오는 중입니다.'
+                : `${policyErrorMessage || '운영 정책을 불러오지 못했습니다.'} 관리자 로그인 상태와 백엔드 배포 상태를 확인해 주세요.`}
+            </p>
+            <ServiceModeGuide selectedMode={null} />
+          </>
         )}
       </div>
       <div className="holiday-editor">
