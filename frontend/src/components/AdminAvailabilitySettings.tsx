@@ -30,13 +30,38 @@ export function AdminAvailabilitySettings() {
   const [message, setMessage] = useState('')
 
   useEffect(() => {
-    void Promise.all([getOperatingSchedules(), getOperatingHolidays(), getOperatingPolicy(), getEstimateSettings()])
-      .then(([nextSchedules, nextHolidays, nextPolicy, nextEstimateSettings]) => {
-        setSchedules(nextSchedules)
-        setHolidays(nextHolidays)
-        setPolicy(nextPolicy)
-        setEstimateSettings(nextEstimateSettings.settings)
-        setEstimateHistories(nextEstimateSettings.histories)
+    void Promise.allSettled([getOperatingSchedules(), getOperatingHolidays(), getOperatingPolicy(), getEstimateSettings()])
+      .then(([scheduleResult, holidayResult, policyResult, estimateResult]) => {
+        const failedMessages: string[] = []
+
+        if (scheduleResult.status === 'fulfilled') {
+          setSchedules(scheduleResult.value)
+        } else {
+          failedMessages.push(getErrorMessage(scheduleResult.reason, '요일별 운영시간을 불러오지 못했습니다.'))
+        }
+
+        if (holidayResult.status === 'fulfilled') {
+          setHolidays(holidayResult.value)
+        } else {
+          failedMessages.push(getErrorMessage(holidayResult.reason, '휴무일을 불러오지 못했습니다.'))
+        }
+
+        if (policyResult.status === 'fulfilled') {
+          setPolicy(policyResult.value)
+        } else {
+          failedMessages.push(getErrorMessage(policyResult.reason, '운영 정책을 불러오지 못했습니다.'))
+        }
+
+        if (estimateResult.status === 'fulfilled') {
+          setEstimateSettings(estimateResult.value.settings)
+          setEstimateHistories(estimateResult.value.histories)
+        } else {
+          failedMessages.push(getErrorMessage(estimateResult.reason, '견적 정책을 불러오지 못했습니다.'))
+        }
+
+        if (failedMessages.length > 0) {
+          setMessage([...new Set(failedMessages)].join(' '))
+        }
       })
       .catch((error) => setMessage(getErrorMessage(error, '운영 일정을 불러오지 못했습니다.')))
   }, [])
@@ -152,7 +177,7 @@ export function AdminAvailabilitySettings() {
               <input type="number" min={1} max={50} value={policy.maxDailyReservations}
                 onChange={(event) => changePolicy('maxDailyReservations', Number(event.target.value))} />
             </label>
-            <button type="button" onClick={() => void savePolicy()}>저장</button>
+            <button type="button" onClick={() => void savePolicy()}>운영 정책 저장</button>
           </div>
         ) : (
           <p>운영 정책을 불러오는 중입니다.</p>
