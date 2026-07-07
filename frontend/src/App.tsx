@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { ChangeEvent, FormEvent } from 'react'
+import type { ChangeEvent, FormEvent, ReactNode } from 'react'
 import './App.css'
 import landingMovingScene from './assets/landing-moving-scene.png'
 import { AdminAvailabilitySettings } from './components/AdminAvailabilitySettings'
@@ -447,15 +447,21 @@ function App() {
 
   if (adminRoute) {
     const currentAdminView = adminConsoleView(currentPath)
+    const currentAdminViewLabel = adminConsoleViewLabel(currentAdminView)
 
     return (
-      <main className="app-shell">
+      <main className="app-shell admin-app-shell">
         <AdminConsoleNav activeView={currentAdminView} />
-        {currentAdminView === 'notifications' && <AdminNotificationListView />}
-        {currentAdminView === 'reviews' && <AdminReviewListView />}
-        {currentAdminView === 'availability' && <AdminAvailabilitySettings />}
-        {currentAdminView === 'faqs' && <AdminFaqListView />}
-        {currentAdminView === 'reservations' && <AdminReservationListView />}
+        <div className="admin-content-shell">
+          <AdminTopCommand currentViewLabel={currentAdminViewLabel} />
+          <div className="admin-view-stack">
+            {currentAdminView === 'notifications' && <AdminNotificationListView />}
+            {currentAdminView === 'reviews' && <AdminReviewListView />}
+            {currentAdminView === 'availability' && <AdminAvailabilitySettings />}
+            {currentAdminView === 'faqs' && <AdminFaqListView />}
+            {currentAdminView === 'reservations' && <AdminReservationListView />}
+          </div>
+        </div>
       </main>
     )
   }
@@ -624,25 +630,197 @@ function App() {
   )
 }
 
-function AdminConsoleNav({ activeView }: { activeView: 'reservations' | 'notifications' | 'reviews' | 'availability' | 'faqs' }) {
+type AdminConsoleView = 'reservations' | 'notifications' | 'reviews' | 'availability' | 'faqs'
+
+const adminQuickActions = [
+  { label: '처리 필요 예약', value: '/admin/reservations?attentionRequired=true' },
+  { label: '거리 확인 필요', value: '/admin/reservations?needsDistance=true' },
+  { label: '신규 접수 확인', value: '/admin/reservations?status=RECEIVED' },
+  { label: '실패 알림 확인', value: '/admin/notifications?status=FAILED' },
+  { label: '낮은 평점 리뷰', value: '/admin/reviews?rating=3' },
+  { label: '운영 시간 설정', value: '/admin/availability' },
+  { label: 'FAQ 추가/수정', value: '/admin/faqs' },
+]
+
+const adminConsoleViewLabel = (activeView: AdminConsoleView) => {
+  if (activeView === 'notifications') {
+    return '알림 이력'
+  }
+
+  if (activeView === 'reviews') {
+    return '리뷰 관리'
+  }
+
+  if (activeView === 'availability') {
+    return '운영 설정'
+  }
+
+  if (activeView === 'faqs') {
+    return 'FAQ 관리'
+  }
+
+  return '예약 관리'
+}
+
+function AdminTopCommand({ currentViewLabel }: { currentViewLabel: string }) {
+  const [searchKeyword, setSearchKeyword] = useState(() => {
+    if (!window.location.pathname.startsWith('/admin')) {
+      return ''
+    }
+
+    return new URLSearchParams(window.location.search).get('keyword') ?? ''
+  })
+
+  const submitAdminSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const keyword = searchKeyword.trim()
+    window.location.assign(`/admin/reservations${keyword ? `?keyword=${encodeURIComponent(keyword)}` : ''}`)
+  }
+
+  const runQuickAction = (event: ChangeEvent<HTMLSelectElement>) => {
+    const destination = event.target.value
+
+    if (destination) {
+      window.location.assign(destination)
+    }
+  }
+
+  return (
+    <header className="admin-top-command">
+      <div className="admin-top-title">
+        <button className="admin-menu-button" type="button" aria-label="관리자 메뉴">
+          <AdminNavIcon name="menu" />
+        </button>
+        <strong>{currentViewLabel}</strong>
+      </div>
+      <div className="admin-top-tools">
+        <label className="admin-quick-action">
+          <span>빠른 작업</span>
+          <select value="" onChange={runQuickAction} aria-label="빠른 작업">
+            <option value="">빠른 작업</option>
+            {adminQuickActions.map((action) => (
+              <option key={action.value} value={action.value}>
+                {action.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <form className="admin-global-search" onSubmit={submitAdminSearch} role="search">
+          <AdminNavIcon name="search" />
+          <input
+            value={searchKeyword}
+            onChange={(event) => setSearchKeyword(event.target.value)}
+            placeholder="예약번호, 고객명, 연락처 검색"
+            aria-label="예약 통합 검색"
+          />
+          <button type="submit">검색</button>
+        </form>
+        <a className="admin-icon-link has-alert" href="/admin/notifications?status=FAILED" aria-label="실패 알림 확인">
+          <AdminNavIcon name="notifications" />
+        </a>
+        <a className="admin-icon-link" href="/admin/faqs" aria-label="FAQ 관리">
+          <AdminNavIcon name="faqs" />
+        </a>
+        <a className="admin-customer-link" href="/">
+          고객 화면
+        </a>
+      </div>
+    </header>
+  )
+}
+
+function AdminConsoleNav({ activeView }: { activeView: AdminConsoleView }) {
+  const links: Array<{ href: string; icon: AdminNavIconName; label: string; view: AdminConsoleView }> = [
+    { href: '/admin/reservations', icon: 'reservations', label: '예약 관리', view: 'reservations' },
+    { href: '/admin/notifications', icon: 'notifications', label: '알림 이력', view: 'notifications' },
+    { href: '/admin/reviews', icon: 'reviews', label: '리뷰 관리', view: 'reviews' },
+    { href: '/admin/availability', icon: 'availability', label: '운영 설정', view: 'availability' },
+    { href: '/admin/faqs', icon: 'faqs', label: 'FAQ 관리', view: 'faqs' },
+  ]
+
   return (
     <nav className="admin-console-nav" aria-label="관리자 메뉴">
-      <a className={activeView === 'reservations' ? 'active' : ''} href="/admin/reservations">
-        예약 관리
+      <a className="admin-console-brand" href="/admin/reservations" aria-label="관리자 홈">
+        <span className="admin-console-brand-mark">24</span>
+        <span>
+          <strong>24nalpo</strong>
+          <small>Admin</small>
+        </span>
       </a>
-      <a className={activeView === 'notifications' ? 'active' : ''} href="/admin/notifications">
-        알림 이력
-      </a>
-      <a className={activeView === 'reviews' ? 'active' : ''} href="/admin/reviews">
-        리뷰 관리
-      </a>
-      <a className={activeView === 'availability' ? 'active' : ''} href="/admin/availability">
-        운영 설정
-      </a>
-      <a className={activeView === 'faqs' ? 'active' : ''} href="/admin/faqs">
-        FAQ 관리
-      </a>
+      <div className="admin-console-nav-links">
+        {links.map((link) => (
+          <a key={link.view} className={activeView === link.view ? 'active' : ''} href={link.href}>
+            <AdminNavIcon name={link.icon} />
+            <span>{link.label}</span>
+          </a>
+        ))}
+      </div>
+      <div className="admin-console-support">
+        <span>운영 콘솔</span>
+        <strong>예약 우선순위를 먼저 확인하세요.</strong>
+      </div>
     </nav>
+  )
+}
+
+type AdminNavIconName = 'availability' | 'faqs' | 'menu' | 'notifications' | 'reservations' | 'reviews' | 'search'
+
+function AdminNavIcon({ name }: { name: AdminNavIconName }) {
+  const pathMap: Record<AdminNavIconName, ReactNode> = {
+    availability: (
+      <>
+        <path d="M7 3v3" />
+        <path d="M17 3v3" />
+        <path d="M4 9h16" />
+        <path d="M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" />
+      </>
+    ),
+    faqs: (
+      <>
+        <path d="M8.5 8a3.5 3.5 0 1 1 5.2 3.05c-.9.55-1.2 1.05-1.2 2.2" />
+        <path d="M12.5 17h.01" />
+        <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+      </>
+    ),
+    menu: (
+      <>
+        <path d="M4 7h16" />
+        <path d="M4 12h16" />
+        <path d="M4 17h16" />
+      </>
+    ),
+    notifications: (
+      <>
+        <path d="M18 9a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z" />
+        <path d="M10 21h4" />
+      </>
+    ),
+    reservations: (
+      <>
+        <path d="M7 3v3" />
+        <path d="M17 3v3" />
+        <path d="M4 8h16" />
+        <path d="M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" />
+        <path d="m9 14 2 2 4-5" />
+      </>
+    ),
+    reviews: (
+      <>
+        <path d="m12 3 2.4 5 5.5.8-4 3.9.9 5.5-4.8-2.6-4.8 2.6.9-5.5-4-3.9 5.5-.8L12 3Z" />
+      </>
+    ),
+    search: (
+      <>
+        <path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z" />
+        <path d="m21 21-4.3-4.3" />
+      </>
+    ),
+  }
+
+  return (
+    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+      {pathMap[name]}
+    </svg>
   )
 }
 

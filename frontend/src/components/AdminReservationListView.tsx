@@ -262,37 +262,6 @@ export function AdminReservationListView() {
         <AdminTaskSummaryCards summary={reservationPage.taskSummary} />
       )}
 
-      {!isAuthenticationRequired && notificationActionItems.length > 0 && (
-        <AdminNotificationActionItems
-          items={notificationActionItems}
-          onSelectReservation={(reservationId) => setSelectedReservationId(reservationId)}
-        />
-      )}
-
-      {!isAuthenticationRequired && conflictAttempts.length > 0 && (
-        <section className="admin-conflict-attempts" aria-labelledby="conflict-attempts-title">
-          <div>
-            <p className="eyebrow">Schedule Conflict</p>
-            <h3 id="conflict-attempts-title">중복 시간 예약 시도</h3>
-            <p>예약은 생성되지 않았으며, 고객에게 다른 시간을 선택하도록 안내했습니다.</p>
-          </div>
-          <ul>
-            {conflictAttempts.map((attempt) => (
-              <li key={attempt.id}>
-                <strong>{attempt.customerName}</strong>
-                <span>{attempt.phone}</span>
-                <span>
-                  희망 {attempt.moveDate} {attempt.moveTime.slice(0, 5)}
-                </span>
-                <time dateTime={attempt.attemptedAt}>
-                  시도 {attempt.attemptedAt.replace('T', ' ').slice(0, 16)}
-                </time>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
       {!isAuthenticationRequired && <div className="admin-filters" aria-label="관리자 예약 목록 필터">
         <label>
           상태
@@ -492,6 +461,37 @@ export function AdminReservationListView() {
           />
         )}
       </div>}
+
+      {!isAuthenticationRequired && notificationActionItems.length > 0 && (
+        <AdminNotificationActionItems
+          items={notificationActionItems}
+          onSelectReservation={(reservationId) => setSelectedReservationId(reservationId)}
+        />
+      )}
+
+      {!isAuthenticationRequired && conflictAttempts.length > 0 && (
+        <section className="admin-conflict-attempts" aria-labelledby="conflict-attempts-title">
+          <div>
+            <p className="eyebrow">Schedule Conflict</p>
+            <h3 id="conflict-attempts-title">중복 시간 예약 시도</h3>
+            <p>예약은 생성되지 않았으며, 고객에게 다른 시간을 선택하도록 안내했습니다.</p>
+          </div>
+          <ul>
+            {conflictAttempts.map((attempt) => (
+              <li key={attempt.id}>
+                <strong>{attempt.customerName}</strong>
+                <span>{attempt.phone}</span>
+                <span>
+                  희망 {attempt.moveDate} {attempt.moveTime.slice(0, 5)}
+                </span>
+                <time dateTime={attempt.attemptedAt}>
+                  시도 {attempt.attemptedAt.replace('T', ' ').slice(0, 16)}
+                </time>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </section>
   )
 }
