@@ -4,6 +4,7 @@ import './App.css'
 import landingMovingScene from './assets/landing-moving-scene.png'
 import { AdminAvailabilitySettings } from './components/AdminAvailabilitySettings'
 import { AdminFaqListView } from './components/AdminFaqListView'
+import { AdminGuideView } from './components/AdminGuideView'
 import { AdminLoginView } from './components/AdminLoginView'
 import { AdminNotificationListView } from './components/AdminNotificationListView'
 import { AdminReviewListView } from './components/AdminReviewListView'
@@ -44,6 +45,7 @@ import type {
 } from './types'
 
 type ActiveView = 'create' | 'search' | 'faq'
+type AdminConsoleView = 'reservations' | 'notifications' | 'reviews' | 'availability' | 'faqs' | 'guide'
 
 type LandingProps = {
   onReserveClick: () => void
@@ -59,7 +61,7 @@ const getViewFromUrl = (): ActiveView => {
 
 const isAdminRoute = () => window.location.pathname.startsWith('/admin')
 const isLoginRoute = () => window.location.pathname === '/login'
-const adminConsoleView = (path: string): 'reservations' | 'notifications' | 'reviews' | 'availability' | 'faqs' => {
+const adminConsoleView = (path: string): AdminConsoleView => {
   if (path.startsWith('/admin/notifications')) {
     return 'notifications'
   }
@@ -74,6 +76,10 @@ const adminConsoleView = (path: string): 'reservations' | 'notifications' | 'rev
 
   if (path.startsWith('/admin/availability')) {
     return 'availability'
+  }
+
+  if (path.startsWith('/admin/guide')) {
+    return 'guide'
   }
 
   return 'reservations'
@@ -459,6 +465,7 @@ function App() {
             {currentAdminView === 'reviews' && <AdminReviewListView />}
             {currentAdminView === 'availability' && <AdminAvailabilitySettings />}
             {currentAdminView === 'faqs' && <AdminFaqListView />}
+            {currentAdminView === 'guide' && <AdminGuideView />}
             {currentAdminView === 'reservations' && <AdminReservationListView />}
           </div>
         </div>
@@ -630,8 +637,6 @@ function App() {
   )
 }
 
-type AdminConsoleView = 'reservations' | 'notifications' | 'reviews' | 'availability' | 'faqs'
-
 const adminQuickActions = [
   { label: '처리 필요 예약', value: '/admin/reservations?attentionRequired=true' },
   { label: '거리 확인 필요', value: '/admin/reservations?needsDistance=true' },
@@ -640,6 +645,7 @@ const adminQuickActions = [
   { label: '낮은 평점 리뷰', value: '/admin/reviews?rating=3' },
   { label: '운영 시간 설정', value: '/admin/availability' },
   { label: 'FAQ 추가/수정', value: '/admin/faqs' },
+  { label: '운영 가이드 보기', value: '/admin/guide' },
 ]
 
 const adminConsoleViewLabel = (activeView: AdminConsoleView) => {
@@ -657,6 +663,10 @@ const adminConsoleViewLabel = (activeView: AdminConsoleView) => {
 
   if (activeView === 'faqs') {
     return 'FAQ 관리'
+  }
+
+  if (activeView === 'guide') {
+    return '운영 가이드'
   }
 
   return '예약 관리'
@@ -736,6 +746,7 @@ function AdminConsoleNav({ activeView }: { activeView: AdminConsoleView }) {
     { href: '/admin/reviews', icon: 'reviews', label: '리뷰 관리', view: 'reviews' },
     { href: '/admin/availability', icon: 'availability', label: '운영 설정', view: 'availability' },
     { href: '/admin/faqs', icon: 'faqs', label: 'FAQ 관리', view: 'faqs' },
+    { href: '/admin/guide', icon: 'guide', label: '운영 가이드', view: 'guide' },
   ]
 
   return (
@@ -763,7 +774,15 @@ function AdminConsoleNav({ activeView }: { activeView: AdminConsoleView }) {
   )
 }
 
-type AdminNavIconName = 'availability' | 'faqs' | 'menu' | 'notifications' | 'reservations' | 'reviews' | 'search'
+type AdminNavIconName =
+  | 'availability'
+  | 'faqs'
+  | 'guide'
+  | 'menu'
+  | 'notifications'
+  | 'reservations'
+  | 'reviews'
+  | 'search'
 
 function AdminNavIcon({ name }: { name: AdminNavIconName }) {
   const pathMap: Record<AdminNavIconName, ReactNode> = {
@@ -780,6 +799,14 @@ function AdminNavIcon({ name }: { name: AdminNavIconName }) {
         <path d="M8.5 8a3.5 3.5 0 1 1 5.2 3.05c-.9.55-1.2 1.05-1.2 2.2" />
         <path d="M12.5 17h.01" />
         <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+      </>
+    ),
+    guide: (
+      <>
+        <path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H20v18H7.5A2.5 2.5 0 0 0 5 22V4.5Z" />
+        <path d="M5 4.5A2.5 2.5 0 0 0 2.5 2H2v18h.5A2.5 2.5 0 0 1 5 22" />
+        <path d="M9 7h7" />
+        <path d="M9 11h6" />
       </>
     ),
     menu: (

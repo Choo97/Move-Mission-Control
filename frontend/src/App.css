@@ -6579,7 +6579,8 @@ dd {
 .admin-notification-view,
 .admin-review-view,
 .admin-faq-view,
-.admin-availability-settings {
+.admin-availability-settings,
+.admin-guide-view {
   width: 100%;
   padding: 22px 24px 44px;
 }
@@ -7166,6 +7167,190 @@ dd {
   margin: 0;
 }
 
+.admin-guide-view {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-guide-focus,
+.admin-guide-workflow,
+.admin-guide-cautions,
+.admin-guide-templates {
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  background: var(--admin-surface);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+  padding: 18px;
+}
+
+.admin-guide-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.admin-guide-section-heading h3 {
+  margin: 0;
+  color: var(--admin-text);
+  font-size: 17px;
+  font-weight: 950;
+  line-height: 1.25;
+}
+
+.admin-guide-section-heading > span {
+  border: 1px solid #cfe0f5;
+  border-radius: 999px;
+  background: var(--admin-primary-soft);
+  color: var(--admin-primary);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  padding: 8px 10px;
+  white-space: nowrap;
+}
+
+.admin-guide-focus-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.admin-guide-focus-grid article {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 170px;
+  border: 1px solid var(--admin-border);
+  border-left: 4px solid var(--admin-blue);
+  border-radius: 8px;
+  background: var(--admin-surface-muted);
+  padding: 14px;
+}
+
+.admin-guide-focus-grid article:first-child {
+  border-left-color: var(--admin-red);
+  background: #fff7f7;
+}
+
+.admin-guide-focus-grid strong,
+.admin-guide-template-list strong {
+  color: var(--admin-text);
+  font-size: 14px;
+  font-weight: 950;
+  line-height: 1.35;
+}
+
+.admin-guide-focus-grid p,
+.admin-guide-template-list p {
+  margin: 0;
+  color: var(--admin-muted);
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 1.55;
+}
+
+.admin-guide-focus-grid a {
+  align-self: end;
+  justify-self: start;
+  border: 1px solid #cfe0f5;
+  border-radius: 7px;
+  background: #ffffff;
+  color: var(--admin-primary);
+  font-size: 12px;
+  font-weight: 950;
+  line-height: 1;
+  padding: 9px 11px;
+  text-decoration: none;
+}
+
+.admin-guide-workflow-list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-guide-workflow-list article {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.75fr) minmax(0, 1.25fr);
+  gap: 14px;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  background: var(--admin-surface-muted);
+  padding: 14px;
+}
+
+.admin-guide-workflow-list article > div {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.admin-guide-workflow-list span {
+  justify-self: start;
+  border-radius: 999px;
+  background: var(--admin-primary);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 950;
+  line-height: 1;
+  padding: 7px 9px;
+}
+
+.admin-guide-workflow-list strong {
+  color: var(--admin-text);
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.45;
+}
+
+.admin-guide-workflow-list ol {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.admin-guide-workflow-list li,
+.admin-guide-cautions li {
+  color: var(--admin-muted);
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 1.55;
+}
+
+.admin-guide-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 16px;
+}
+
+.admin-guide-cautions ul,
+.admin-guide-template-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-guide-cautions ul {
+  list-style: none;
+}
+
+.admin-guide-cautions li {
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  background: #fff7ed;
+  padding: 12px;
+}
+
+.admin-guide-template-list article {
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  background: var(--admin-surface-muted);
+  padding: 13px;
+}
+
 .holiday-editor,
 .operating-schedule-list {
   padding: 16px;
@@ -7302,7 +7487,8 @@ dd {
   .admin-notification-view,
   .admin-review-view,
   .admin-faq-view,
-  .admin-availability-settings {
+  .admin-availability-settings,
+  .admin-guide-view {
     padding: 18px 16px 34px;
   }
 
@@ -7341,6 +7527,19 @@ dd {
     grid-template-columns: 1fr;
   }
 
+  .admin-guide-section-heading {
+    flex-direction: column;
+  }
+
+  .admin-guide-section-heading > span {
+    white-space: normal;
+  }
+
+  .admin-guide-workflow-list article,
+  .admin-guide-columns {
+    grid-template-columns: 1fr;
+  }
+
   .operating-schedule-row {
     grid-template-columns: 1fr 1fr;
   }
@@ -7354,7 +7553,11 @@ dd {
   }
 
   .admin-console-nav-links {
-    overflow-x: auto;
+    display: grid;
+    flex: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-width: 0;
+    overflow-x: visible;
     width: 100%;
   }
 
@@ -7363,7 +7566,8 @@ dd {
   }
 
   .admin-console-nav a:not(.admin-console-brand) {
-    flex: 0 0 auto;
+    justify-content: center;
+    min-width: 0;
   }
 
   .admin-customer-link {
@@ -7393,7 +7597,8 @@ dd {
   .admin-review-meta,
   .admin-site-grid,
   .admin-operation-grid,
-  .admin-history-columns {
+  .admin-history-columns,
+  .admin-guide-focus-grid {
     grid-template-columns: 1fr;
   }
 
