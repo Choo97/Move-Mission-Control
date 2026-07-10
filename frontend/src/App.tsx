@@ -27,6 +27,7 @@ import {
   updateReservation,
   uploadReservationPhotos,
 } from './api/customerApi'
+import { getAdminNotificationActionItems, logoutAdmin } from './api/adminApi'
 import { getErrorMessage } from './api/apiError'
 import {
   initialForm,
@@ -486,16 +487,7 @@ function App() {
 
   if (loginRoute) {
     return (
-      <main className="app-shell">
-        <header className="top-bar">
-          <div className="brand-mark" aria-label="24nalpo">
-            <span>24</span>
-          </div>
-          <div className="brand-copy">
-            <p className="eyebrow">Moving Reservation Platform</p>
-            <h1>24nalpo</h1>
-          </div>
-        </header>
+      <main className="app-shell admin-login-app">
         <AdminLoginView onBackHome={backToCustomerHome} />
       </main>
     )
@@ -705,6 +697,28 @@ function AdminTopCommand({ currentViewLabel }: { currentViewLabel: string }) {
 
     return new URLSearchParams(window.location.search).get('keyword') ?? ''
   })
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [alertCount, setAlertCount] = useState<number | null>(null)
+
+  useEffect(() => {
+    let mounted = true
+
+    getAdminNotificationActionItems(99)
+      .then((items) => {
+        if (mounted) {
+          setAlertCount(items.length)
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setAlertCount(null)
+        }
+      })
+
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   const submitAdminSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -720,6 +734,18 @@ function AdminTopCommand({ currentViewLabel }: { currentViewLabel: string }) {
     }
   }
 
+  const submitAdminLogout = async () => {
+    setIsLoggingOut(true)
+
+    try {
+      await logoutAdmin()
+    } catch {
+      // 이미 세션이 만료된 경우에도 로그인 화면으로 보내면 사용자는 같은 흐름으로 다시 진입할 수 있습니다.
+    }
+
+    window.location.assign('/login?logout')
+  }
+
   return (
     <header className="admin-top-command">
       <div className="admin-top-title">
@@ -729,17 +755,6 @@ function AdminTopCommand({ currentViewLabel }: { currentViewLabel: string }) {
         <strong>{currentViewLabel}</strong>
       </div>
       <div className="admin-top-tools">
-        <label className="admin-quick-action">
-          <span>빠른 작업</span>
-          <select value="" onChange={runQuickAction} aria-label="빠른 작업">
-            <option value="">빠른 작업</option>
-            {adminQuickActions.map((action) => (
-              <option key={action.value} value={action.value}>
-                {action.label}
-              </option>
-            ))}
-          </select>
-        </label>
         <form className="admin-global-search" onSubmit={submitAdminSearch} role="search">
           <AdminNavIcon name="search" />
           <input
@@ -750,15 +765,37 @@ function AdminTopCommand({ currentViewLabel }: { currentViewLabel: string }) {
           />
           <button type="submit">검색</button>
         </form>
+        <label className="admin-quick-action">
+          <span>빠른 이동</span>
+          <select value="" onChange={runQuickAction} aria-label="빠른 작업">
+            <option value="">빠른 이동</option>
+            {adminQuickActions.map((action) => (
+              <option key={action.value} value={action.value}>
+                {action.label}
+              </option>
+            ))}
+          </select>
+        </label>
         <a className="admin-icon-link has-alert" href="/admin/notifications?status=FAILED" aria-label="실패 알림 확인">
           <AdminNavIcon name="notifications" />
+          {alertCount !== null && alertCount > 0 && (
+            <span className="admin-alert-count">{Math.min(alertCount, 99)}</span>
+          )}
         </a>
-        <a className="admin-icon-link" href="/admin/faqs" aria-label="FAQ 관리">
+        <a className="admin-faq-top-link" href="/admin/faqs" aria-label="FAQ 관리">
           <AdminNavIcon name="faqs" />
+          <span>FAQ</span>
         </a>
-        <a className="admin-customer-link" href="/">
-          고객 화면
-        </a>
+        <div className="admin-top-user" aria-label="관리자 정보">
+          <span className="admin-user-avatar" aria-hidden="true" />
+          <span>
+            <strong>관리자</strong>
+            <small>운영팀 / 관리자</small>
+          </span>
+        </div>
+        <button className="admin-top-logout" type="button" disabled={isLoggingOut} onClick={() => void submitAdminLogout()}>
+          {isLoggingOut ? '로그아웃 중' : '로그아웃'}
+        </button>
       </div>
     </header>
   )
@@ -777,11 +814,7 @@ function AdminConsoleNav({ activeView }: { activeView: AdminConsoleView }) {
   return (
     <nav className="admin-console-nav" aria-label="관리자 메뉴">
       <a className="admin-console-brand" href="/admin/reservations" aria-label="관리자 홈">
-        <span className="admin-console-brand-mark">24</span>
-        <span>
-          <strong>24nalpo</strong>
-          <small>Admin</small>
-        </span>
+        <strong>24nalpo Admin</strong>
       </a>
       <div className="admin-console-nav-links">
         {links.map((link) => (
@@ -792,8 +825,8 @@ function AdminConsoleNav({ activeView }: { activeView: AdminConsoleView }) {
         ))}
       </div>
       <div className="admin-console-support">
-        <span>운영 콘솔</span>
-        <strong>예약 우선순위를 먼저 확인하세요.</strong>
+        <span>←</span>
+        <strong>메뉴 접기</strong>
       </div>
     </nav>
   )

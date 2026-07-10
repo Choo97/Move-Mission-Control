@@ -205,25 +205,41 @@ export function AdminAvailabilitySettings() {
   return (
     <section className="admin-availability-settings">
       <div className="admin-section-heading">
-        <div><p className="eyebrow">Availability</p><h3>예약 가능 시간표</h3></div>
+        <div><p className="eyebrow">Operations Settings</p><h3>운영 설정</h3></div>
       </div>
-      <div className="holiday-editor">
-        <h4>운영 정책</h4>
+      <div className="holiday-editor admin-service-mode-panel">
+        <h4>서비스 운영 방식</h4>
         {policy ? (
           <>
-            <div className="holiday-form">
-              <label>
-                서비스 운영 방식
-                <select
-                  value={policy.serviceMode}
-                  onChange={(event) =>
-                    changePolicy('serviceMode', event.target.value as OperatingPolicyResponse['serviceMode'])
-                  }
-                >
-                  <option value="GENERAL">일반 이사 예약</option>
-                  <option value="NON_PROFIT">비영리 도움 요청</option>
-                </select>
+            <div className="admin-service-mode-choice-grid" aria-label="서비스 운영 방식 선택">
+              <label className={policy.serviceMode === 'GENERAL' ? 'selected' : ''}>
+                <input
+                  type="radio"
+                  name="serviceMode"
+                  value="GENERAL"
+                  checked={policy.serviceMode === 'GENERAL'}
+                  onChange={() => changePolicy('serviceMode', 'GENERAL')}
+                />
+                <span>
+                  <strong>일반 이사 예약</strong>
+                  <small>고객이 이사 서비스를 예약하고 견적을 확인하는 일반 모드입니다.</small>
+                </span>
               </label>
+              <label className={policy.serviceMode === 'NON_PROFIT' ? 'selected' : ''}>
+                <input
+                  type="radio"
+                  name="serviceMode"
+                  value="NON_PROFIT"
+                  checked={policy.serviceMode === 'NON_PROFIT'}
+                  onChange={() => changePolicy('serviceMode', 'NON_PROFIT')}
+                />
+                <span>
+                  <strong>비영리 도움 요청</strong>
+                  <small>비용 노출을 줄이고 도움 요청 중심으로 안내하는 모드입니다.</small>
+                </span>
+              </label>
+            </div>
+            <div className="holiday-form admin-policy-number-form">
               <label>
                 예약 시작(일 후)
                 <input type="number" min={0} max={30} value={policy.minAdvanceDays}
@@ -254,8 +270,8 @@ export function AdminAvailabilitySettings() {
           </>
         )}
       </div>
-      <div className="holiday-editor">
-        <h4>견적 정책</h4>
+      <div className="holiday-editor admin-estimate-policy-panel">
+        <h4>견적 정책 설정</h4>
         <p>예약 접수와 거리 입력 시 자동 견적에 반영되는 기준값입니다.</p>
         <ul>
           {estimateSettings.map((setting) => (
@@ -288,7 +304,8 @@ export function AdminAvailabilitySettings() {
           </>
         )}
       </div>
-      <div className="operating-schedule-list">
+      <div className="operating-schedule-list admin-schedule-panel">
+        <h4>요일별 운영시간</h4>
         {schedules.map((schedule) => (
           <div className="operating-schedule-row" key={schedule.id}>
             <strong>{schedule.dayLabel}</strong>
@@ -309,8 +326,8 @@ export function AdminAvailabilitySettings() {
           </div>
         ))}
       </div>
-      <div className="holiday-editor">
-        <h4>지정 휴무일</h4>
+      <div className="holiday-editor admin-holiday-panel">
+        <h4>휴무일 관리</h4>
         <div className="holiday-form">
           <input type="date" value={holidayDate} min={new Date().toISOString().slice(0, 10)}
             onChange={(event) => setHolidayDate(event.target.value)} />

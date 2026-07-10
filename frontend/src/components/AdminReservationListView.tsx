@@ -224,6 +224,8 @@ export function AdminReservationListView() {
     }
   }
 
+  const isDetailMode = selectedReservationId !== null
+
   return (
     <section className="admin-reservation-view">
       <div className="admin-heading">
@@ -258,11 +260,11 @@ export function AdminReservationListView() {
           <p className="message error">{errorMessage}</p>
         ))}
 
-      {!isAuthenticationRequired && reservationPage?.taskSummary && (
+      {!isAuthenticationRequired && !isDetailMode && reservationPage?.taskSummary && (
         <AdminTaskSummaryCards summary={reservationPage.taskSummary} />
       )}
 
-      {!isAuthenticationRequired && <div className="admin-filters" aria-label="관리자 예약 목록 필터">
+      {!isAuthenticationRequired && !isDetailMode && <div className="admin-filters" aria-label="관리자 예약 목록 필터">
         <label>
           상태
           <select
@@ -330,7 +332,23 @@ export function AdminReservationListView() {
 
       {!isAuthenticationRequired && isLoading && <p className="admin-loading">예약 목록을 불러오는 중입니다.</p>}
 
-      {!isAuthenticationRequired && <div className="admin-master-detail">
+      {!isAuthenticationRequired && isDetailMode && (
+        <div className="admin-detail-page-layout">
+          <AdminRecentReservationNav
+            reservations={reservationPage?.content ?? []}
+            selectedReservationId={selectedReservationId}
+            onBackToList={() => setSelectedReservationId(null)}
+            onSelectReservation={setSelectedReservationId}
+          />
+          <AdminReservationDetailPanel
+            reservationId={selectedReservationId}
+            onClose={() => setSelectedReservationId(null)}
+            onReservationChanged={() => setRefreshVersion((current) => current + 1)}
+          />
+        </div>
+      )}
+
+      {!isAuthenticationRequired && !isDetailMode && <div className="admin-master-detail">
         <div>
           <div className="admin-table-wrap">
             <table className="admin-reservation-table">
@@ -443,33 +461,16 @@ export function AdminReservationListView() {
             </div>
           )}
         </div>
-
-        {selectedReservationId === null ? (
-          <aside className="admin-detail-panel placeholder">
-            <h2>예약 상세</h2>
-            <StatusNotice
-              title="선택된 예약이 없습니다"
-              description="목록에서 예약을 선택하면 고객 정보, 견적, 알림, 작업 이력을 확인할 수 있습니다."
-              actions={['먼저 처리 우선순위가 높은 예약부터 상세 버튼을 눌러 확인해 주세요.']}
-            />
-          </aside>
-        ) : (
-          <AdminReservationDetailPanel
-            reservationId={selectedReservationId}
-            onClose={() => setSelectedReservationId(null)}
-            onReservationChanged={() => setRefreshVersion((current) => current + 1)}
-          />
-        )}
       </div>}
 
-      {!isAuthenticationRequired && notificationActionItems.length > 0 && (
+      {!isAuthenticationRequired && !isDetailMode && notificationActionItems.length > 0 && (
         <AdminNotificationActionItems
           items={notificationActionItems}
           onSelectReservation={(reservationId) => setSelectedReservationId(reservationId)}
         />
       )}
 
-      {!isAuthenticationRequired && conflictAttempts.length > 0 && (
+      {!isAuthenticationRequired && !isDetailMode && conflictAttempts.length > 0 && (
         <section className="admin-conflict-attempts" aria-labelledby="conflict-attempts-title">
           <div>
             <p className="eyebrow">Schedule Conflict</p>
@@ -493,6 +494,50 @@ export function AdminReservationListView() {
         </section>
       )}
     </section>
+  )
+}
+
+function AdminRecentReservationNav({
+  reservations,
+  selectedReservationId,
+  onBackToList,
+  onSelectReservation,
+}: {
+  reservations: AdminReservationPageResponse['content']
+  selectedReservationId: number
+  onBackToList: () => void
+  onSelectReservation: (reservationId: number) => void
+}) {
+  return (
+    <aside className="admin-recent-reservation-nav" aria-label="최근 예약">
+      <button type="button" className="admin-back-to-list" onClick={onBackToList}>
+        ← 예약 목록으로
+      </button>
+      <div className="admin-recent-heading">
+        <strong>최근 예약</strong>
+        <span>최신순</span>
+      </div>
+      <div className="admin-recent-list">
+        {reservations.map((reservation) => (
+          <button
+            key={reservation.id}
+            type="button"
+            className={reservation.id === selectedReservationId ? 'active' : ''}
+            onClick={() => onSelectReservation(reservation.id)}
+          >
+            <span>#{reservation.id}</span>
+            <strong>{reservation.customerName}</strong>
+            <small>
+              {reservation.moveDate} {reservation.moveTime.slice(0, 5)}
+            </small>
+            <em>{reservation.statusLabel}</em>
+          </button>
+        ))}
+        {reservations.length === 0 && (
+          <p>현재 목록에 표시할 최근 예약이 없습니다.</p>
+        )}
+      </div>
+    </aside>
   )
 }
 
@@ -574,6 +619,8 @@ function AdminNotificationActionItems({
 }) {
   const failedCount = items.filter((item) => item.status === 'FAILED').length
   const readyCount = items.filter((item) => item.status === 'READY').length
+  const visibleItems = items.slice(0, 3)
+  const hiddenCount = Math.max(items.length - visibleItems.length, 0)
 
   return (
     <section className="admin-notification-action-panel" aria-labelledby="admin-notification-action-title">
@@ -589,7 +636,7 @@ function AdminNotificationActionItems({
         </div>
       </div>
       <ul className="admin-notification-action-list">
-        {items.map((item) => (
+        {visibleItems.map((item) => (
           <li key={item.id} className={item.status.toLowerCase()}>
             <div className="admin-notification-action-main">
               <span className={`admin-notification-action-status ${item.status.toLowerCase()}`}>
@@ -620,6 +667,12 @@ function AdminNotificationActionItems({
             </a>
           </li>
         ))}
+        {hiddenCount > 0 && (
+          <li className="admin-notification-more">
+            <span>남은 알림 {hiddenCount.toLocaleString()}건</span>
+            <a href="/admin/notifications">알림 이력 보기</a>
+          </li>
+        )}
       </ul>
     </section>
   )
