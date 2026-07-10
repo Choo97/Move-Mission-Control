@@ -9,6 +9,7 @@ import { AdminLoginView } from './components/AdminLoginView'
 import { AdminNotificationListView } from './components/AdminNotificationListView'
 import { AdminReviewListView } from './components/AdminReviewListView'
 import { AdminReservationListView } from './components/AdminReservationListView'
+import { NonProfitHelpLanding } from './components/NonProfitHelpLanding'
 import { ReservationCreateForm } from './components/ReservationCreateForm'
 import { ReservationDetailPanel } from './components/ReservationDetailPanel'
 import { ReservationEditFormView } from './components/ReservationEditFormView'
@@ -61,6 +62,7 @@ const getViewFromUrl = (): ActiveView => {
 
 const isAdminRoute = () => window.location.pathname.startsWith('/admin')
 const isLoginRoute = () => window.location.pathname === '/login'
+const isHelpRoute = () => window.location.pathname === '/help'
 const adminConsoleView = (path: string): AdminConsoleView => {
   if (path.startsWith('/admin/notifications')) {
     return 'notifications'
@@ -140,6 +142,8 @@ function App() {
 
   const today = useMemo(() => new Date().toISOString().slice(0, 10), [])
   const isNonProfitMode = serviceMode === 'NON_PROFIT'
+  const customerServiceMode: ServiceMode = isHelpRoute() || isNonProfitMode ? 'NON_PROFIT' : 'GENERAL'
+  const isHelpExperience = customerServiceMode === 'NON_PROFIT'
 
   useEffect(() => {
     let active = true
@@ -148,6 +152,10 @@ function App() {
       .then((policy) => {
         if (active) {
           setServiceMode(policy.serviceMode)
+          if (policy.serviceMode === 'NON_PROFIT' && window.location.pathname === '/') {
+            window.history.replaceState(null, '', `/help${window.location.search}`)
+            setCurrentPath('/help')
+          }
         }
       })
       .catch(() => {
@@ -217,10 +225,13 @@ function App() {
   }
 
   const backToCustomerHome = () => {
+    const destination = serviceMode === 'NON_PROFIT' ? '/help' : '/'
+
     setAdminRoute(false)
     setLoginRoute(false)
+    setCurrentPath(destination)
     setActiveView('create')
-    window.history.replaceState(null, '', '/')
+    window.history.replaceState(null, '', destination)
   }
 
   const showReservation = async (nextReservation: ReservationResponse) => {
@@ -279,7 +290,7 @@ function App() {
       setForm(initialForm)
       changeView('search')
     } catch (error) {
-      setErrorMessage(getErrorMessage(error, '예약 신청에 실패했습니다.'))
+      setErrorMessage(getErrorMessage(error, isHelpExperience ? '도움 요청 접수에 실패했습니다.' : '예약 신청에 실패했습니다.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -297,7 +308,7 @@ function App() {
       await showReservation(await searchReservationApi(searchForm))
       setPhotoFiles([])
     } catch (error) {
-      setSearchErrorMessage(getErrorMessage(error, '예약 조회에 실패했습니다.'))
+      setSearchErrorMessage(getErrorMessage(error, isHelpExperience ? '요청 내역 확인에 실패했습니다.' : '예약 조회에 실패했습니다.'))
     } finally {
       setIsSearching(false)
     }
@@ -493,7 +504,7 @@ function App() {
   return (
     <main className="app-shell">
       <header className="top-bar customer-top-bar">
-        <a className="brand-home" href="/" aria-label="24nalpo 홈">
+        <a className="brand-home" href={isHelpExperience ? '/help' : '/'} aria-label="24nalpo 홈">
           24nalpo
         </a>
 
@@ -508,7 +519,7 @@ function App() {
               setCompletedReservationId(null)
             }}
           >
-            {isNonProfitMode ? '도움 요청' : '이사 예약'}
+            {isHelpExperience ? '도움 요청' : '이사 예약'}
           </button>
           <button
             type="button"
@@ -531,7 +542,7 @@ function App() {
               setCompletedReservationId(null)
             }}
           >
-            {isNonProfitMode ? '요청 조회' : '예약 조회'}
+            {isHelpExperience ? '요청 조회' : '예약 조회'}
           </button>
         </nav>
 
@@ -545,21 +556,34 @@ function App() {
       ) : (
         <>
         {activeView === 'create' && (
-          <LandingSections
-            onReserveClick={() => {
-              document.getElementById('reservation-form')?.scrollIntoView({ behavior: 'smooth' })
-            }}
-            onSearchClick={() => {
-              changeView('search')
-              setSearchErrorMessage('')
-              setActionMessage('')
-            }}
-            onFaqClick={() => {
-              changeView('faq')
-              setActionMessage('')
-            }}
-            serviceMode={serviceMode}
-          />
+          isHelpExperience ? (
+            <NonProfitHelpLanding
+              onRequestClick={() => {
+                document.getElementById('reservation-form')?.scrollIntoView({ behavior: 'smooth' })
+              }}
+              onLookupClick={() => {
+                changeView('search')
+                setSearchErrorMessage('')
+                setActionMessage('')
+              }}
+            />
+          ) : (
+            <LandingSections
+              onReserveClick={() => {
+                document.getElementById('reservation-form')?.scrollIntoView({ behavior: 'smooth' })
+              }}
+              onSearchClick={() => {
+                changeView('search')
+                setSearchErrorMessage('')
+                setActionMessage('')
+              }}
+              onFaqClick={() => {
+                changeView('faq')
+                setActionMessage('')
+              }}
+              serviceMode={customerServiceMode}
+            />
+          )
         )}
 
         <section id="reservation-form" className={`workspace${reservation ? ' workspace-with-detail' : ''}`}>
@@ -571,7 +595,7 @@ function App() {
             isSubmitting={isSubmitting}
             onSubmit={submitReservation}
             onChange={updateField}
-            serviceMode={serviceMode}
+            serviceMode={customerServiceMode}
           />
         ) : (
           <ReservationSearchFormView
@@ -580,6 +604,7 @@ function App() {
             isSearching={isSearching}
             onSubmit={searchReservation}
             onChange={updateSearchField}
+            serviceMode={customerServiceMode}
           />
         )}
 
@@ -627,12 +652,12 @@ function App() {
               document.getElementById('reservation-form')?.scrollIntoView({ behavior: 'smooth' })
             }, 0)
           }}
-          serviceMode={serviceMode}
+          serviceMode={customerServiceMode}
         />
         </section>
         </>
       )}
-      <SiteFooter serviceMode={serviceMode} />
+      <SiteFooter serviceMode={customerServiceMode} />
     </main>
   )
 }
