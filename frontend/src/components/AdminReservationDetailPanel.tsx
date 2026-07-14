@@ -594,6 +594,10 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
                 <dd>{reservation.moveTypeLabel}</dd>
               </div>
               <div>
+                <dt>서비스 유형</dt>
+                <dd>{reservation.serviceTypeLabel}</dd>
+              </div>
+              <div>
                 <dt>출발</dt>
                 <dd>{reservation.fromAddress}</dd>
               </div>
@@ -607,7 +611,11 @@ export function AdminReservationDetailPanel({ reservationId, onClose, onReservat
               </div>
               <div>
                 <dt>최종 견적</dt>
-                <dd>{formatPrice(reservation.finalEstimatedPrice)}</dd>
+                <dd>
+                  {reservation.serviceType === 'NON_PROFIT'
+                    ? '비영리 요청 · 견적 없음'
+                    : formatPrice(reservation.finalEstimatedPrice)}
+                </dd>
               </div>
             </dl>
           </section>

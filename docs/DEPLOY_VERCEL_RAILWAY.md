@@ -157,6 +157,10 @@ APP_CORS_ALLOWED_ORIGIN_CRA=https://Vercel에서_생성한_프론트_URL
 
 이 순서로 확인하는 이유는 사용자의 핵심 흐름이 `예약 접수 -> 예약 조회 -> 관리자 처리`이기 때문입니다. 이 세 가지가 배포 환경에서 되면 포트폴리오 시연의 기본은 통과한 것입니다.
 
+## 기존 DB를 데모 데이터로 교체하기
+
+일반 이사 예약과 비영리 도움 요청이 함께 들어 있는 포트폴리오용 데이터로 초기화하려면 [DEMO_DATA.md](DEMO_DATA.md)의 절차를 따릅니다. `ddl-auto=create`는 한 번만 사용하고 데이터 생성 확인 직후 반드시 `update`로 되돌립니다.
+
 ## 공식 문서
 
 - [Railway Spring Boot 배포 가이드](https://docs.railway.com/guides/spring-boot)

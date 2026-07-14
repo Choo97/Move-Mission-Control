@@ -1,5 +1,7 @@
 export type MoveType = 'STUDIO' | 'TWO_ROOM' | 'FAMILY' | 'OFFICE' | 'STORAGE'
 
+export type ServiceRequestType = 'GENERAL' | 'NON_PROFIT'
+
 export type ReservationStatus =
   | 'RECEIVED'
   | 'CONSULTING'
@@ -82,6 +84,8 @@ export type ReservationApiResponse = {
   toAddress: string
   moveType: MoveType
   moveTypeLabel: string
+  serviceType: ServiceRequestType
+  serviceTypeLabel: string
   status: ReservationStatus
   statusLabel: string
   fromElevator: boolean
@@ -91,10 +95,10 @@ export type ReservationApiResponse = {
   fromLadderTruck: boolean
   toLadderTruck: boolean
   distanceKm: number | null
-  estimatedPrice: number
-  baseEstimatedPrice: number
+  estimatedPrice: number | null
+  baseEstimatedPrice: number | null
   discountAmount: number
-  finalEstimatedPrice: number
+  finalEstimatedPrice: number | null
   couponCode: string | null
   couponName: string | null
   editable: boolean

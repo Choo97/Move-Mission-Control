@@ -41,6 +41,9 @@ public class ReservationCreateRequest {
     @NotNull(message = "이사 유형을 선택해 주세요.")
     private MoveType moveType;
 
+    @NotNull(message = "서비스 유형을 선택해 주세요.")
+    private ServiceRequestType serviceType = ServiceRequestType.GENERAL;
+
     private boolean fromElevator;
     private boolean toElevator;
 
@@ -71,6 +74,7 @@ public class ReservationCreateRequest {
                 fromAddress,
                 toAddress,
                 moveType,
+                serviceType,
                 fromElevator,
                 toElevator,
                 fromFloor,
@@ -143,6 +147,14 @@ public class ReservationCreateRequest {
 
     public void setMoveType(MoveType moveType) {
         this.moveType = moveType;
+    }
+
+    public ServiceRequestType getServiceType() {
+        return serviceType == null ? ServiceRequestType.GENERAL : serviceType;
+    }
+
+    public void setServiceType(ServiceRequestType serviceType) {
+        this.serviceType = serviceType;
     }
 
     public boolean isFromElevator() {

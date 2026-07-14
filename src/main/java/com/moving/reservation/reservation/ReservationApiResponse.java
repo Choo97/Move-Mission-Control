@@ -26,6 +26,10 @@ public record ReservationApiResponse(
         String moveType,
         @Schema(description = "이사 유형 한글명", example = "원룸")
         String moveTypeLabel,
+        @Schema(description = "서비스 유형 코드", example = "GENERAL")
+        String serviceType,
+        @Schema(description = "서비스 유형 한글명", example = "일반 이사 예약")
+        String serviceTypeLabel,
         @Schema(description = "예약 상태 코드", example = "RECEIVED")
         String status,
         @Schema(description = "예약 상태 한글명", example = "접수")
@@ -100,6 +104,8 @@ public record ReservationApiResponse(
                 reservation.getToAddress(),
                 reservation.getMoveType().name(),
                 reservation.getMoveType().getLabel(),
+                reservation.getServiceType().name(),
+                reservation.getServiceType().getLabel(),
                 reservation.getStatus().name(),
                 reservation.getStatus().getLabel(),
                 reservation.isFromElevator(),

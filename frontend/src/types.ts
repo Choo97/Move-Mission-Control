@@ -56,4 +56,5 @@ export type {
   ReservationResponse,
   ReservationSearchForm,
   ReservationStatus,
+  ServiceRequestType,
 } from './types/reservation'

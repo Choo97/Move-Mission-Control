@@ -473,7 +473,11 @@ function ReservationLookupHeader({
       {!isNonProfitMode && (
         <div>
           <span>예상 금액</span>
-          <strong>{reservation.finalEstimatedPrice.toLocaleString()}원</strong>
+          <strong>
+            {reservation.finalEstimatedPrice === null
+              ? '확인 전'
+              : `${reservation.finalEstimatedPrice.toLocaleString()}원`}
+          </strong>
         </div>
       )}
     </div>
@@ -527,7 +531,11 @@ function ReservationSummary({
           </div>
           <div>
             <dt>예상금액</dt>
-            <dd>{reservation.finalEstimatedPrice.toLocaleString()}원</dd>
+            <dd>
+              {reservation.finalEstimatedPrice === null
+                ? '확인 전'
+                : `${reservation.finalEstimatedPrice.toLocaleString()}원`}
+            </dd>
           </div>
           {reservation.acceptedEstimatePrice !== null && (
             <div>
@@ -920,7 +928,11 @@ function CustomerActions({
         <div className="estimate-confirm-card">
           <div>
             <span>안내 견적</span>
-            <strong>{reservation.finalEstimatedPrice.toLocaleString()}원</strong>
+            <strong>
+              {reservation.finalEstimatedPrice === null
+                ? '확인 전'
+                : `${reservation.finalEstimatedPrice.toLocaleString()}원`}
+            </strong>
             <p>견적에 동의하면 예약이 확정되고, 이후 진행 안내를 받을 수 있습니다.</p>
           </div>
           <button

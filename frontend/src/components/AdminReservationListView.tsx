@@ -390,7 +390,7 @@ export function AdminReservationListView() {
                     </td>
                     <td>
                       <span className="admin-status">{reservation.statusLabel}</span>
-                      <span>{reservation.moveTypeLabel}</span>
+                      <span>{reservation.serviceTypeLabel} · {reservation.moveTypeLabel}</span>
                     </td>
                     <td>
                       <span
@@ -404,7 +404,11 @@ export function AdminReservationListView() {
                       <span>{reservation.nextActionDescription}</span>
                     </td>
                     <td>
-                      <strong>{formatNullablePrice(reservation.finalEstimatedPrice)}</strong>
+                      <strong>
+                        {reservation.serviceType === 'NON_PROFIT'
+                          ? '비영리 지원'
+                          : formatNullablePrice(reservation.finalEstimatedPrice)}
+                      </strong>
                       <span>{reservation.distanceKm === null ? '거리 확인 전' : `${reservation.distanceKm}km`}</span>
                     </td>
                     <td>
@@ -528,7 +532,7 @@ function AdminRecentReservationNav({
             <span>#{reservation.id}</span>
             <strong>{reservation.customerName}</strong>
             <small>
-              {reservation.moveDate} {reservation.moveTime.slice(0, 5)}
+              {reservation.moveDate} {reservation.moveTime.slice(0, 5)} · {reservation.serviceTypeLabel}
             </small>
             <em>{reservation.statusLabel}</em>
           </button>

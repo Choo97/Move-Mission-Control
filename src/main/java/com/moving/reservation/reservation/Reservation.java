@@ -58,6 +58,10 @@ public class Reservation {
     private MoveType moveType;
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private ServiceRequestType serviceType = ServiceRequestType.GENERAL;
+
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private ReservationStatus status = ReservationStatus.RECEIVED;
 
@@ -123,6 +127,15 @@ public class Reservation {
                        String fromAddress, String toAddress, MoveType moveType,
                        boolean fromElevator, boolean toElevator, Integer fromFloor, Integer toFloor,
                        boolean fromLadderTruck, boolean toLadderTruck, String memo) {
+        this(customerName, phone, email, moveDate, moveTime, fromAddress, toAddress, moveType,
+                ServiceRequestType.GENERAL, fromElevator, toElevator, fromFloor, toFloor,
+                fromLadderTruck, toLadderTruck, memo);
+    }
+
+    public Reservation(String customerName, String phone, String email, LocalDate moveDate, LocalTime moveTime,
+                       String fromAddress, String toAddress, MoveType moveType, ServiceRequestType serviceType,
+                       boolean fromElevator, boolean toElevator, Integer fromFloor, Integer toFloor,
+                       boolean fromLadderTruck, boolean toLadderTruck, String memo) {
         this.customerName = customerName;
         this.phone = phone;
         this.email = normalizeEmail(email);
@@ -131,6 +144,7 @@ public class Reservation {
         this.fromAddress = fromAddress;
         this.toAddress = toAddress;
         this.moveType = moveType;
+        this.serviceType = serviceType == null ? ServiceRequestType.GENERAL : serviceType;
         this.fromElevator = fromElevator;
         this.toElevator = toElevator;
         this.fromFloor = fromFloor;
@@ -328,6 +342,10 @@ public class Reservation {
 
     public MoveType getMoveType() {
         return moveType;
+    }
+
+    public ServiceRequestType getServiceType() {
+        return serviceType == null ? ServiceRequestType.GENERAL : serviceType;
     }
 
     public ReservationStatus getStatus() {

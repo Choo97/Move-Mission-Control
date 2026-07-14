@@ -48,6 +48,10 @@ public class ReservationApiCreateRequest {
     @NotNull(message = "이사 유형을 선택해 주세요.")
     private MoveType moveType;
 
+    @Schema(description = "요청 서비스 유형", example = "GENERAL")
+    @NotNull(message = "서비스 유형을 선택해 주세요.")
+    private ServiceRequestType serviceType = ServiceRequestType.GENERAL;
+
     @Schema(description = "출발지 엘리베이터 사용 가능 여부", example = "true")
     private boolean fromElevator;
 
@@ -88,6 +92,7 @@ public class ReservationApiCreateRequest {
         request.setFromAddress(fromAddress);
         request.setToAddress(toAddress);
         request.setMoveType(moveType);
+        request.setServiceType(serviceType);
         request.setFromElevator(fromElevator);
         request.setToElevator(toElevator);
         request.setFromFloor(fromFloor);
@@ -161,6 +166,14 @@ public class ReservationApiCreateRequest {
 
     public void setMoveType(MoveType moveType) {
         this.moveType = moveType;
+    }
+
+    public ServiceRequestType getServiceType() {
+        return serviceType == null ? ServiceRequestType.GENERAL : serviceType;
+    }
+
+    public void setServiceType(ServiceRequestType serviceType) {
+        this.serviceType = serviceType;
     }
 
     public boolean isFromElevator() {

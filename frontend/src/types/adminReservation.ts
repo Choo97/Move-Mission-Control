@@ -1,4 +1,4 @@
-import type { MoveType, ReservationCustomerRequestResponse, ReservationStatus } from './reservation'
+import type { MoveType, ReservationCustomerRequestResponse, ReservationStatus, ServiceRequestType } from './reservation'
 
 export type AdminReservationSort = 'PRIORITY' | 'MOVE_DATE' | 'CREATED_DESC'
 export type AdminNotificationChannel = 'SMS' | 'EMAIL' | 'KAKAO_ALIMTALK'
@@ -14,6 +14,8 @@ export type AdminReservationListItemResponse = {
   toAddress: string
   moveType: MoveType
   moveTypeLabel: string
+  serviceType: ServiceRequestType
+  serviceTypeLabel: string
   status: ReservationStatus
   statusLabel: string
   nextActionLabel: string
@@ -162,6 +164,8 @@ export type AdminReservationDetailResponse = {
   toAddress: string
   moveType: MoveType
   moveTypeLabel: string
+  serviceType: ServiceRequestType
+  serviceTypeLabel: string
   status: ReservationStatus
   statusLabel: string
   selectableStatuses: AdminReservationStatusOptionResponse[]

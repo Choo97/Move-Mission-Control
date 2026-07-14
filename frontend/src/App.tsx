@@ -280,7 +280,7 @@ function App() {
     const submittedPhone = form.phone
 
     try {
-      const createdReservation = await createReservation(form)
+      const createdReservation = await createReservation(form, customerServiceMode)
       await showReservation(createdReservation)
       setCompletedReservationId(createdReservation.id)
       setSearchForm({
@@ -381,6 +381,11 @@ function App() {
   const acceptEstimate = async () => {
     if (!reservation || !searchForm.phone) {
       setActionMessage('예약 조회에 사용한 연락처가 필요합니다.')
+      return
+    }
+
+    if (reservation.finalEstimatedPrice === null) {
+      setActionMessage('이 요청에는 동의할 견적 금액이 없습니다.')
       return
     }
 
@@ -644,7 +649,7 @@ function App() {
               document.getElementById('reservation-form')?.scrollIntoView({ behavior: 'smooth' })
             }, 0)
           }}
-          serviceMode={customerServiceMode}
+          serviceMode={reservation?.serviceType ?? customerServiceMode}
         />
         </section>
         </>

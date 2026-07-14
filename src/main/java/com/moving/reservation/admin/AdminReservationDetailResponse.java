@@ -26,6 +26,8 @@ public record AdminReservationDetailResponse(
         String toAddress,
         String moveType,
         String moveTypeLabel,
+        String serviceType,
+        String serviceTypeLabel,
         String status,
         String statusLabel,
         List<AdminReservationStatusOptionResponse> selectableStatuses,
@@ -81,6 +83,8 @@ public record AdminReservationDetailResponse(
                 reservation.getToAddress(),
                 reservation.getMoveType().name(),
                 reservation.getMoveType().getLabel(),
+                reservation.getServiceType().name(),
+                reservation.getServiceType().getLabel(),
                 reservation.getStatus().name(),
                 reservation.getStatus().getLabel(),
                 reservation.getStatus().getSelectableStatuses().stream()

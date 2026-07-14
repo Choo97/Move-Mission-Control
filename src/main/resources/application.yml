@@ -93,3 +93,7 @@ admin:
     login:
       max-failure-count: ${ADMIN_LOGIN_MAX_FAILURE_COUNT:5}
       lock-minutes: ${ADMIN_LOGIN_LOCK_MINUTES:10}
+
+demo:
+  seed:
+    enabled: ${DEMO_SEED_ENABLED:false}

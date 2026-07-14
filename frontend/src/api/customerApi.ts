@@ -9,6 +9,7 @@ import type {
   ReservationPhotoResponse,
   ReservationResponse,
   ReservationSearchForm,
+  ServiceRequestType,
   PublicReviewResponse,
   PublicOperatingPolicyResponse,
   ReviewForm,
@@ -36,11 +37,11 @@ export async function getServicePolicy() {
   return readJson<PublicOperatingPolicyResponse>(response, '서비스 운영 방식을 불러오지 못했습니다.')
 }
 
-export async function createReservation(form: ReservationForm) {
+export async function createReservation(form: ReservationForm, serviceType: ServiceRequestType = 'GENERAL') {
   const response = await fetch(`${API_BASE_URL}/api/reservations`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(form),
+    body: JSON.stringify({ ...form, serviceType }),
   })
 
   return readJson<ReservationResponse>(response, '예약 신청에 실패했습니다.')

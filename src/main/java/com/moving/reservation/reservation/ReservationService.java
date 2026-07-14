@@ -104,22 +104,25 @@ public class ReservationService {
 
         Reservation reservation = request.toEntity();
         reservation.updatePhoneHash(privacyHashService.phoneHash(reservation.getPhone()));
-        List<ReservationEstimateLine> estimateLines = estimateCalculator.calculateLines(
-                request.getMoveType(),
-                request.isFromElevator(),
-                request.isToElevator(),
-                request.getFromFloor(),
-                request.getToFloor(),
-                request.isFromLadderTruck(),
-                request.isToLadderTruck(),
-                null
-        );
-        reservation.applyBaseEstimate(sumEstimateLines(estimateLines));
+        List<ReservationEstimateLine> estimateLines = List.of();
 
-        Coupon coupon = couponService.findActiveByCode(request.getCouponCode());
+        if (!reservation.getServiceType().isNonProfit()) {
+            estimateLines = estimateCalculator.calculateLines(
+                    request.getMoveType(),
+                    request.isFromElevator(),
+                    request.isToElevator(),
+                    request.getFromFloor(),
+                    request.getToFloor(),
+                    request.isFromLadderTruck(),
+                    request.isToLadderTruck(),
+                    null
+            );
+            reservation.applyBaseEstimate(sumEstimateLines(estimateLines));
 
-        if (coupon != null) {
-            reservation.applyCoupon(coupon);
+            Coupon coupon = couponService.findActiveByCode(request.getCouponCode());
+            if (coupon != null) {
+                reservation.applyCoupon(coupon);
+            }
         }
 
         reservationRepository.save(reservation);
@@ -301,6 +304,10 @@ public class ReservationService {
     }
 
     public List<ReservationEstimateLine> estimateLines(Reservation reservation) {
+        if (reservation.getServiceType().isNonProfit()) {
+            return List.of();
+        }
+
         if (reservation.getId() != null) {
             List<ReservationEstimateLine> snapshotLines = estimateSnapshotLineRepository
                     .findByReservationIdOrderByLineOrderAsc(reservation.getId()).stream()
@@ -565,6 +572,10 @@ public class ReservationService {
     }
 
     private void recalculateBaseEstimate(Reservation reservation) {
+        if (reservation.getServiceType().isNonProfit()) {
+            return;
+        }
+
         List<ReservationEstimateLine> estimateLines = estimateCalculator.calculateLines(
                 reservation.getMoveType(),
                 reservation.isFromElevator(),
@@ -635,6 +646,9 @@ public class ReservationService {
     @Transactional
     public void updateEstimate(Long id, Integer estimatedPrice) {
         Reservation reservation = get(id);
+        if (reservation.getServiceType().isNonProfit()) {
+            throw new IllegalArgumentException("비영리 도움 요청에는 견적 금액을 저장하지 않습니다.");
+        }
         reservation.updateEstimate(estimatedPrice);
         if (reservation.getStatus().canTransitionTo(ReservationStatus.ESTIMATE_SENT)) {
             changeStatus(reservation, ReservationStatus.ESTIMATE_SENT, "admin");
