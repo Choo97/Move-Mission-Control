@@ -648,7 +648,7 @@ h3 {
   background: #ffffff;
 }
 
-.admin-console-nav a:hover {
+.admin-console-nav a:not(.admin-console-brand):hover {
   color: #172033;
   background: #f8fbff;
 }
