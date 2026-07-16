@@ -1,95 +1,84 @@
-# Move Mission Control
+# 24nalpo
 
-Spring Boot 기반 이사 예약 관리 웹 서비스입니다.
+이사 예약 접수부터 관리자 운영, 견적, 알림, 후기까지 한 흐름으로 관리하는 개인 프로젝트입니다.
 
-고객은 이사 예약을 신청하고 예약번호와 연락처로 진행 상태를 조회할 수 있습니다. 관리자는 예약 목록, 일정, 견적, 알림, 리뷰, 운영 설정을 관리합니다.
+Spring Boot가 예약 규칙과 REST API를 담당하고, React가 고객 및 관리자 화면을 제공합니다. 일반 이사 예약과 비영리 이사 도움 요청 흐름을 함께 지원합니다.
 
-현재 프로젝트는 고객 화면을 React로 전환하고, 백엔드는 Spring Boot API와 관리자 화면을 함께 제공하는 MVP 구조입니다.
+- 배포 화면: [https://24nalpo.vercel.app](https://24nalpo.vercel.app)
+- 개발 형태: 개인 프로젝트
+- 핵심 흐름: `예약 접수 -> 관리자 확인 -> 견적 안내 -> 고객 동의 -> 일정 확정 -> 완료 및 후기`
 
 ## 실제 화면
-
-로컬에서 생성한 시연 데이터로 캡처한 포트폴리오용 화면입니다. `고객 예약 접수 -> 예약 조회 -> 관리자 처리 -> 완료 후 리뷰 관리` 흐름이 한 번에 보이도록 구성했습니다.
 
 | 고객 예약 | 예약 조회 |
 | --- | --- |
 | ![고객 예약 단계별 입력 화면](docs/screenshots/customer-reservation.png) | ![예약번호와 연락처로 조회한 예약 상세 화면](docs/screenshots/reservation-lookup.png) |
-| 고객 정보, 연락처, 이사 유형을 단계별 예약 폼에서 입력합니다. | 예약번호와 연락처로 현재 상태, 이사 일정, 예상 금액을 확인합니다. |
+| 단계형 폼에서 고객 정보, 일정, 주소를 입력합니다. | 예약번호와 연락처로 진행 상태와 견적을 확인합니다. |
 
 | 관리자 예약 관리 | 리뷰 관리 |
 | --- | --- |
 | ![관리자 예약 목록과 예약 상세 관리 화면](docs/screenshots/admin-reservations.png) | ![관리자 리뷰 목록과 답변 관리 화면](docs/screenshots/admin-reviews.png) |
-| 관리자는 예약 목록에서 처리 대상 예약을 선택하고 견적, 상태, 메모, 알림 흐름을 확인합니다. | 완료 예약의 고객 리뷰를 확인하고 공개 여부와 관리자 답변을 관리합니다. |
-
-## 기술 스택
-
-- Java 17
-- Spring Boot 3.3.6
-- Spring MVC, Thymeleaf
-- Spring Data JPA
-- MySQL
-- Maven
-- React, Vite, TypeScript
+| 처리 우선순위, 견적, 상태, 알림을 한 화면에서 관리합니다. | 공개 여부와 관리자 답변을 관리합니다. |
 
 ## 주요 기능
 
-- 고객 예약 신청, 임시 저장, 예약 조회
-- 예약 수정/취소 요청 접수 및 관리자 승인/반려, 견적 동의, 짐 사진 업로드
-- 완료 예약 리뷰 작성
-- 관리자 예약 목록, 상세, 고객 요청 처리, 상태 변경, 견적 관리
-- 운영시간, 휴무일, 중복 시간 예약 시도 관리
-- 이메일/SMS 알림 이력, FAQ, 고객 안내, 리뷰, 감사 로그 관리
+- 고객: 예약 신청과 임시 저장, 가능 시간 확인, 예약 조회, 수정·취소 요청, 사진 업로드, 후기 작성
+- 관리자: 예약 목록과 상세 처리, 견적·상태 관리, 고객 요청 승인/반려, 일정·휴무일 설정
+- 운영: 이메일·SMS 알림 이력, FAQ, 리뷰, 서비스 모드와 견적 정책 관리
+- 보안: 관리자 인증, 예약 조회 시도 제한, 개인정보 마스킹·암호화, 파일 업로드 검증, 감사 로그
 
-전체 테스트 흐름은 [docs/TEST_SCENARIOS.md](docs/TEST_SCENARIOS.md)에서 확인할 수 있습니다.
-취업 포트폴리오와 면접 설명용 요약은 [docs/PORTFOLIO_CASE_STUDY.md](docs/PORTFOLIO_CASE_STUDY.md)에 정리했습니다.
+## 기술 스택
 
-## 빠른 실행
+| 영역 | 기술 |
+| --- | --- |
+| Backend | Java 17, Spring Boot 3.3.6, Spring Security, Spring Data JPA |
+| Frontend | React, TypeScript, Vite |
+| Data | MySQL, 파일 업로드 저장소 |
+| Build/Deploy | Maven, GitHub Actions, Vercel, Railway |
 
-MySQL에 `movemission` 데이터베이스를 만든 뒤 `.env.example`을 복사해 `.env.local`을 만들고 실행합니다.
+## 로컬 실행
+
+MySQL에 `movemission` 데이터베이스를 만든 뒤 Bash 터미널 두 개를 사용합니다.
 
 ```bash
 cp .env.example .env.local
-```
-
-터미널 1:
-
-```bash
 bash run-backend.sh
 ```
 
-터미널 2:
+새 터미널에서:
 
 ```bash
 bash run-frontend.sh
 ```
 
-실행 상태가 헷갈릴 때:
+```text
+고객/관리자 React  http://localhost:5173
+Spring Boot API    http://localhost:8081
+```
+
+실행 상태는 `bash check-local.sh`로 확인할 수 있습니다. 환경변수와 관리자 계정 설정은 [실행 문서](docs/RUNNING.md)를 참고합니다.
+
+## 검증
 
 ```bash
-bash check-local.sh
+mvn test
+cd frontend
+npm run lint
+npm run build
 ```
-
-```text
-고객 React 화면  http://localhost:5173/
-React 관리자 화면 http://localhost:5173/admin/reservations
-백엔드 화면      http://localhost:8081/
-기존 관리자 화면 http://localhost:8081/admin/reservations
-```
-
-자세한 실행 방법, 환경변수, 테스트, 관리자 계정 설정은 [docs/RUNNING.md](docs/RUNNING.md)에 정리했습니다.
 
 ## 문서
 
-| 문서 | 내용 |
+| 문서 | 용도 |
 | --- | --- |
-| [CONVENTION.md](CONVENTION.md) | 협업을 고려한 브랜치, 커밋, 코드 작성, 테스트 기준 |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | 프로젝트 구조, 패키지 역할, 예약 상태 흐름 |
-| [docs/API.md](docs/API.md) | 고객 예약, 사진 업로드, 리뷰 작성 REST API |
-| [docs/RUNNING.md](docs/RUNNING.md) | 실행 방법, 테스트, 환경변수, DB, 관리자 계정 |
-| [docs/DEPLOY_ENV.md](docs/DEPLOY_ENV.md) | 배포 환경변수, prod 프로필, 프론트/백엔드 주소 설정 |
-| [docs/DEPLOY_VERCEL_RAILWAY.md](docs/DEPLOY_VERCEL_RAILWAY.md) | Vercel/Railway 배포 구조, 사용자 작업 순서, 배포 후 확인 방법 |
-| [docs/TEST_SCENARIOS.md](docs/TEST_SCENARIOS.md) | 고객 예약부터 관리자 처리까지 전체 수동 테스트 흐름 |
-| [docs/PORTFOLIO_CASE_STUDY.md](docs/PORTFOLIO_CASE_STUDY.md) | 이력서 bullet, 면접 답변, 시연 흐름, 설계 판단 |
-| [docs/ROADMAP.md](docs/ROADMAP.md) | 앞으로 개발할 기능과 우선순위 |
-| [docs/ADMIN.md](docs/ADMIN.md) | 관리자 화면, 대시보드, 운영 구조 |
-| [docs/DESIGN.md](docs/DESIGN.md) | 고객 화면 디자인 방향, UI/UX 기준 |
-| [docs/NON_PROFIT_LANDING_GUIDE.md](docs/NON_PROFIT_LANDING_GUIDE.md) | 비영리 도움 요청 랜딩페이지 정보 구조와 문구 기준 |
+| [아키텍처](docs/ARCHITECTURE.md) | 프로젝트 구조와 예약 상태 흐름 |
+| [REST API](docs/API.md) | API 요청·응답과 인증 기준 |
+| [실행 및 환경 설정](docs/RUNNING.md) | 로컬 실행, 테스트, 환경변수, 계정 설정 |
+| [관리자 기능](docs/ADMIN.md) | 관리자 메뉴와 운영 처리 기준 |
+| [디자인 가이드](docs/DESIGN.md) | 고객·관리자 UI/UX 기준 |
+| [테스트 시나리오](docs/TEST_SCENARIOS.md) | 주요 기능 수동 검증 순서 |
+| [배포 가이드](docs/DEPLOY_VERCEL_RAILWAY.md) | Vercel·Railway 배포 방법 |
+| [포트폴리오 케이스 스터디](docs/PORTFOLIO_CASE_STUDY.md) | 문제 해결 과정과 면접 설명 자료 |
+| [로드맵](docs/ROADMAP.md) | 다음 개발 우선순위 |
+
+세부 운영·배포 문서는 [`docs`](docs) 폴더에 목적별로 분리되어 있습니다.
