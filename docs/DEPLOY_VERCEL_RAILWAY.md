@@ -1,5 +1,7 @@
 # Vercel/Railway 배포 가이드
 
+> 이 문서는 이전 Railway 배포 기록입니다. 현재 기본 배포 방법은 [Google Cloud 배포 가이드](DEPLOY_GOOGLE_CLOUD.md)를 사용합니다.
+
 이 문서는 포트폴리오용 1차 배포를 기준으로 합니다.
 
 ## 선택한 구조

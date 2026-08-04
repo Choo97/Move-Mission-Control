@@ -1,0 +1,20 @@
+# Local and version-control files
+.gcloudignore
+.git/
+.github/
+.idea/
+.vscode/
+.env*
+*.iml
+*.log
+*.err
+
+# Build output and runtime data
+target/
+uploads/
+outputs/
+
+# The Cloud Run source build only needs the Spring Boot backend.
+frontend/
+docs/
+railway.toml

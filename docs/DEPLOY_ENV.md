@@ -9,10 +9,9 @@
 | 이름 | 예시 | 설명 |
 | --- | --- | --- |
 | `SPRING_PROFILES_ACTIVE` | `prod` | 배포 설정 파일을 사용합니다. |
-| `PORT` | Railway 자동 주입 | Railway가 외부 트래픽을 연결할 포트입니다. 직접 만들지 않아도 됩니다. |
-| `SERVER_PORT` | `8080` | Railway가 아닌 환경에서 사용할 백업 포트입니다. |
-| `SPRING_DATASOURCE_URL` | `jdbc:mysql://host:3306/movemission?serverTimezone=Asia/Seoul&characterEncoding=UTF-8` | 배포 DB 주소입니다. |
-| `SPRING_DATASOURCE_USERNAME` | `move_user` | 배포 DB 사용자입니다. |
+| `PORT` | Cloud Run 자동 주입 | Cloud Run이 외부 트래픽을 연결할 포트입니다. 직접 만들지 않습니다. |
+| `SPRING_DATASOURCE_URL` | `jdbc:mysql:///movemission?cloudSqlInstance=...&socketFactory=com.google.cloud.sql.mysql.SocketFactory&cloudSqlRefreshStrategy=lazy&ipTypes=PUBLIC` | Cloud SQL Java Connector용 JDBC 주소입니다. 전체 값은 `.env.production.example`을 사용합니다. |
+| `SPRING_DATASOURCE_USERNAME` | `nalpo_app` | Cloud SQL DB 사용자입니다. |
 | `SPRING_DATASOURCE_PASSWORD` | `비공개` | 배포 DB 비밀번호입니다. |
 | `APP_FRONTEND_BASE_URL` | `https://frontend.example.com` | 백엔드가 프론트 주소로 이동시킬 때 사용합니다. |
 | `APP_CORS_ALLOWED_ORIGIN_VITE` | `https://frontend.example.com` | React 프론트에서 API 호출을 허용할 출처입니다. |
@@ -22,6 +21,8 @@
 | `ADMIN_INITIAL_USERNAME` | `admin` | 최초 관리자 계정 ID입니다. |
 | `ADMIN_INITIAL_PASSWORD` | `강한 비밀번호` | 최초 관리자 계정 비밀번호입니다. `admin1234`를 사용하면 안 됩니다. |
 | `ADMIN_INITIAL_ROLE` | `ADMIN` | 최초 관리자 권한입니다. |
+
+DB 비밀번호, 개인정보 키, 관리자 비밀번호는 Cloud Run의 일반 환경변수가 아니라 Secret Manager에서 연결합니다. Cloud SQL의 작은 인스턴스에 맞춰 `DB_MAX_POOL_SIZE=5`, `DB_MIN_IDLE=0`을 권장합니다.
 
 ## 프론트 필수 환경변수
 
@@ -35,7 +36,7 @@
 
 | 이름 | 권장값 | 설명 |
 | --- | --- | --- |
-| `RESERVATION_PHOTO_UPLOAD_DIR` | `/app/uploads/reservation-photos` | 업로드 파일 저장 경로입니다. 배포 플랫폼에서 영구 저장 경로로 연결해야 합니다. |
+| `RESERVATION_PHOTO_UPLOAD_DIR` | `/app/uploads/reservation-photos` | `chanho-bucket`을 Cloud Run의 읽기/쓰기 볼륨으로 마운트할 경로입니다. |
 | `RESERVATION_PHOTO_MAX_FILE_SIZE_BYTES` | `10485760` | 파일당 최대 10MB입니다. |
 | `RESERVATION_PHOTO_MAX_FILES_PER_REQUEST` | `5` | 한 번에 업로드 가능한 파일 수입니다. |
 | `RESERVATION_PHOTO_MAX_FILES_PER_RESERVATION` | `10` | 예약 1건당 최대 파일 수입니다. |
@@ -57,6 +58,6 @@ SMS_PROVIDER=disabled
 
 실제 값이 들어간 `.env.production` 파일은 Git에 올리지 않습니다.
 
-## Vercel/Railway 배포 순서
+## Vercel/Google Cloud 배포 순서
 
-실제 배포 순서는 [docs/DEPLOY_VERCEL_RAILWAY.md](DEPLOY_VERCEL_RAILWAY.md)에 따로 정리했습니다.
+실제 배포 순서는 [Google Cloud 배포 가이드](DEPLOY_GOOGLE_CLOUD.md)에 정리했습니다.

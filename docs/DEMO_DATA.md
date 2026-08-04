@@ -24,32 +24,43 @@
 
 시더는 예약 테이블이 비어 있을 때만 실행됩니다. 예약이 한 건이라도 있으면 아무 데이터도 추가하거나 삭제하지 않습니다. 따라서 운영 서버 재시작으로 데모 데이터가 중복 생성되지 않습니다.
 
-## Railway DB를 비우고 데모 데이터로 교체하기
+## 새 Cloud SQL에 처음 넣기
+
+새로 만든 `movemission` 데이터베이스가 비어 있다면 파괴적인 초기화가 필요 없습니다. Cloud Run의 첫 배포에서 아래 값만 사용합니다.
+
+```env
+SPRING_JPA_HIBERNATE_DDL_AUTO=update
+DEMO_SEED_ENABLED=true
+```
+
+로그에서 데이터 12건 생성 메시지를 확인한 직후 `DEMO_SEED_ENABLED=false`로 바꾸고 새 리비전을 배포합니다.
+
+## 기존 DB를 비우고 데모 데이터로 교체하기
 
 > `SPRING_JPA_HIBERNATE_DDL_AUTO=create`는 서버가 시작될 때 모든 DB 테이블을 다시 만듭니다. 아래 3단계 직후 반드시 `update`로 되돌려야 합니다.
 
-1. 이 변경사항을 GitHub에 올리고 Railway와 Vercel이 최신 코드를 배포하게 합니다.
-2. Railway 백엔드 서비스의 `Variables`에서 아래 값을 설정합니다.
+1. 삭제해도 되는 DB가 맞는지 확인하고 필요한 백업을 만듭니다.
+2. Cloud Run 서비스에서 `새 버전 수정 및 배포`를 누른 뒤 아래 환경변수를 설정합니다.
 
    ```env
    SPRING_JPA_HIBERNATE_DDL_AUTO=create
    DEMO_SEED_ENABLED=true
    ```
 
-3. Railway 백엔드를 한 번 재배포하고 로그에서 아래 메시지를 확인합니다.
+3. 새 리비전을 한 번 배포하고 Cloud Run 로그에서 아래 메시지를 확인합니다.
 
    ```text
    일반 이사 6건과 비영리 도움 요청 6건의 데모 시드를 생성했습니다.
    ```
 
-4. 확인 즉시 Railway 변수 값을 아래처럼 바꾸고 다시 재배포합니다.
+4. 확인 즉시 Cloud Run 환경변수를 아래처럼 바꾸고 다시 배포합니다.
 
    ```env
    SPRING_JPA_HIBERNATE_DDL_AUTO=update
    DEMO_SEED_ENABLED=false
    ```
 
-5. Vercel 고객 화면과 Railway 관리자 화면에서 아래 항목을 확인합니다.
+5. Vercel 고객 화면과 관리자 화면에서 아래 항목을 확인합니다.
 
    - 관리자 예약 목록에 총 12건 표시
    - 일반 이사 예약 6건, 비영리 도움 요청 6건 표시
@@ -66,6 +77,6 @@ DB를 새로 만든 직후에는 아래 조회 정보로 완료 사례를 확인
 | 일반 이사 완료 | 5 | `010-0000-1005` |
 | 비영리 도움 완료 | 10 | `010-0000-2004` |
 
-## Railway Volume의 사진 파일
+## Cloud Storage의 사진 파일
 
-DB 테이블을 초기화해도 `/app/uploads/reservation-photos` Volume의 기존 파일은 남습니다. 이번 데모 시드는 사진 파일을 생성하지 않으므로 서비스 동작에는 영향을 주지 않지만, 저장 공간까지 완전히 비우려면 Railway Volume 파일을 별도로 정리해야 합니다.
+DB 테이블을 초기화해도 `chanho-bucket`의 기존 객체는 남습니다. 이번 데모 시드는 사진 파일을 생성하지 않으므로 서비스 동작에는 영향을 주지 않지만, 저장 공간까지 완전히 비우려면 Cloud Storage 객체를 별도로 삭제해야 합니다. 버킷의 공개 액세스 방지는 계속 사용 설정해 둡니다.

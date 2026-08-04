@@ -33,8 +33,8 @@ Spring Boot가 예약 규칙과 REST API를 담당하고, React가 고객 및 �
 | --- | --- |
 | Backend | Java 17, Spring Boot 3.3.6, Spring Security, Spring Data JPA |
 | Frontend | React, TypeScript, Vite |
-| Data | MySQL, 파일 업로드 저장소 |
-| Build/Deploy | Maven, GitHub Actions, Vercel, Railway |
+| Data | Cloud SQL for MySQL, Cloud Storage |
+| Build/Deploy | Maven, GitHub Actions, Vercel, Google Cloud Run |
 
 ## 로컬 실행
 
@@ -77,7 +77,8 @@ npm run build
 | [관리자 기능](docs/ADMIN.md) | 관리자 메뉴와 운영 처리 기준 |
 | [디자인 가이드](docs/DESIGN.md) | 고객·관리자 UI/UX 기준 |
 | [테스트 시나리오](docs/TEST_SCENARIOS.md) | 주요 기능 수동 검증 순서 |
-| [배포 가이드](docs/DEPLOY_VERCEL_RAILWAY.md) | Vercel·Railway 배포 방법 |
+| [Google Cloud 배포 가이드](docs/DEPLOY_GOOGLE_CLOUD.md) | Vercel·Cloud Run·Cloud SQL·Cloud Storage 배포 방법 |
+| [이전 Railway 배포 가이드](docs/DEPLOY_VERCEL_RAILWAY.md) | 기존 Railway 배포 기록 |
 | [포트폴리오 케이스 스터디](docs/PORTFOLIO_CASE_STUDY.md) | 문제 해결 과정과 면접 설명 자료 |
 | [로드맵](docs/ROADMAP.md) | 다음 개발 우선순위 |
 
