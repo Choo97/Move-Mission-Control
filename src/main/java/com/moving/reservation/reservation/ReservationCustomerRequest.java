@@ -60,15 +60,15 @@ public class ReservationCustomerRequest {
     private boolean toLadderTruck;
 
     @Convert(converter = SensitiveStringConverter.class)
-    @Column(length = 5000)
+    @Column(columnDefinition = "TEXT")
     private String memo;
 
     @Convert(converter = SensitiveStringConverter.class)
-    @Column(nullable = false, length = 10000)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String detail;
 
     @Convert(converter = SensitiveStringConverter.class)
-    @Column(length = 5000)
+    @Column(columnDefinition = "TEXT")
     private String rejectionReason;
 
     @Column(nullable = false, length = 50)
