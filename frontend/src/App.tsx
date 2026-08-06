@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent, ReactNode } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import './App.css'
 import landingMovingScene from './assets/landing-moving-scene.png'
 import { AdminAvailabilitySettings } from './components/AdminAvailabilitySettings'
@@ -655,6 +656,7 @@ function App() {
         </>
       )}
       <SiteFooter serviceMode={customerServiceMode} />
+      <Analytics />
     </main>
   )
 }
