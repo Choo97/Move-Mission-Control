@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { getAvailability } from '../api/customerApi'
 import { moveTypeOptions } from '../reservationData'
@@ -21,6 +21,30 @@ type Props = {
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
   onChange: <K extends keyof ReservationForm>(key: K, value: ReservationForm[K]) => void
   serviceMode: ServiceMode
+}
+
+type AddressField = 'fromAddress' | 'toAddress'
+
+type KakaoPostcodeData = {
+  apartment: 'Y' | 'N'
+  bname: string
+  buildingName: string
+  jibunAddress: string
+  roadAddress: string
+  userSelectedType: 'J' | 'R'
+}
+
+type KakaoPostcodeConstructor = new (options: {
+  height: string
+  maxSuggestItems: number
+  oncomplete: (data: KakaoPostcodeData) => void
+  width: string
+}) => { embed: (container: HTMLElement) => void }
+
+type KakaoPostcodeWindow = Window & {
+  kakao?: {
+    Postcode?: KakaoPostcodeConstructor
+  }
 }
 
 const weekdayLabels = ['일', '월', '화', '수', '목', '금', '토']
@@ -53,6 +77,21 @@ const formatSelectedDate = (dateValue: string) => {
 }
 
 const formatOptionalText = (value: string, fallback = '없음') => value.trim() || fallback
+
+const formatKakaoAddress = (data: KakaoPostcodeData) => {
+  const address = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress
+
+  if (data.userSelectedType !== 'R') {
+    return address
+  }
+
+  const extraAddress = [
+    data.bname && /[동로가]$/.test(data.bname) ? data.bname : '',
+    data.buildingName && data.apartment === 'Y' ? data.buildingName : '',
+  ].filter(Boolean)
+
+  return extraAddress.length > 0 ? `${address} (${extraAddress.join(', ')})` : address
+}
 
 const buildCalendarDays = (calendarMonth: Date, today: string): Array<CalendarDay | null> => {
   const firstDate = startOfMonth(calendarMonth)
@@ -87,7 +126,11 @@ export function ReservationCreateForm({
   const [isLoadingAvailability, setIsLoadingAvailability] = useState(Boolean(form.moveDate))
   const [currentStep, setCurrentStep] = useState<FormStep>('customer')
   const [stepMessage, setStepMessage] = useState('')
+  const [addressSearchField, setAddressSearchField] = useState<AddressField | null>(null)
   const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(parseDateValue(form.moveDate || today)))
+  const fromAddressInputRef = useRef<HTMLInputElement>(null)
+  const toAddressInputRef = useRef<HTMLInputElement>(null)
+  const postcodeContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!form.moveDate) {
@@ -122,6 +165,21 @@ export function ReservationCreateForm({
       active = false
     }
   }, [form.moveDate])
+
+  useEffect(() => {
+    if (!addressSearchField) {
+      return
+    }
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setAddressSearchField(null)
+      }
+    }
+
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [addressSearchField])
 
   useEffect(() => {
     if (!form.moveDate || isLoadingAvailability) {
@@ -293,6 +351,42 @@ export function ReservationCreateForm({
     setIsLoadingAvailability(true)
     onChange('moveDate', dateValue)
     onChange('moveTime', '')
+  }
+
+  const openAddressSearch = (field: AddressField) => {
+    const Postcode = (window as KakaoPostcodeWindow).kakao?.Postcode
+    const inputRef = field === 'fromAddress' ? fromAddressInputRef : toAddressInputRef
+
+    if (!Postcode) {
+      setStepMessage('주소 검색 서비스를 불러오지 못했습니다. 잠시 후 다시 시도하거나 주소를 직접 입력해 주세요.')
+      inputRef.current?.focus()
+      return
+    }
+
+    setStepMessage('')
+    setAddressSearchField(field)
+    window.requestAnimationFrame(() => {
+      const container = postcodeContainerRef.current
+
+      if (!container) {
+        return
+      }
+
+      new Postcode({
+        width: '100%',
+        height: '100%',
+        maxSuggestItems: 5,
+        oncomplete: (data) => {
+          onChange(field, formatKakaoAddress(data))
+          setAddressSearchField(null)
+          window.requestAnimationFrame(() => {
+            const input = inputRef.current
+            input?.focus()
+            input?.setSelectionRange(input.value.length, input.value.length)
+          })
+        },
+      }).embed(container)
+    })
   }
 
   const submitStepForm = (event: FormEvent<HTMLFormElement>) => {
@@ -479,15 +573,27 @@ export function ReservationCreateForm({
         <div className="step-panel address-grid">
           <fieldset>
             <legend>출발지</legend>
-            <label>
-              주소
-              <input
-                value={form.fromAddress}
-                onChange={(event) => onChange('fromAddress', event.target.value)}
-                placeholder="서울시 강남구 테헤란로 1"
-                required
-              />
-            </label>
+            <div className="reservation-address-field">
+              <label htmlFor="reservation-from-address">주소</label>
+              <div className="reservation-address-search-row">
+                <input
+                  id="reservation-from-address"
+                  ref={fromAddressInputRef}
+                  value={form.fromAddress}
+                  onChange={(event) => onChange('fromAddress', event.target.value)}
+                  placeholder="주소 검색 후 상세주소를 입력해 주세요"
+                  required
+                />
+                <button
+                  type="button"
+                  className="reservation-address-search-button"
+                  aria-controls="reservation-from-address"
+                  onClick={() => openAddressSearch('fromAddress')}
+                >
+                  주소 검색
+                </button>
+              </div>
+            </div>
             <label>
               층수
               <input
@@ -522,15 +628,27 @@ export function ReservationCreateForm({
 
           <fieldset>
             <legend>도착지</legend>
-            <label>
-              주소
-              <input
-                value={form.toAddress}
-                onChange={(event) => onChange('toAddress', event.target.value)}
-                placeholder="서울시 송파구 올림픽로 1"
-                required
-              />
-            </label>
+            <div className="reservation-address-field">
+              <label htmlFor="reservation-to-address">주소</label>
+              <div className="reservation-address-search-row">
+                <input
+                  id="reservation-to-address"
+                  ref={toAddressInputRef}
+                  value={form.toAddress}
+                  onChange={(event) => onChange('toAddress', event.target.value)}
+                  placeholder="주소 검색 후 상세주소를 입력해 주세요"
+                  required
+                />
+                <button
+                  type="button"
+                  className="reservation-address-search-button"
+                  aria-controls="reservation-to-address"
+                  onClick={() => openAddressSearch('toAddress')}
+                >
+                  주소 검색
+                </button>
+              </div>
+            </div>
             <label>
               층수
               <input
@@ -677,6 +795,33 @@ export function ReservationCreateForm({
               ? '도움 요청 접수 후에는 조회번호가 발급됩니다. 조회번호와 연락처로 진행 상황을 확인할 수 있습니다.'
               : '예약 접수 후에는 예약번호가 발급됩니다. 예약번호와 연락처로 진행 상황을 조회할 수 있습니다.'}
           </p>
+        </div>
+      )}
+
+      {addressSearchField && (
+        <div className="reservation-address-dialog-backdrop">
+          <section
+            className="reservation-address-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="reservation-address-dialog-title"
+          >
+            <header>
+              <h3 id="reservation-address-dialog-title">
+                {addressSearchField === 'fromAddress' ? '출발지' : '도착지'} 주소 검색
+              </h3>
+              <button
+                type="button"
+                className="reservation-address-dialog-close"
+                aria-label="주소 검색 닫기"
+                title="닫기"
+                onClick={() => setAddressSearchField(null)}
+              >
+                ×
+              </button>
+            </header>
+            <div ref={postcodeContainerRef} className="reservation-postcode-container" />
+          </section>
         </div>
       )}
 
